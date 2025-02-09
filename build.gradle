@@ -34,6 +34,17 @@ deploy {
                 // getTargetTypeClass is a shortcut to get the class type using a string
 
                 frcJava(getArtifactTypeClass('FRCJavaArtifact')) {
+                    jvmArgs.add("-XX:+UnlockExperimentalVMOptions")
+                    jvmArgs.add("-XX:GCTimeRatio=5")
+                    jvmArgs.add("-XX:+UseSerialGC")
+                    jvmArgs.add("-XX:MaxGCPauseMillis=50")
+
+                    // The options below may improve performance, but should only be enabled on the RIO 2
+                    //
+                    // final MAX_JAVA_HEAP_SIZE_MB = 100;
+                    // jvmArgs.add("-Xmx" + MAX_JAVA_HEAP_SIZE_MB + "M")
+                    // jvmArgs.add("-Xms" + MAX_JAVA_HEAP_SIZE_MB + "M")
+                    // jvmArgs.add("-XX:+AlwaysPreTouch")
                 }
 
                 // Static files artifact
@@ -130,8 +141,41 @@ gversion {
     className    = "BuildConstants"
     dateFormat   = "yyyy-MM-dd HH:mm:ss z"
     timeZone     = "America/Chicago"
-    indent
+    indent       = "  "
 }
+
+// Create commit with working changes on event branches
+task(eventDeploy) {
+    doLast {
+        if (project.gradle.startParameter.taskNames.any({ it.toLowerCase().contains("deploy") })) {
+            def branchPrefix = "event"
+            def branch = 'git branch --show-current'.execute().text.trim()
+            def commitMessage = "Update at '${new Date().toString()}'"
+
+            if (branch.startsWith(branchPrefix)) {
+                exec {
+                    workingDir(projectDir)
+                    executable 'git'
+                    args 'add', '-A'
+                }
+                exec {
+                    workingDir(projectDir)
+                    executable 'git'
+                    args 'commit', '-m', commitMessage
+                    ignoreExitValue = true
+                }
+
+                println "Committed to branch: '$branch'"
+                println "Commit message: '$commitMessage'"
+            } else {
+                println "Not on an event branch, skipping commit"
+            }
+        } else {
+            println "Not running deploy task, skipping commit"
+        }
+    }
+}
+createVersionFile.dependsOn(eventDeploy)
 
 spotless {
     java {
