@@ -34,4 +34,10 @@ public final class Constants {
     /** Replaying from a log file. */
     REPLAY
   }
+
+  public static class SparkMaxCan {
+    public static int nDexterLeftID = 0;
+    public static int nDexterRightID = 1;
+    public static int ICEEID = 2;
+  }
 }
