@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package subsystems;
+package frc.robot.subsystems;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
@@ -17,6 +17,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.SparkMaxCan;
 
 public class ICEE extends SubsystemBase {
   private DigitalInput limitSwitch;
@@ -35,7 +36,7 @@ public class ICEE extends SubsystemBase {
   public ICEE() {
     this.limitSwitch = new DigitalInput(0);
 
-    this.motor = new SparkMax(0, MotorType.kBrushless);
+    this.motor = new SparkMax(SparkMaxCan.ICEEID, MotorType.kBrushless);
     this.targetVelocity = 0;
 
     this.closedLoopController = this.motor.getClosedLoopController();

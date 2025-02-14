@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package subsystems;
+package frc.robot.subsystems;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
@@ -17,6 +17,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.SparkMaxCan;
 
 public class nDexter extends SubsystemBase {
   /** Creates a new nDexter. */
@@ -44,8 +45,8 @@ public class nDexter extends SubsystemBase {
   private RelativeEncoder leftEncoder;
 
   public nDexter() {
-    this.leftSide = new SparkMax(0, MotorType.kBrushless);
-    this.rightSide = new SparkMax(1, MotorType.kBrushless);
+    this.leftSide = new SparkMax(SparkMaxCan.nDexterLeftID, MotorType.kBrushless);
+    this.rightSide = new SparkMax(SparkMaxCan.nDexterRightID, MotorType.kBrushless);
     this.targetVelocityLeft = 0;
     this.targetVelocityRight = 0;
     this.leftController = new PIDController(kp, ki, kd);
