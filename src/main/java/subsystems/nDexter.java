@@ -80,9 +80,8 @@ public class nDexter extends SubsystemBase {
         .velocityFF(1.0 / 5767, ClosedLoopSlot.kSlot1)
         .outputRange(-1, 1, ClosedLoopSlot.kSlot1);
 
-        leftSide.configure(leftMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
-
-
+    leftSide.configure(
+        leftMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
 
     rightMotorConfig
         .closedLoop
@@ -99,9 +98,8 @@ public class nDexter extends SubsystemBase {
         .d(0, ClosedLoopSlot.kSlot1)
         .velocityFF(1.0 / 5767, ClosedLoopSlot.kSlot1)
         .outputRange(-1, 1, ClosedLoopSlot.kSlot1);
-      rightSide.configure(rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
-
-
+    rightSide.configure(
+        rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
   }
 
   public void setTargetVelocity(double leftTarget, double rightTarget) {

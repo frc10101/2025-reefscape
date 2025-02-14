@@ -20,7 +20,9 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
@@ -31,14 +33,6 @@ import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-
-/**
- * This class is where the bulk of the robot should be declared. Since Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
- * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
- * subsystems, commands, and button mappings) should be declared here.
- */import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import subsystems.ICEE;
 import subsystems.nDexter;
 
@@ -53,10 +47,10 @@ public class RobotContainer {
   private final LoggedDashboardChooser<Command> autoChooser;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
-
   private nDexter dec = new nDexter();
+
   private ICEE icee = new ICEE();
-  private CommandPS4Controller controller = new CommandPS4Controller(0);
+  private CommandPS4Controller controller2 = new CommandPS4Controller(1);
 
   public RobotContainer() {
     switch (Constants.currentMode) {
@@ -155,6 +149,21 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
                     drive)
                 .ignoringDisable(true));
+
+    dec.setDefaultCommand(dec.runOnPID());
+    Trigger x_bot = controller2.cross();
+    x_bot.onTrue(Commands.runOnce(() -> dec.setTarget(0, 0)));
+    Trigger circle_bot = controller2.circle();
+    circle_bot.onTrue(Commands.runOnce(() -> dec.setTarget(50, 100)));
+    Trigger square_bot = controller2.square();
+    square_bot.onTrue(Commands.runOnce(() -> dec.setTarget(100, .50)));
+    Trigger triangle_bot = controller2.triangle();
+    triangle_bot.onTrue(Commands.runOnce(() -> dec.setTarget(100, 100)));
+
+    Trigger iCeeTriggerIn = controller2.L1();
+    iCeeTriggerIn.whileTrue(icee.runOnPIDIn());
+    Trigger iCeeTriggerOut = controller2.L1();
+    iCeeTriggerOut.whileTrue(icee.runOnPIDOut());
   }
 
   /**
@@ -162,26 +171,6 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-    configureBindings();
-  }
-
-  private void configureBindings() {
-    dec.setDefaultCommand(dec.runOnPID());
-    Trigger x_bot = controller.cross();
-    x_bot.onTrue(Commands.runOnce(() -> dec.setTarget(0, 0)));
-    Trigger circle_bot = controller.circle();
-    circle_bot.onTrue(Commands.runOnce(() -> dec.setTarget(50, 100)));
-    Trigger square_bot = controller.square();
-    square_bot.onTrue(Commands.runOnce(() -> dec.setTarget(100, .50)));
-    Trigger triangle_bot = controller.triangle();
-    triangle_bot.onTrue(Commands.runOnce(() -> dec.setTarget(100, 100)));
-
-    Trigger iCeeTriggerIn = controller.L1();
-    iCeeTriggerIn.whileTrue(icee.runOnPIDIn());
-    Trigger iCeeTriggerOut = controller.L1();
-    iCeeTriggerOut.whileTrue(icee.runOnPIDOut());
-  }
-
   public Command getAutonomousCommand() {
     return autoChooser.get();
   }

@@ -64,8 +64,7 @@ public class ICEE extends SubsystemBase {
         .velocityFF(1.0 / 5767, ClosedLoopSlot.kSlot1)
         .outputRange(-1, 1, ClosedLoopSlot.kSlot1);
 
-        motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
-
+    motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
   }
 
   public void setTargetVelocity(double leftTarget, double rightTarget) {
