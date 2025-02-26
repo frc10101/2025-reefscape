@@ -19,32 +19,32 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.SparkMaxCan;
 
-public class nDexter extends SubsystemBase {
+public class NDexter extends SubsystemBase {
   /** Creates a new nDexter. */
   public static final double ki = 0;
 
   public static final double kp = 0.1;
   public static final double kd = 0.001;
 
-  private SparkMax leftSide;
-  private SparkMax rightSide;
+  private final SparkMax leftSide;
+  private final SparkMax rightSide;
 
   private double targetVelocityLeft;
   private double targetVelocityRight;
 
-  private PIDController leftController;
-  private PIDController rightController;
+  private final PIDController leftController;
+  private final PIDController rightController;
 
-  private SparkMaxConfig rightMotorConfig;
-  private SparkMaxConfig leftMotorConfig;
+  private final SparkMaxConfig rightMotorConfig;
+  private final SparkMaxConfig leftMotorConfig;
 
-  private SparkClosedLoopController rightClosedLoopController;
-  private SparkClosedLoopController leftClosedLoopController;
+  private final SparkClosedLoopController rightClosedLoopController;
+  private final SparkClosedLoopController leftClosedLoopController;
 
-  private RelativeEncoder rightEncoder;
-  private RelativeEncoder leftEncoder;
+  private final RelativeEncoder rightEncoder;
+  private final RelativeEncoder leftEncoder;
 
-  public nDexter() {
+  public NDexter() {
     this.leftSide = new SparkMax(SparkMaxCan.nDexterLeftID, MotorType.kBrushless);
     this.rightSide = new SparkMax(SparkMaxCan.nDexterRightID, MotorType.kBrushless);
     this.targetVelocityLeft = 0;

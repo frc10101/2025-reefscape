@@ -21,15 +21,15 @@ import frc.robot.Constants.SparkMaxCan;
 
 public class ICEE extends SubsystemBase {
 
-  private SparkMax motor;
+  private final SparkMax motor;
 
   private double targetVelocity;
 
-  private SparkMaxConfig motorConfig;
+  private final SparkMaxConfig motorConfig;
 
-  private SparkClosedLoopController closedLoopController;
+  private final SparkClosedLoopController closedLoopController;
 
-  private RelativeEncoder encoder;
+  private final RelativeEncoder encoder;
 
   /** Creates a new ICEE. */
   public ICEE() {
