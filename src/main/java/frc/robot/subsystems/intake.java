@@ -31,8 +31,8 @@ public class intake extends SubsystemBase {
   private final double RotateKI = 0.0;
   private final double RotateKD = 0.7;
   private final double RotateKFF = 1.1;
-  /** Creates a new algae. */
-  public algae() {
+  /** Creates a new intake. */
+  public intake() {
     m_motor = new SparkMax(3, MotorType.kBrushless);
     SparkMaxConfig config = new SparkMaxConfig();
     SparkMaxConfig configRotate = new SparkMaxConfig();
