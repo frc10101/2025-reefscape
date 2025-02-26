@@ -149,6 +149,11 @@ public class nDexter extends SubsystemBase {
     this.targetVelocityRight = rightTarget;
   }
 
+  public double[] getTargetVelocities() {
+    double ret[] = {this.targetVelocityLeft, this.targetVelocityRight};
+    return ret;
+  }
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run

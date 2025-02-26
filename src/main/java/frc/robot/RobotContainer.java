@@ -161,9 +161,11 @@ public class RobotContainer {
     triangle_bot.onTrue(Commands.runOnce(() -> dec.setTarget(100, 100)));
 
     Trigger iCeeTriggerIn = controller2.L1();
-    iCeeTriggerIn.whileTrue(icee.runOnPIDIn());
+    iCeeTriggerIn.and(icee.ICEELimit()).whileTrue(icee.runOnPIDIn());
     Trigger iCeeTriggerOut = controller2.L1();
     iCeeTriggerOut.whileTrue(icee.runOnPIDOut());
+
+    icee.ICEELimit().whileTrue(Commands.runOnce(() -> dec.setTarget(0, 0)));
   }
 
   /**

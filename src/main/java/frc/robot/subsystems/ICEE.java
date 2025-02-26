@@ -14,13 +14,12 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.SparkMaxCan;
 
 public class ICEE extends SubsystemBase {
-  private DigitalInput limitSwitch;
 
   private SparkMax motor;
 
@@ -34,7 +33,6 @@ public class ICEE extends SubsystemBase {
 
   /** Creates a new ICEE. */
   public ICEE() {
-    this.limitSwitch = new DigitalInput(0);
 
     this.motor = new SparkMax(SparkMaxCan.ICEEID, MotorType.kBrushless);
     this.targetVelocity = 0;
@@ -86,6 +84,10 @@ public class ICEE extends SubsystemBase {
         });
   }
 
+  public Trigger ICEELimit() {
+    return new Trigger(this.motor.getForwardLimitSwitch()::isPressed);
+  }
+
   public Command runOnPIDOut() {
 
     return runOnce(
@@ -96,7 +98,11 @@ public class ICEE extends SubsystemBase {
   }
 
   public boolean getSwitchState() {
-    return this.limitSwitch.get();
+    return this.motor.getForwardLimitSwitch().isPressed();
+  }
+
+  public double getTargetVelocitie() {
+    return this.targetVelocity;
   }
 
   @Override
