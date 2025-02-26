@@ -7,11 +7,10 @@ package frc.robot.subsystems;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -30,30 +29,25 @@ public class Elevator extends SubsystemBase {
   public Elevator() {
     SparkMaxConfig config = new SparkMaxConfig();
     SparkMaxConfig configFollower = new SparkMaxConfig();
-    config.closedLoop
-        .pidf(kP, kI, kD, kFF);
+    config.closedLoop.pidf(kP, kI, kD, kFF);
 
-    config.closedLoop.maxMotion
+    config
+        .closedLoop
+        .maxMotion
         .maxAcceleration(kMaxAcceleration)
         .maxVelocity(kMaxVelocity)
         .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal);
 
-    config.encoder
-        .positionConversionFactor(2.0 * Math.PI * 1.5);
+    config.encoder.positionConversionFactor(2.0 * Math.PI * 1.5);
 
     m_motor = new SparkMax(1, MotorType.kBrushless);
-    m_motor.configure(
-        config,
-        ResetMode.kResetSafeParameters,
-        PersistMode.kPersistParameters);
+    m_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    configFollower.follow(m_motor,true);
+    configFollower.follow(m_motor, true);
 
-    m_motorFollower = new SparkMax(2,MotorType.kBrushless);
+    m_motorFollower = new SparkMax(2, MotorType.kBrushless);
     m_motorFollower.configure(
-      configFollower,
-      ResetMode.kResetSafeParameters,
-        PersistMode.kPersistParameters);
+        configFollower, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   private void goToGoal(double goal) {

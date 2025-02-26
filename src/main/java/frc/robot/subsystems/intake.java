@@ -11,7 +11,6 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -31,54 +30,52 @@ public class intake extends SubsystemBase {
   private final double RotateKI = 0.0;
   private final double RotateKD = 0.7;
   private final double RotateKFF = 1.1;
+
   /** Creates a new intake. */
   public intake() {
     m_motor = new SparkMax(3, MotorType.kBrushless);
     SparkMaxConfig config = new SparkMaxConfig();
     SparkMaxConfig configRotate = new SparkMaxConfig();
-    config.closedLoop
-        .pidf(kP, kI, kD, kFF);
+    config.closedLoop.pidf(kP, kI, kD, kFF);
 
-    config.closedLoop.maxMotion
+    config
+        .closedLoop
+        .maxMotion
         .maxAcceleration(kMaxAcceleration)
         .maxVelocity(kMaxVelocity)
         .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal);
 
-    config.encoder
-        .positionConversionFactor(2.0 * Math.PI * 1.5);
+    config.encoder.positionConversionFactor(2.0 * Math.PI * 1.5);
 
     m_motor = new SparkMax(1, MotorType.kBrushless);
-    m_motor.configure(
-        config,
-        ResetMode.kResetSafeParameters,
-        PersistMode.kPersistParameters);
-        config.closedLoop
-        .pidf(kP, kI, kD, kFF);
+    m_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    config.closedLoop.pidf(kP, kI, kD, kFF);
 
-    configRotate.closedLoop.maxMotion
+    configRotate
+        .closedLoop
+        .maxMotion
         .maxAcceleration(RotateKMaxAcceleration)
         .maxVelocity(RotateKMaxVelocity)
         .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal);
 
-        configRotate.encoder
-        .positionConversionFactor(2.0 * Math.PI * 1.5);
+    configRotate.encoder.positionConversionFactor(2.0 * Math.PI * 1.5);
 
     m_motorRotate.configure(
-        configRotate,
-        ResetMode.kResetSafeParameters,
-        PersistMode.kPersistParameters);
-        configRotate.closedLoop
-        .pidf(kP, kI, kD, kFF);
+        configRotate, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    configRotate.closedLoop.pidf(kP, kI, kD, kFF);
   }
 
   private void goToGoal(double goal) {
-    m_motorRotate.getClosedLoopController().setReference(goal, ControlType.kMAXMotionPositionControl);
+    m_motorRotate
+        .getClosedLoopController()
+        .setReference(goal, ControlType.kMAXMotionPositionControl);
   }
 
-  private void upSpool(){
+  private void upSpool() {
     m_motor.getClosedLoopController().setReference(1, ControlType.kMAXMotionVelocityControl);
   }
-  private void downSpool(){
+
+  private void downSpool() {
     m_motor.getClosedLoopController().setReference(-1, ControlType.kMAXMotionVelocityControl);
   }
 
@@ -87,17 +84,19 @@ public class intake extends SubsystemBase {
     // This method will be called once per scheduler run
   }
 
-  public Command spoolUp(){
+  public Command spoolUp() {
     return run(() -> upSpool());
   }
-  public Command spoolDown(){
+
+  public Command spoolDown() {
     return run(() -> downSpool());
   }
-  public Command intakeUp(){
+
+  public Command intakeUp() {
     return run(() -> goToGoal(5));
   }
-  public Command intakeDown(){
+
+  public Command intakeDown() {
     return run(() -> goToGoal(0));
   }
-
 }

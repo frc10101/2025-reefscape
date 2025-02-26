@@ -59,15 +59,18 @@ import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
 
-  private SwerveModuleState[] states = new SwerveModuleState[] {
-    new SwerveModuleState(),
-    new SwerveModuleState(),
-    new SwerveModuleState(),
-    new SwerveModuleState()
-  };
+  private SwerveModuleState[] states =
+      new SwerveModuleState[] {
+        new SwerveModuleState(),
+        new SwerveModuleState(),
+        new SwerveModuleState(),
+        new SwerveModuleState()
+      };
 
-  StructArrayPublisher<SwerveModuleState> publisher = NetworkTableInstance.getDefault()
-.getStructArrayTopic("MyStates", SwerveModuleState.struct).publish();
+  StructArrayPublisher<SwerveModuleState> publisher =
+      NetworkTableInstance.getDefault()
+          .getStructArrayTopic("MyStates", SwerveModuleState.struct)
+          .publish();
 
   // TunerConstants doesn't include these constants, so they are declared locally
   static final double ODOMETRY_FREQUENCY =
