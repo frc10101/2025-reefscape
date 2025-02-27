@@ -13,14 +13,11 @@ import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 
 public class Elevator extends SubsystemBase {
   private final double kMaxVelocity = 1.75;
   private final double kMaxAcceleration = 0.75;
-  private final double kP = 1.3;
-  private final double kI = 0.0;
-  private final double kD = 0.7;
-  private final double kFF = 1.1;
 
   private final SparkMax m_motor;
   private final SparkMax m_motorFollower;
@@ -29,7 +26,11 @@ public class Elevator extends SubsystemBase {
   public Elevator() {
     SparkMaxConfig config = new SparkMaxConfig();
     SparkMaxConfig configFollower = new SparkMaxConfig();
-    config.closedLoop.pidf(kP, kI, kD, kFF);
+    config.closedLoop.pidf(
+        Constants.elevatorConstants.kP,
+        Constants.elevatorConstants.kI,
+        Constants.elevatorConstants.kD,
+        Constants.elevatorConstants.kFF);
 
     config
         .closedLoop
@@ -40,12 +41,12 @@ public class Elevator extends SubsystemBase {
 
     config.encoder.positionConversionFactor(2.0 * Math.PI * 1.5);
 
-    m_motor = new SparkMax(1, MotorType.kBrushless);
+    m_motor = new SparkMax(Constants.canIDs.ElevatorMotor, MotorType.kBrushless);
     m_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     configFollower.follow(m_motor, true);
 
-    m_motorFollower = new SparkMax(2, MotorType.kBrushless);
+    m_motorFollower = new SparkMax(Constants.canIDs.ElevatorMotorFollower, MotorType.kBrushless);
     m_motorFollower.configure(
         configFollower, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
@@ -55,11 +56,11 @@ public class Elevator extends SubsystemBase {
   }
 
   public Command raise() {
-    return run(() -> goToGoal(5));
+    return runOnce(() -> goToGoal(5));
   }
 
   public Command lower() {
-    return run(() -> goToGoal(0));
+    return runOnce(() -> goToGoal(0));
   }
 
   @Override

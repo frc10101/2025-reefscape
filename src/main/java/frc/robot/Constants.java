@@ -34,4 +34,35 @@ public final class Constants {
     /** Replaying from a log file. */
     REPLAY
   }
+
+  public static final class canIDs {
+    /** Intake Can ID's */
+    public static final int intakeMotor = 1;
+
+    public static final int intakeMotorRotate = 2;
+    public static final int intakeMotorFollower = 3;
+
+    /** Elevator Can ID's */
+    public static final int ElevatorMotor = 4;
+
+    public static final int ElevatorMotorFollower = 5;
+  }
+
+  public static final class intakeConstants {
+    public static final double kP = 1.3;
+    public static final double kI = 0.0;
+    public static final double kD = 0.7;
+    public static final double kFF = 1.1;
+    public static final double RotateKP = 1.3;
+    public static final double RotateKI = 0.0;
+    public static final double RotateKD = 0.7;
+    public static final double RotateKFF = 1.1;
+  }
+
+  public static final class elevatorConstants {
+    public static final double kP = 1.3;
+    public static final double kI = 0.0;
+    public static final double kD = 0.7;
+    public static final double kFF = 1.1;
+  }
 }
