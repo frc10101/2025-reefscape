@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -11,50 +7,66 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 
 public class Arm extends SubsystemBase {
-  private SparkMax m_armMotor;
-  private final double kMaxVelocity = 2.0;
-  private final double kMaxAcceleration = 1.0;
-  private final double kP = 1.0;
-  private final double kI = 0.0;
-  private final double kD = 0.5;
-  private final double kFF = 0.8;
 
-  /** Creates a new arm. */
+  private final double ARM_MASS = 0.5; // kg
+  private final double ARM_LENGTH = 0.3; // meters
+  private final double GRAVITY = 9.81; // m/s^2
+  private final double L_C = ARM_LENGTH / 2; // Center of mass
+  private final double GEAR_RATIO = 10.0; // Motor rotations per arm rotation
+  private final double kTorqueToVoltage = 0.1; // Tune: Nm to volts
+
+  private double thetaRef; // Desired arm angle (radians)
+  private double theta; // Current arm angle (radians)
+
+  private final SparkMax armMotor;
+
   public Arm() {
-    m_armMotor = new SparkMax(2, MotorType.kBrushless);
-    SparkMaxConfig config = new SparkMaxConfig();
+    armMotor = new SparkMax(Constants.canIDs.ArmMotor, MotorType.kBrushless);
+    armMotor.getEncoder().setPosition(0);
 
-    config.closedLoop.pidf(kP, kI, kD, kFF);
+    SparkMaxConfig armConfig = new SparkMaxConfig();
+    armConfig.closedLoop.pidf(
+        Constants.armConstants.kP,
+        Constants.armConstants.kI,
+        Constants.armConstants.kD,
+        Constants.armConstants.kFF);
 
-    config
+    armConfig
         .closedLoop
         .maxMotion
-        .maxAcceleration(kMaxAcceleration)
-        .maxVelocity(kMaxVelocity)
+        .maxAcceleration(Constants.armConstants.kMaxAcceleration)
+        .maxVelocity(Constants.armConstants.kMaxVelocity)
         .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal);
 
-    config.encoder.positionConversionFactor(2.0 * Math.PI * 1.0);
+    armConfig.encoder.positionConversionFactor(2.0 * Math.PI / GEAR_RATIO);
 
-    m_armMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    config.closedLoop.pidf(kP, kI, kD, kFF);
+    armMotor.configure(armConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    thetaRef = 0.0;
   }
 
-  private void moveToPosition(double position) {
-    m_armMotor
-        .getClosedLoopController()
-        .setReference(position, ControlType.kMAXMotionPositionControl);
+  public double getAngle() {
+    return theta;
+  }
+
+  public void stop() {
+    armMotor.set(0);
   }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
-  }
+    theta = armMotor.getEncoder().getPosition();
 
-  public Command armToPosition(double position) {
-    return run(() -> moveToPosition(position));
+    // calculate gravity feed forward in volts
+    double gravityFF = (ARM_MASS * GRAVITY * L_C * Math.cos(thetaRef)) * kTorqueToVoltage;
+    armMotor
+        .getClosedLoopController()
+        .setReference(
+            thetaRef + gravityFF * 0.1, // tune the 0.1 as a scaling factor
+            ControlType.kMAXMotionPositionControl);
   }
 }

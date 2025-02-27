@@ -34,4 +34,17 @@ public final class Constants {
     /** Replaying from a log file. */
     REPLAY
   }
+
+  public static final class canIDs {
+    public static final int ArmMotor = 6;
+  }
+
+  public static final class armConstants {
+    public static final double kP = 1.3;
+    public static final double kI = 0.0;
+    public static final double kD = 0.7;
+    public static final double kFF = 0.0;
+    public static final double kMaxAcceleration = 2.0;
+    public static final double kMaxVelocity = 1.0;
+  }
 }
