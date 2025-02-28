@@ -46,11 +46,8 @@ public class NDexter extends SubsystemBase {
         .d(Constants.NDexterConstants.leftKd)
         .outputRange(-1, 1)
         // Set PID values for velocity control in slot 1
-        .p(0.0001, ClosedLoopSlot.kSlot1)
-        .i(0, ClosedLoopSlot.kSlot1)
-        .d(0, ClosedLoopSlot.kSlot1)
-        .velocityFF(1.0 / 5767, ClosedLoopSlot.kSlot1)
-        .outputRange(-1, 1, ClosedLoopSlot.kSlot1);
+        .velocityFF(Constants.NDexterConstants.leftFF, ClosedLoopSlot.kSlot0)
+        .outputRange(-1, 1, ClosedLoopSlot.kSlot0);
 
     leftMotor.configure(
         leftMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
@@ -65,7 +62,7 @@ public class NDexter extends SubsystemBase {
         .d(Constants.NDexterConstants.rightKd)
         .outputRange(-1, 1)
         // Set PID values for velocity control in slot 1
-        .velocityFF(1.0 / 5767, ClosedLoopSlot.kSlot0)
+        .velocityFF(Constants.NDexterConstants.rightFF, ClosedLoopSlot.kSlot0)
         .outputRange(-1, 1, ClosedLoopSlot.kSlot0);
     rightMotor.configure(
         rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);

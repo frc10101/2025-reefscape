@@ -48,6 +48,7 @@ public final class Constants {
     public static final double Ki=0;
     public static final double Kd=0;
     public static final double ratio=1;
+    public static final double FF=1.0 / 5767;
   } 
 
   public static final class NDexterConstants {
@@ -57,6 +58,7 @@ public final class Constants {
     public static final double rightKi=0;
     public static final double rightKd=0;
     public static final double rightGearRatio=5;
+    public static final double leftFF=1.0 / 5767;
 
     public static final double leftFaster=1;
     public static final double leftSlower=.5;
@@ -64,6 +66,7 @@ public final class Constants {
     public static final double leftKi=0;
     public static final double leftKd=0;
     public static final double leftGearRatio=9;
+    public static final double rightFF=1.0 / 5767;
 
 
 

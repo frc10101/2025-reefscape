@@ -41,7 +41,7 @@ public class ICEE extends SubsystemBase {
         .p(Constants.IceeConstants.Kp, ClosedLoopSlot.kSlot0)
         .i(Constants.IceeConstants.Ki, ClosedLoopSlot.kSlot0)
         .d(Constants.IceeConstants.Kd, ClosedLoopSlot.kSlot0)
-        .velocityFF(1.0 / 5767, ClosedLoopSlot.kSlot0)
+        .velocityFF(Constants.IceeConstants.FF, ClosedLoopSlot.kSlot0)
         .outputRange(-1, 1, ClosedLoopSlot.kSlot0);
 
     motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
