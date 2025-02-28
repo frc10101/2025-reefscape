@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -47,10 +48,10 @@ public class RobotContainer {
   private final LoggedDashboardChooser<Command> autoChooser;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
-  private NDexter dec = new NDexter();
+  private NDexter nDexter = new NDexter();
 
   private ICEE icee = new ICEE();
-  private CommandPS4Controller controller2 = new CommandPS4Controller(1);
+  private CommandJoystick controller2 = new CommandJoystick(1);
 
   public RobotContainer() {
     switch (Constants.currentMode) {
@@ -150,22 +151,25 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    dec.setDefaultCommand(dec.runOnPID());
-    Trigger x_bot = controller2.cross();
-    x_bot.onTrue(Commands.runOnce(() -> dec.setTarget(0, 0)));
-    Trigger circle_bot = controller2.circle();
-    circle_bot.onTrue(Commands.runOnce(() -> dec.setTarget(50, 100)));
-    Trigger square_bot = controller2.square();
-    square_bot.onTrue(Commands.runOnce(() -> dec.setTarget(100, .50)));
-    Trigger triangle_bot = controller2.triangle();
-    triangle_bot.onTrue(Commands.runOnce(() -> dec.setTarget(100, 100)));
+    nDexter.setDefaultCommand(nDexter.stop());
 
-    Trigger iCeeTriggerIn = controller2.L1();
-    iCeeTriggerIn.and(icee.ICEELimit()).whileTrue(icee.runOnPIDIn());
-    Trigger iCeeTriggerOut = controller2.L1();
-    iCeeTriggerOut.whileTrue(icee.runOnPIDOut());
+    Trigger x_bot = controller2.button(0);
+    x_bot.whileTrue(nDexter.Out());
+    Trigger circle_bot = controller2.button(1);
+    circle_bot.whileTrue(nDexter.rightFaster());
+    Trigger square_bot = controller2.button(2);
+    square_bot.whileTrue(nDexter.leftFaster());
+    Trigger triangle_bot = controller2.button(3);
+    triangle_bot.whileTrue(nDexter.runSame());
 
-    icee.ICEELimit().whileTrue(Commands.runOnce(() -> dec.setTarget(0, 0)));
+    Trigger iCeeTriggerIn = controller2.button(4);
+    iCeeTriggerIn.whileTrue(icee.runIn());
+    Trigger iCeeTriggerOut = controller2.button(5);
+    iCeeTriggerOut.whileTrue(icee.runOut());
+
+    icee.ICEELimit().onTrue(nDexter.canSpin(false));
+    icee.ICEELimit().onFalse(nDexter.canSpin(true));
+
   }
 
   /**

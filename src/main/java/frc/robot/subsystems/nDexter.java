@@ -4,75 +4,46 @@
 
 package frc.robot.subsystems;
 
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.SparkMaxCan;
 
 public class NDexter extends SubsystemBase {
   /** Creates a new nDexter. */
-  public static final double ki = 0;
-
-  public static final double kp = 0.1;
-  public static final double kd = 0.001;
-
-  private final SparkMax leftSide;
-  private final SparkMax rightSide;
-
-  private double targetVelocityLeft;
-  private double targetVelocityRight;
-
-  private final PIDController leftController;
-  private final PIDController rightController;
-
-  private final SparkMaxConfig rightMotorConfig;
-  private final SparkMaxConfig leftMotorConfig;
-
-  private final SparkClosedLoopController rightClosedLoopController;
-  private final SparkClosedLoopController leftClosedLoopController;
-
-  private final RelativeEncoder rightEncoder;
-  private final RelativeEncoder leftEncoder;
+  private final SparkMax leftMotor;
+  private final SparkMax rightMotor;
+  private boolean canSpin=true;
 
   public NDexter() {
-    this.leftSide = new SparkMax(SparkMaxCan.nDexterLeftID, MotorType.kBrushless);
-    this.rightSide = new SparkMax(SparkMaxCan.nDexterRightID, MotorType.kBrushless);
-    this.targetVelocityLeft = 0;
-    this.targetVelocityRight = 0;
-    this.leftController = new PIDController(kp, ki, kd);
-    this.rightController = new PIDController(kp, ki, kd);
+    this.leftMotor = new SparkMax(SparkMaxCan.nDexterLeftID, MotorType.kBrushless);
+    this.rightMotor = new SparkMax(SparkMaxCan.nDexterRightID, MotorType.kBrushless);
+    SparkMaxConfig leftMotorConfig = new SparkMaxConfig();
+    SparkMaxConfig rightMotorConfig = new SparkMaxConfig();
 
-    this.rightClosedLoopController = this.rightSide.getClosedLoopController();
-    this.leftClosedLoopController = this.leftSide.getClosedLoopController();
 
-    this.rightEncoder = rightSide.getEncoder();
-    this.leftEncoder = leftSide.getEncoder();
+    leftMotorConfig.encoder.positionConversionFactor(1).velocityConversionFactor(1/Constants.NDexterConstants.leftGearRatio);
 
-    rightMotorConfig = new SparkMaxConfig();
-    leftMotorConfig = new SparkMaxConfig();
+    rightMotorConfig.encoder.positionConversionFactor(1).velocityConversionFactor(1/Constants.NDexterConstants.rightGearRatio);
 
-    leftMotorConfig.encoder.positionConversionFactor(1).velocityConversionFactor(1);
 
-    rightMotorConfig.encoder.positionConversionFactor(1).velocityConversionFactor(1);
 
     leftMotorConfig
         .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         // Set PID values for position control. We don't need to pass a closed loop
         // slot, as it will default to slot 0.
-        .p(0.1)
-        .i(0)
-        .d(0)
+        .p(Constants.NDexterConstants.leftKp)
+        .i(Constants.NDexterConstants.leftKi)
+        .d(Constants.NDexterConstants.leftKd)
         .outputRange(-1, 1)
         // Set PID values for velocity control in slot 1
         .p(0.0001, ClosedLoopSlot.kSlot1)
@@ -81,7 +52,7 @@ public class NDexter extends SubsystemBase {
         .velocityFF(1.0 / 5767, ClosedLoopSlot.kSlot1)
         .outputRange(-1, 1, ClosedLoopSlot.kSlot1);
 
-    leftSide.configure(
+    leftMotor.configure(
         leftMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
 
     rightMotorConfig
@@ -89,71 +60,109 @@ public class NDexter extends SubsystemBase {
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         // Set PID values for position control. We don't need to pass a closed loop
         // slot, as it will default to slot 0.
-        .p(0.1)
-        .i(0)
-        .d(0)
+        .p(Constants.NDexterConstants.rightKp)
+        .i(Constants.NDexterConstants.rightKi)
+        .d(Constants.NDexterConstants.rightKd)
         .outputRange(-1, 1)
         // Set PID values for velocity control in slot 1
-        .p(0.0001, ClosedLoopSlot.kSlot1)
-        .i(0, ClosedLoopSlot.kSlot1)
-        .d(0, ClosedLoopSlot.kSlot1)
-        .velocityFF(1.0 / 5767, ClosedLoopSlot.kSlot1)
-        .outputRange(-1, 1, ClosedLoopSlot.kSlot1);
-    rightSide.configure(
+        .velocityFF(1.0 / 5767, ClosedLoopSlot.kSlot0)
+        .outputRange(-1, 1, ClosedLoopSlot.kSlot0);
+    rightMotor.configure(
         rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
   }
 
-  public void setTargetVelocity(double leftTarget, double rightTarget) {
-    this.targetVelocityLeft = leftTarget;
-    this.targetVelocityRight = rightTarget;
+  public Command runSame() {
+    if(canSpin){
+      return runOnce(
+          () -> {
+            this.rightMotor.getClosedLoopController().setReference(
+                Constants.NDexterConstants.rightFaster,
+                ControlType.kMAXMotionVelocityControl,
+                ClosedLoopSlot.kSlot0);
+            this.leftMotor.getClosedLoopController().setReference(
+                Constants.NDexterConstants.leftFaster,
+                ControlType.kMAXMotionVelocityControl,
+                ClosedLoopSlot.kSlot0);
+          });
+    }
+    else{
+      return this.stop();
+    }
   }
 
-  public Command runOnPID() {
+  public Command rightFaster() {
+    if(canSpin){
+      return runOnce(
+          () -> {
+            this.rightMotor.getClosedLoopController().setReference(
+              Constants.NDexterConstants.rightFaster,
+                ControlType.kMAXMotionVelocityControl,
+                ClosedLoopSlot.kSlot0);
+            this.leftMotor.getClosedLoopController().setReference(
+              Constants.NDexterConstants.leftSlower,
+                ControlType.kMAXMotionVelocityControl,
+                ClosedLoopSlot.kSlot0);
+          });
+    }
+    else{
+      return this.stop();
+    }
+  } 
+
+
+  public Command leftFaster() {
+    if(canSpin){
+      return runOnce(
+          () -> {
+            this.rightMotor.getClosedLoopController().setReference(
+                Constants.NDexterConstants.rightSlower,
+                ControlType.kMAXMotionVelocityControl,
+                ClosedLoopSlot.kSlot0);
+            this.leftMotor.getClosedLoopController().setReference(
+              Constants.NDexterConstants.leftFaster,
+                ControlType.kMAXMotionVelocityControl,
+                ClosedLoopSlot.kSlot0);
+          });
+    }
+    else{
+      return this.stop();
+    }
+  }
+
+  public Command stop() {
 
     return runOnce(
         () -> {
-          leftController.setSetpoint(this.targetVelocityLeft);
-          rightController.setSetpoint(this.targetVelocityRight);
-
-          // leftSide.setVoltage(leftController.calculate(leftSide.get()));
-          // rightSide.setVoltage(rightController.calculate(rightSide.get()));
-          rightClosedLoopController.setReference(
-              this.targetVelocityRight,
+          this.rightMotor.getClosedLoopController().setReference(
+              0,
               ControlType.kMAXMotionVelocityControl,
               ClosedLoopSlot.kSlot0);
-          leftClosedLoopController.setReference(
-              this.targetVelocityLeft,
+          this.leftMotor.getClosedLoopController().setReference(
+              0,
               ControlType.kMAXMotionVelocityControl,
               ClosedLoopSlot.kSlot0);
         });
   }
 
-  // public boolean overDraw(){
-  //   if(leftSide.getBusVoltage() > MARGIN || rightSide.getBusVoltage() > MARGIN){
-  //     return true;
-  //   }
-  //   return false;
-  // }
-
-  public void assighnPower(double left, double right) {
-    leftSide.setVoltage(left);
-    rightSide.setVoltage(right);
+  public Command Out() {
+    return runOnce(
+        () -> {
+          this.rightMotor.getClosedLoopController().setReference(
+              -Constants.NDexterConstants.rightFaster,
+              ControlType.kMAXMotionVelocityControl,
+              ClosedLoopSlot.kSlot0);
+          this.leftMotor.getClosedLoopController().setReference(
+            -Constants.NDexterConstants.leftFaster,
+              ControlType.kMAXMotionVelocityControl,
+              ClosedLoopSlot.kSlot0);
+        });
   }
 
-  public Command power(double left, double right) {
-    return runOnce(() -> this.assighnPower(left, right));
+  public Command canSpin(boolean spin){
+    return runOnce(()->{
+     canSpin=spin;
+    });
   }
-
-  public void setTarget(double leftTarget, double rightTarget) {
-    this.targetVelocityLeft = leftTarget;
-    this.targetVelocityRight = rightTarget;
-  }
-
-  public double[] getTargetVelocities() {
-    double ret[] = {this.targetVelocityLeft, this.targetVelocityRight};
-    return ret;
-  }
-
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
