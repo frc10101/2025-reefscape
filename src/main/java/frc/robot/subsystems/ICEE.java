@@ -26,14 +26,14 @@ public class ICEE extends SubsystemBase {
   public ICEE() {
 
     this.motor = new SparkMax(SparkMaxCan.ICEEID, MotorType.kBrushless);
-    SparkMaxConfig motorConfig= new SparkMaxConfig();
-
-    motorConfig.encoder.positionConversionFactor(Constants.IceeConstants.ratio).velocityConversionFactor(Constants.IceeConstants.ratio);
-
+    SparkMaxConfig motorConfig = new SparkMaxConfig();
 
     motorConfig
-        .limitSwitch
-        .forwardLimitSwitchEnabled(true);
+        .encoder
+        .positionConversionFactor(Constants.IceeConstants.ratio)
+        .velocityConversionFactor(Constants.IceeConstants.ratio);
+
+    motorConfig.limitSwitch.forwardLimitSwitchEnabled(true);
 
     motorConfig
         .closedLoop
@@ -47,7 +47,6 @@ public class ICEE extends SubsystemBase {
     motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
   }
 
-
   public Trigger ICEELimit() {
     return new Trigger(this.motor.getForwardLimitSwitch()::isPressed);
   }
@@ -56,16 +55,26 @@ public class ICEE extends SubsystemBase {
 
     return runOnce(
         () -> {
-          motor.getClosedLoopController().setReference(
-              Constants.IceeConstants.IceeOutVelocity, ControlType.kMAXMotionVelocityControl, ClosedLoopSlot.kSlot0);
+          motor
+              .getClosedLoopController()
+              .setReference(
+                  Constants.IceeConstants.IceeOutVelocity,
+                  ControlType.kMAXMotionVelocityControl,
+                  ClosedLoopSlot.kSlot0);
         });
   }
 
   public Command runIn() {
     return runOnce(
         () -> {
-          motor.getClosedLoopController().setReference(
-              motor.getForwardLimitSwitch().isPressed()?0:Constants.IceeConstants.IceeInVelocity, ControlType.kMAXMotionVelocityControl, ClosedLoopSlot.kSlot0);
+          motor
+              .getClosedLoopController()
+              .setReference(
+                  motor.getForwardLimitSwitch().isPressed()
+                      ? 0
+                      : Constants.IceeConstants.IceeInVelocity,
+                  ControlType.kMAXMotionVelocityControl,
+                  ClosedLoopSlot.kSlot0);
         });
   }
 
