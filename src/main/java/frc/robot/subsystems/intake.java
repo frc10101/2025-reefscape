@@ -24,7 +24,7 @@ public class Intake extends SubsystemBase {
   private final double kMaxAcceleration = 0.75;
   private final double RotateKMaxVelocity = 1.75;
   private final double RotateKMaxAcceleration = 0.75;
-  private final double m_motorTargetPos = 0, m_motorRotateTarget = 0;
+  private double m_motorTargetPos = 0, m_motorRotateTarget = 0;
 
   /** Creates a new intake. */
   public Intake() {
