@@ -25,12 +25,13 @@ public class Intake extends SubsystemBase {
 
   /** Creates a new intake. */
   public Intake() {
-    m_motorLeft = new SparkMax(Constants.SparkMaxCanIDs.intakeMotorLeft, MotorType.kBrushless);
-    m_motorRight = new SparkMax(Constants.SparkMaxCanIDs.intakeMotorRight, MotorType.kBrushless);
+    m_motorLeft = new SparkMax(Constants.SparkMaxCanIDs.intakeMotorSpinLeft, MotorType.kBrushless);
+    m_motorRight =
+        new SparkMax(Constants.SparkMaxCanIDs.intakeMotorSpinRight, MotorType.kBrushless);
     m_motorRotateLeft =
-        new SparkMax(Constants.SparkMaxCanIDs.intakeMotorRotateLeft, MotorType.kBrushless);
+        new SparkMax(Constants.SparkMaxCanIDs.intakeMotorPivotLeft, MotorType.kBrushless);
     m_motorRotateRight =
-        new SparkMax(Constants.SparkMaxCanIDs.intakeMotorRotateRight, MotorType.kBrushless);
+        new SparkMax(Constants.SparkMaxCanIDs.intakeMotorPivotRight, MotorType.kBrushless);
 
     SparkMaxConfig config = new SparkMaxConfig();
     SparkMaxConfig configRotate = new SparkMaxConfig();

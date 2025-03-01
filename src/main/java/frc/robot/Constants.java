@@ -35,19 +35,32 @@ public final class Constants {
     REPLAY
   }
 
+  /** ALL SPARK MAX CAN ID'S = PDH PORT PLUS ONE */
   public static final class SparkMaxCanIDs {
     /** Intake Can ID's */
-    public static final int intakeMotorLeft = 1;
+    public static final int intakeMotorSpinLeft = 10;
 
-    public static final int intakeMotorRight = 2;
-    public static final int intakeMotorRotateLeft = 3;
+    public static final int intakeMotorSpinRight = 14;
 
-    public static final int intakeMotorRotateRight = 4;
+    public static final int intakeMotorPivotLeft = 9;
+
+    public static final int intakeMotorPivotRight = 17;
 
     /** Elevator Can ID's */
-    public static final int ElevatorMotorLeft = 5;
+    public static final int ElevatorMotorLeft = 8;
 
-    public static final int ElevatorMotorRight = 6;
+    public static final int ElevatorMotorRight = 18;
+
+    /** NDexter Can ID's */
+    public static final int NDexterMotorLeft = 15;
+
+    public static final int NDexterMotorRight = 16;
+
+    /** Straw Can ID */
+    public static final int StrawPivotMotor = 13;
+
+    /** ICEE Can ID */
+    public static final int IceeMotor = 12;
   }
 
   public static final class IntakeConstants {
