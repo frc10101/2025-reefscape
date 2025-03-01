@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.Constants.SparkMaxCan;
+import org.littletonrobotics.junction.Logger;
 
 public class ICEE extends SubsystemBase {
 
@@ -28,10 +29,7 @@ public class ICEE extends SubsystemBase {
     this.motor = new SparkMax(SparkMaxCan.ICEEID, MotorType.kBrushless);
     SparkMaxConfig motorConfig = new SparkMaxConfig();
 
-    motorConfig
-        .encoder
-        .velocityConversionFactor(Constants.IceeConstants.ratio);
-    
+    motorConfig.encoder.velocityConversionFactor(Constants.IceeConstants.ratio);
 
     motorConfig.limitSwitch.forwardLimitSwitchEnabled(true);
 
@@ -80,6 +78,7 @@ public class ICEE extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    Logger.recordOutput("ICEE motor", motor.get());
+    Logger.recordOutput("ICEE Limit Switch", motor.getForwardLimitSwitch().isPressed());
   }
 }

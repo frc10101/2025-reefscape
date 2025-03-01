@@ -166,8 +166,8 @@ public class RobotContainer {
     Trigger iCeeTriggerOut = controller2.button(6);
     iCeeTriggerOut.whileTrue(icee.runOut());
 
-    icee.ICEELimit().onTrue(nDexter.canSpin(false));
-    icee.ICEELimit().onFalse(nDexter.canSpin(true));
+    icee.ICEELimit().debounce(.1).onTrue(nDexter.canSpin(false));
+    icee.ICEELimit().debounce(.1).onFalse(nDexter.canSpin(true));
   }
 
   /**
