@@ -17,7 +17,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.Constants.SparkMaxCanIDs;
-
 import org.littletonrobotics.junction.Logger;
 
 public class ICEE extends SubsystemBase {

@@ -95,8 +95,8 @@ public final class Constants {
     public static final double L3 = 3;
     public static final double L4 = 4;
     public static final double HumanPlayer = 5;
-
   }
+
   public static final class IceeConstants {
     public static final double IceeInVelocity = 1;
     public static final double IceeOutVelocity = -1;
@@ -125,4 +125,3 @@ public final class Constants {
     public static final double rightFF = 1.0 / 5767;
   }
 }
-
