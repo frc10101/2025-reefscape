@@ -17,14 +17,14 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.SparkMaxCan;
 
-public class NDexter extends SubsystemBase {
+public class Womp extends SubsystemBase {
   /** Creates a new nDexter. */
   private final SparkMax leftMotor;
 
   private final SparkMax rightMotor;
   private boolean canSpin = true;
 
-  public NDexter() {
+  public Womp() {
     this.leftMotor = new SparkMax(SparkMaxCan.nDexterLeftID, MotorType.kBrushless);
     this.rightMotor = new SparkMax(SparkMaxCan.nDexterRightID, MotorType.kBrushless);
     SparkMaxConfig leftMotorConfig = new SparkMaxConfig();
