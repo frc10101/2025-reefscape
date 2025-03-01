@@ -16,7 +16,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
-import frc.robot.Constants.SparkMaxCan;
+import frc.robot.Constants.SparkMaxCanIDs;
+
 import org.littletonrobotics.junction.Logger;
 
 public class ICEE extends SubsystemBase {
@@ -26,7 +27,7 @@ public class ICEE extends SubsystemBase {
   /** Creates a new ICEE. */
   public ICEE() {
 
-    this.motor = new SparkMax(SparkMaxCan.ICEEID, MotorType.kBrushless);
+    this.motor = new SparkMax(SparkMaxCanIDs.IceeMotor, MotorType.kBrushless);
     SparkMaxConfig motorConfig = new SparkMaxConfig();
 
     motorConfig.encoder.velocityConversionFactor(Constants.IceeConstants.ratio);

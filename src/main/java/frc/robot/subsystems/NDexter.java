@@ -15,7 +15,8 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Constants.SparkMaxCan;
+import frc.robot.Constants.SparkMaxCanIDs;
+
 import org.littletonrobotics.junction.Logger;
 
 public class NDexter extends SubsystemBase {
@@ -26,8 +27,8 @@ public class NDexter extends SubsystemBase {
   private boolean canSpin = true;
 
   public NDexter() {
-    this.leftMotor = new SparkMax(SparkMaxCan.nDexterLeftID, MotorType.kBrushless);
-    this.rightMotor = new SparkMax(SparkMaxCan.nDexterRightID, MotorType.kBrushless);
+    this.leftMotor = new SparkMax(SparkMaxCanIDs.NDexterMotorLeft, MotorType.kBrushless);
+    this.rightMotor = new SparkMax(SparkMaxCanIDs.NDexterMotorRight, MotorType.kBrushless);
     SparkMaxConfig leftMotorConfig = new SparkMaxConfig();
     SparkMaxConfig rightMotorConfig = new SparkMaxConfig();
 
