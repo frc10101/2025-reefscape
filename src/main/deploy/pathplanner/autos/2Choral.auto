@@ -5,21 +5,22 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "startToReef"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "reefToHP"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "HpToReef"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "startToReef"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": null
+                }
+              }
+            ]
           }
         }
       ]

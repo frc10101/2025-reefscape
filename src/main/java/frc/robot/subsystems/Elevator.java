@@ -56,12 +56,28 @@ public class Elevator extends SubsystemBase {
     m_motorLeft.getClosedLoopController().setReference(goal, ControlType.kMAXMotionPositionControl);
   }
 
-  public Command raise() {
-    return runOnce(() -> goToGoal(5));
+  public Command Ndexter() {
+    return runOnce(() -> goToGoal(Constants.ElevatorConstants.NDexter));
   }
 
-  public Command lower() {
-    return runOnce(() -> goToGoal(0));
+  public Command L1() {
+    return runOnce(() -> goToGoal(Constants.ElevatorConstants.L1));
+  }
+
+  public Command L2() {
+    return runOnce(() -> goToGoal(Constants.ElevatorConstants.L2));
+  }
+
+  public Command L3() {
+    return runOnce(() -> goToGoal(Constants.ElevatorConstants.L3));
+  }
+
+  public Command L4() {
+    return runOnce(() -> goToGoal(Constants.ElevatorConstants.L4));
+  }
+
+  public Command HumanPlayer() {
+    return runOnce(() -> goToGoal(Constants.ElevatorConstants.HumanPlayer));
   }
 
   @Override

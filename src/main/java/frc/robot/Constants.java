@@ -76,5 +76,11 @@ public final class Constants {
     public static final double kMaxVelocity = 1.75;
     public static final double kMaxAcceleration = 0.75;
     public static final double ElevatorGearRatio = 1.5;
+    public static final double NDexter = 0;
+    public static final double L1 = 1;
+    public static final double L2 = 2;
+    public static final double L3 = 3;
+    public static final double L4 = 4;
+    public static final double HumanPlayer = 5;
   }
 }
