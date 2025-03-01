@@ -35,16 +35,34 @@ public final class Constants {
     REPLAY
   }
 
-  public static final class canIDs {
+  public static final class SparkMaxIDs {
     public static final int ArmMotor = 6;
   }
 
-  public static final class armConstants {
+  public static final class ArmConstants {
+    //tuning variables
     public static final double kP = 1.3;
     public static final double kI = 0.0;
     public static final double kD = 0.7;
     public static final double kFF = 0.0;
     public static final double kMaxAcceleration = 2.0;
     public static final double kMaxVelocity = 1.0;
+
+    //arm measurements
+    public static final double ARM_MASS_KG = 0.5; // kg
+    public static final double ARM_LENGTH_METERS = 0.3; // meters
+    public static final double GRAVITY_M_PER_SEC = 9.81; // m/s^2
+    public static final double CENTER_OF_MASS = ARM_LENGTH_METERS / 2; // Center of mass
+    public static final double GEAR_RATIO = 1.0; // Motor rotations per arm rotation
+    public static final double kTorqueToVoltage = 0.1; // Tune: Nm to volts
+
+    //different positions
+    public static final double INTAKEPOSITION = 0;
+    public static final double HUMANPLAYERPOSITION = 0;
+    public static final double L1POSITION = 0;
+    public static final double L2POSITION = 0;
+    public static final double L3POSITION = 0;
+    public static final double L4POSITION = 0;
+
   }
 }
