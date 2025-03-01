@@ -22,10 +22,14 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.ICEE;
+import frc.robot.subsystems.NDexter;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -34,12 +38,6 @@ import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
-/**
- * This class is where the bulk of the robot should be declared. Since Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
- * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
- * subsystems, commands, and button mappings) should be declared here.
- */
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
@@ -51,6 +49,11 @@ public class RobotContainer {
   private final LoggedDashboardChooser<Command> autoChooser;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
+  private NDexter nDexter = new NDexter();
+
+  private ICEE icee = new ICEE();
+  private CommandJoystick controller2 = new CommandJoystick(1);
+
   public RobotContainer() {
     switch (Constants.currentMode) {
       case REAL:
@@ -148,6 +151,25 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
                     drive)
                 .ignoringDisable(true));
+
+    nDexter.setDefaultCommand(nDexter.stop());
+
+    Trigger x_bot = controller2.button(1);
+    x_bot.whileTrue(nDexter.Out());
+    Trigger circle_bot = controller2.button(2);
+    circle_bot.whileTrue(nDexter.rightFaster());
+    Trigger square_bot = controller2.button(3);
+    square_bot.whileTrue(nDexter.leftFaster());
+    Trigger triangle_bot = controller2.button(4);
+    triangle_bot.whileTrue(nDexter.runSame());
+
+    Trigger iCeeTriggerIn = controller2.button(5);
+    iCeeTriggerIn.whileTrue(icee.runIn());
+    Trigger iCeeTriggerOut = controller2.button(6);
+    iCeeTriggerOut.whileTrue(icee.runOut());
+
+    icee.ICEELimit().debounce(.1).onTrue(nDexter.canSpin(false));
+    icee.ICEELimit().debounce(.1).onFalse(nDexter.canSpin(true));
   }
 
   /**

@@ -96,4 +96,32 @@ public final class Constants {
     public static final double L4 = 4;
     public static final double HumanPlayer = 5;
   }
+
+  public static final class IceeConstants {
+    public static final double IceeInVelocity = 1;
+    public static final double IceeOutVelocity = -1;
+    public static final double Kp = 0;
+    public static final double Ki = 0;
+    public static final double Kd = 0;
+    public static final double ratio = 1;
+    public static final double FF = 1.0 / 5767;
+  }
+
+  public static final class NDexterConstants {
+    public static final double rightFaster = 1;
+    public static final double rightSlower = .5;
+    public static final double rightKp = 0;
+    public static final double rightKi = 0;
+    public static final double rightKd = 0;
+    public static final double rightGearRatio = 5;
+    public static final double leftFF = 1.0 / 5767;
+
+    public static final double leftFaster = 1;
+    public static final double leftSlower = .5;
+    public static final double leftKp = 0;
+    public static final double leftKi = 0;
+    public static final double leftKd = 0;
+    public static final double leftGearRatio = 9;
+    public static final double rightFF = 1.0 / 5767;
+  }
 }
