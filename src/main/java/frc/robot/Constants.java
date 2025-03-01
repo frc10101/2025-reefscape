@@ -35,20 +35,26 @@ public final class Constants {
     REPLAY
   }
 
-  public static final class canIDs {
+  public static final class SparkMaxCanIDs {
     /** Intake Can ID's */
-    public static final int intakeMotor = 1;
+    public static final int intakeMotorLeft = 1;
 
-    public static final int intakeMotorRotate = 2;
-    public static final int intakeMotorFollower = 3;
+    public static final int intakeMotorRight = 2;
+    public static final int intakeMotorRotateLeft = 3;
+
+    public static final int intakeMotorRotateRight = 4;
 
     /** Elevator Can ID's */
-    public static final int ElevatorMotor = 4;
+    public static final int ElevatorMotorLeft = 5;
 
-    public static final int ElevatorMotorFollower = 5;
+    public static final int ElevatorMotorRight = 6;
   }
 
-  public static final class intakeConstants {
+  public static final class IntakeConstants {
+    public static final double kMaxVelocity = 1.75;
+    public static final double kMaxAcceleration = 0.75;
+    public static final double RotateKMaxVelocity = 1.75;
+    public static final double RotateKMaxAcceleration = 0.75;
     public static final double kP = 1.3;
     public static final double kI = 0.0;
     public static final double kD = 0.7;
@@ -57,12 +63,18 @@ public final class Constants {
     public static final double RotateKI = 0.0;
     public static final double RotateKD = 0.7;
     public static final double RotateKFF = 1.1;
+    public static final double IntakeGearRatio = 1.5;
+    public static final double IntakeUpPos = 5;
+    public static final double IntakeDownPos = 0;
   }
 
-  public static final class elevatorConstants {
+  public static final class ElevatorConstants {
     public static final double kP = 1.3;
     public static final double kI = 0.0;
     public static final double kD = 0.7;
     public static final double kFF = 1.1;
+    public static final double kMaxVelocity = 1.75;
+    public static final double kMaxAcceleration = 0.75;
+    public static final double ElevatorGearRatio = 1.5;
   }
 }

@@ -17,90 +17,116 @@ import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger; // import for Logger
 
 public class Intake extends SubsystemBase {
-  private final SparkMax m_motor;
-  private final SparkMax m_motorRotate;
-  private final SparkMax m_motorFollower;
-  private final double kMaxVelocity = 1.75;
-  private final double kMaxAcceleration = 0.75;
-  private final double RotateKMaxVelocity = 1.75;
-  private final double RotateKMaxAcceleration = 0.75;
+  private final SparkMax m_motorLeft;
+  private final SparkMax m_motorRotateLeft;
+  private final SparkMax m_motorRight;
+  private final SparkMax m_motorRotateRight;
   private double m_motorTargetPos = 0, m_motorRotateTarget = 0;
 
   /** Creates a new intake. */
   public Intake() {
-    m_motor = new SparkMax(Constants.canIDs.intakeMotor, MotorType.kBrushless);
-    m_motorFollower = new SparkMax(Constants.canIDs.intakeMotorFollower, MotorType.kBrushless);
-    m_motorRotate = new SparkMax(Constants.canIDs.intakeMotorRotate, MotorType.kBrushless);
+    m_motorLeft = new SparkMax(Constants.SparkMaxCanIDs.intakeMotorLeft, MotorType.kBrushless);
+    m_motorRight = new SparkMax(Constants.SparkMaxCanIDs.intakeMotorRight, MotorType.kBrushless);
+    m_motorRotateLeft =
+        new SparkMax(Constants.SparkMaxCanIDs.intakeMotorRotateLeft, MotorType.kBrushless);
+    m_motorRotateRight =
+        new SparkMax(Constants.SparkMaxCanIDs.intakeMotorRotateRight, MotorType.kBrushless);
 
     SparkMaxConfig config = new SparkMaxConfig();
     SparkMaxConfig configRotate = new SparkMaxConfig();
     SparkMaxConfig configFollower = new SparkMaxConfig();
+    SparkMaxConfig configRotateFollower = new SparkMaxConfig();
     config.closedLoop.pidf(
-        Constants.intakeConstants.kP,
-        Constants.intakeConstants.kI,
-        Constants.intakeConstants.kD,
-        Constants.intakeConstants.kFF);
+        Constants.IntakeConstants.kP,
+        Constants.IntakeConstants.kI,
+        Constants.IntakeConstants.kD,
+        Constants.IntakeConstants.kFF);
 
     config
         .closedLoop
         .maxMotion
-        .maxAcceleration(kMaxAcceleration)
-        .maxVelocity(kMaxVelocity)
+        .maxAcceleration(Constants.IntakeConstants.kMaxAcceleration)
+        .maxVelocity(Constants.IntakeConstants.kMaxVelocity)
         .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal);
 
-    config.encoder.positionConversionFactor(2.0 * Math.PI * 1.5);
-
-    m_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    m_motorLeft.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     configRotate.closedLoop.pidf(
-        Constants.intakeConstants.RotateKP,
-        Constants.intakeConstants.RotateKI,
-        Constants.intakeConstants.RotateKD,
-        Constants.intakeConstants.RotateKFF);
+        Constants.IntakeConstants.RotateKP,
+        Constants.IntakeConstants.RotateKI,
+        Constants.IntakeConstants.RotateKD,
+        Constants.IntakeConstants.RotateKFF);
 
     configRotate
         .closedLoop
         .maxMotion
-        .maxAcceleration(RotateKMaxAcceleration)
-        .maxVelocity(RotateKMaxVelocity)
+        .maxAcceleration(Constants.IntakeConstants.RotateKMaxAcceleration)
+        .maxVelocity(Constants.IntakeConstants.RotateKMaxVelocity)
         .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal);
 
-    configRotate.encoder.positionConversionFactor(2.0 * Math.PI * 1.5);
+    configRotate.encoder.positionConversionFactor(
+        2.0 * Math.PI * Constants.IntakeConstants.IntakeGearRatio);
 
-    m_motorRotate.configure(
+    m_motorRight.configure(
         configRotate, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    configFollower.follow(m_motor, true);
+    configFollower.follow(m_motorLeft, true);
 
-    m_motorFollower.configure(
+    m_motorRight.configure(
+        configFollower, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    configRotateFollower.follow(m_motorRotateLeft, true);
+
+    m_motorRotateRight.configure(
         configFollower, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   private void goToGoal(double goal) {
-    m_motorTargetPos = goal;
-    m_motorRotate
+    m_motorRotateTarget = goal;
+    m_motorRotateLeft
         .getClosedLoopController()
         .setReference(goal, ControlType.kMAXMotionPositionControl);
   }
 
-  private void upSpool() {
-    m_motorRotateTarget = 1;
-    m_motor.getClosedLoopController().setReference(1, ControlType.kMAXMotionVelocityControl);
+  private void intakeUp() {
+    goToGoal(Constants.IntakeConstants.IntakeUpPos);
   }
 
-  private void downSpool() {
-    m_motorRotateTarget = -1;
-    m_motor.getClosedLoopController().setReference(-1, ControlType.kMAXMotionVelocityControl);
+  private void intakeDown() {
+    goToGoal(Constants.IntakeConstants.IntakeDownPos);
+  }
+
+  private void intake() {
+    m_motorTargetPos = 1;
+    m_motorLeft.getClosedLoopController().setReference(1, ControlType.kMAXMotionVelocityControl);
+  }
+
+  private void spitOut() {
+    m_motorTargetPos = -1;
+    m_motorLeft.getClosedLoopController().setReference(-1, ControlType.kMAXMotionVelocityControl);
   }
 
   @Override
   public void periodic() {
-    Logger.recordOutput("M_Motor Error", m_motorTargetPos - m_motor.getEncoder().getPosition());
     Logger.recordOutput(
-        "M_MotorRotate Error", m_motorRotateTarget - m_motorRotate.getEncoder().getPosition());
+        "M_MotorRotate Error", m_motorTargetPos - m_motorLeft.getEncoder().getPosition());
+    Logger.recordOutput(
+        "M_MotorRotate Error", m_motorRotateTarget - m_motorRotateLeft.getEncoder().getPosition());
   }
 
-  public Command spoolUp() {
-    return runOnce(() -> upSpool());
+  public Command StartIntake() {
+    return runOnce(() -> intake());
+  }
+
+  public Command StartSpitout() {
+    return runOnce(() -> spitOut());
+  }
+
+  public Command IntakeUp() {
+    return runOnce(() -> intakeUp());
+  }
+
+  public Command IntakeDown() {
+    return runOnce(() -> intakeDown());
   }
 }

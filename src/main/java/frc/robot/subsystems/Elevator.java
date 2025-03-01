@@ -16,43 +16,44 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class Elevator extends SubsystemBase {
-  private final double kMaxVelocity = 1.75;
-  private final double kMaxAcceleration = 0.75;
 
-  private final SparkMax m_motor;
-  private final SparkMax m_motorFollower;
+  private final SparkMax m_motorLeft;
+  private final SparkMax m_motorRight;
+
+  /** follower motor */
 
   /** Creates a new ElevatorSubsystem. */
   public Elevator() {
     SparkMaxConfig config = new SparkMaxConfig();
     SparkMaxConfig configFollower = new SparkMaxConfig();
     config.closedLoop.pidf(
-        Constants.elevatorConstants.kP,
-        Constants.elevatorConstants.kI,
-        Constants.elevatorConstants.kD,
-        Constants.elevatorConstants.kFF);
+        Constants.ElevatorConstants.kP,
+        Constants.ElevatorConstants.kI,
+        Constants.ElevatorConstants.kD,
+        Constants.ElevatorConstants.kFF);
 
     config
         .closedLoop
         .maxMotion
-        .maxAcceleration(kMaxAcceleration)
-        .maxVelocity(kMaxVelocity)
+        .maxAcceleration(Constants.ElevatorConstants.kMaxAcceleration)
+        .maxVelocity(Constants.ElevatorConstants.kMaxVelocity)
         .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal);
 
-    config.encoder.positionConversionFactor(2.0 * Math.PI * 1.5);
+    config.encoder.positionConversionFactor(
+        2.0 * Math.PI * Constants.ElevatorConstants.ElevatorGearRatio);
 
-    m_motor = new SparkMax(Constants.canIDs.ElevatorMotor, MotorType.kBrushless);
-    m_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    m_motorLeft = new SparkMax(Constants.SparkMaxCanIDs.ElevatorMotorLeft, MotorType.kBrushless);
+    m_motorLeft.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    configFollower.follow(m_motor, true);
+    configFollower.follow(m_motorLeft, true);
 
-    m_motorFollower = new SparkMax(Constants.canIDs.ElevatorMotorFollower, MotorType.kBrushless);
-    m_motorFollower.configure(
+    m_motorRight = new SparkMax(Constants.SparkMaxCanIDs.ElevatorMotorRight, MotorType.kBrushless);
+    m_motorRight.configure(
         configFollower, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   private void goToGoal(double goal) {
-    m_motor.getClosedLoopController().setReference(goal, ControlType.kMAXMotionPositionControl);
+    m_motorLeft.getClosedLoopController().setReference(goal, ControlType.kMAXMotionPositionControl);
   }
 
   public Command raise() {
