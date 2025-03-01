@@ -7,11 +7,10 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import edu.wpi.first.wpilibj.Joystick;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.SparkMaxIDs;
 
@@ -24,11 +23,7 @@ public class Arm extends SubsystemBase {
     armMotor.getEncoder().setPosition(0);
 
     SparkMaxConfig armConfig = new SparkMaxConfig();
-    armConfig.closedLoop.pidf(
-        ArmConstants.kP,
-        ArmConstants.kI,
-        ArmConstants.kD,
-        ArmConstants.kFF);
+    armConfig.closedLoop.pidf(ArmConstants.kP, ArmConstants.kI, ArmConstants.kD, ArmConstants.kFF);
 
     armConfig
         .closedLoop
@@ -62,7 +57,8 @@ public class Arm extends SubsystemBase {
       @Override
       public void initialize() {
         targetPosition = position;
-        armMotor.getClosedLoopController()
+        armMotor
+            .getClosedLoopController()
             .setReference(position, ControlType.kMAXMotionPositionControl);
       }
 
@@ -83,6 +79,7 @@ public class Arm extends SubsystemBase {
 
   /**
    * Helper method to bind arm position commands to joystick buttons
+   *
    * @param joystick The joystick to use for button binding
    */
   public void configureButtonBindings(Joystick joystick) {

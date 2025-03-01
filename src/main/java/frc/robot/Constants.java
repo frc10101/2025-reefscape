@@ -40,7 +40,7 @@ public final class Constants {
   }
 
   public static final class ArmConstants {
-    //tuning variables
+    // tuning variables
     public static final double kP = 1.3;
     public static final double kI = 0.0;
     public static final double kD = 0.7;
@@ -48,7 +48,7 @@ public final class Constants {
     public static final double kMaxAcceleration = 2.0;
     public static final double kMaxVelocity = 1.0;
 
-    //arm measurements
+    // arm measurements
     public static final double ARM_MASS_KG = 0.5; // kg
     public static final double ARM_LENGTH_METERS = 0.3; // meters
     public static final double GRAVITY_M_PER_SEC = 9.81; // m/s^2
@@ -56,12 +56,12 @@ public final class Constants {
     public static final double GEAR_RATIO = 1.0; // Motor rotations per arm rotation
     public static final double kTorqueToVoltage = 0.1; // Tune: Nm to volts
 
-    //different positions (example values in radians)
-    public static final double INTAKEPOSITION = 0.0;          // 0 degrees
-    public static final double HUMANPLAYERPOSITION = Math.PI/6; // 30 degrees
-    public static final double L1POSITION = Math.PI/3;        // 60 degrees
-    public static final double L2POSITION = Math.PI/2;        // 90 degrees
-    public static final double L3POSITION = 2*Math.PI/3;      // 120 degrees
-    public static final double L4POSITION = 5*Math.PI/6;
+    // different positions (example values in radians)
+    public static final double INTAKEPOSITION = 0.0; // 0 degrees
+    public static final double HUMANPLAYERPOSITION = Math.PI / 6; // 30 degrees
+    public static final double L1POSITION = Math.PI / 3; // 60 degrees
+    public static final double L2POSITION = Math.PI / 2; // 90 degrees
+    public static final double L3POSITION = 2 * Math.PI / 3; // 120 degrees
+    public static final double L4POSITION = 5 * Math.PI / 6;
   }
 }
