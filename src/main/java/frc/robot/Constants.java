@@ -56,13 +56,12 @@ public final class Constants {
     public static final double GEAR_RATIO = 1.0; // Motor rotations per arm rotation
     public static final double kTorqueToVoltage = 0.1; // Tune: Nm to volts
 
-    //different positions
-    public static final double INTAKEPOSITION = 0;
-    public static final double HUMANPLAYERPOSITION = 0;
-    public static final double L1POSITION = 0;
-    public static final double L2POSITION = 0;
-    public static final double L3POSITION = 0;
-    public static final double L4POSITION = 0;
-
+    //different positions (example values in radians)
+    public static final double INTAKEPOSITION = 0.0;          // 0 degrees
+    public static final double HUMANPLAYERPOSITION = Math.PI/6; // 30 degrees
+    public static final double L1POSITION = Math.PI/3;        // 60 degrees
+    public static final double L2POSITION = Math.PI/2;        // 90 degrees
+    public static final double L3POSITION = 2*Math.PI/3;      // 120 degrees
+    public static final double L4POSITION = 5*Math.PI/6;
   }
 }
