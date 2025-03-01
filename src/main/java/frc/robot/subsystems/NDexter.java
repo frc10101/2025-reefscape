@@ -33,6 +33,9 @@ public class NDexter extends SubsystemBase {
 
     leftMotorConfig.encoder.velocityConversionFactor(1 / Constants.NDexterConstants.leftGearRatio);
 
+    leftMotorConfig.smartCurrentLimit(60);
+    rightMotorConfig.smartCurrentLimit(60);
+
     rightMotorConfig.encoder.velocityConversionFactor(
         1 / Constants.NDexterConstants.rightGearRatio);
 

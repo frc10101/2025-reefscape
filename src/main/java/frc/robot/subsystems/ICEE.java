@@ -33,6 +33,8 @@ public class ICEE extends SubsystemBase {
 
     motorConfig.limitSwitch.forwardLimitSwitchEnabled(true);
 
+    motorConfig.smartCurrentLimit(50);
+
     motorConfig
         .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
