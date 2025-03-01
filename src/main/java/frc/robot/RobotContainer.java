@@ -152,18 +152,18 @@ public class RobotContainer {
 
     nDexter.setDefaultCommand(nDexter.stop());
 
-    Trigger x_bot = controller2.button(0);
+    Trigger x_bot = controller2.button(1);
     x_bot.whileTrue(nDexter.Out());
-    Trigger circle_bot = controller2.button(1);
+    Trigger circle_bot = controller2.button(2);
     circle_bot.whileTrue(nDexter.rightFaster());
-    Trigger square_bot = controller2.button(2);
+    Trigger square_bot = controller2.button(3);
     square_bot.whileTrue(nDexter.leftFaster());
-    Trigger triangle_bot = controller2.button(3);
+    Trigger triangle_bot = controller2.button(4);
     triangle_bot.whileTrue(nDexter.runSame());
 
-    Trigger iCeeTriggerIn = controller2.button(4);
+    Trigger iCeeTriggerIn = controller2.button(5);
     iCeeTriggerIn.whileTrue(icee.runIn());
-    Trigger iCeeTriggerOut = controller2.button(5);
+    Trigger iCeeTriggerOut = controller2.button(6);
     iCeeTriggerOut.whileTrue(icee.runOut());
 
     icee.ICEELimit().onTrue(nDexter.canSpin(false));

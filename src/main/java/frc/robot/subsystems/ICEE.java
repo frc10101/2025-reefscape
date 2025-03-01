@@ -30,19 +30,19 @@ public class ICEE extends SubsystemBase {
 
     motorConfig
         .encoder
-        .positionConversionFactor(Constants.IceeConstants.ratio)
         .velocityConversionFactor(Constants.IceeConstants.ratio);
+    
 
     motorConfig.limitSwitch.forwardLimitSwitchEnabled(true);
 
     motorConfig
         .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .p(Constants.IceeConstants.Kp, ClosedLoopSlot.kSlot0)
-        .i(Constants.IceeConstants.Ki, ClosedLoopSlot.kSlot0)
-        .d(Constants.IceeConstants.Kd, ClosedLoopSlot.kSlot0)
-        .velocityFF(Constants.IceeConstants.FF, ClosedLoopSlot.kSlot0)
-        .outputRange(-1, 1, ClosedLoopSlot.kSlot0);
+        .p(Constants.IceeConstants.Kp)
+        .i(Constants.IceeConstants.Ki)
+        .d(Constants.IceeConstants.Kd)
+        .velocityFF(Constants.IceeConstants.FF)
+        .outputRange(-1, 1);
 
     motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
   }
@@ -59,7 +59,7 @@ public class ICEE extends SubsystemBase {
               .getClosedLoopController()
               .setReference(
                   Constants.IceeConstants.IceeOutVelocity,
-                  ControlType.kMAXMotionVelocityControl,
+                  ControlType.kVelocity,
                   ClosedLoopSlot.kSlot0);
         });
   }
@@ -73,7 +73,7 @@ public class ICEE extends SubsystemBase {
                   motor.getForwardLimitSwitch().isPressed()
                       ? 0
                       : Constants.IceeConstants.IceeInVelocity,
-                  ControlType.kMAXMotionVelocityControl,
+                  ControlType.kVelocity,
                   ClosedLoopSlot.kSlot0);
         });
   }

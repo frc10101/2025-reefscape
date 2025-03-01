@@ -32,12 +32,10 @@ public class NDexter extends SubsystemBase {
 
     leftMotorConfig
         .encoder
-        .positionConversionFactor(1)
         .velocityConversionFactor(1 / Constants.NDexterConstants.leftGearRatio);
 
     rightMotorConfig
         .encoder
-        .positionConversionFactor(1)
         .velocityConversionFactor(1 / Constants.NDexterConstants.rightGearRatio);
 
     leftMotorConfig
@@ -50,8 +48,7 @@ public class NDexter extends SubsystemBase {
         .d(Constants.NDexterConstants.leftKd)
         .outputRange(-1, 1)
         // Set PID values for velocity control in slot 1
-        .velocityFF(Constants.NDexterConstants.leftFF, ClosedLoopSlot.kSlot0)
-        .outputRange(-1, 1, ClosedLoopSlot.kSlot0);
+        .velocityFF(Constants.NDexterConstants.leftFF);
 
     leftMotor.configure(
         leftMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
@@ -66,76 +63,70 @@ public class NDexter extends SubsystemBase {
         .d(Constants.NDexterConstants.rightKd)
         .outputRange(-1, 1)
         // Set PID values for velocity control in slot 1
-        .velocityFF(Constants.NDexterConstants.rightFF, ClosedLoopSlot.kSlot0)
-        .outputRange(-1, 1, ClosedLoopSlot.kSlot0);
+        .velocityFF(Constants.NDexterConstants.rightFF)
+        .outputRange(-1, 1);
     rightMotor.configure(
         rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
   }
 
   public Command runSame() {
-    if (canSpin) {
+    if (!canSpin) {return this.stop();}
+
       return runOnce(
           () -> {
             this.rightMotor
                 .getClosedLoopController()
                 .setReference(
                     Constants.NDexterConstants.rightFaster,
-                    ControlType.kMAXMotionVelocityControl,
+                    ControlType.kVelocity,
                     ClosedLoopSlot.kSlot0);
             this.leftMotor
                 .getClosedLoopController()
                 .setReference(
                     Constants.NDexterConstants.leftFaster,
-                    ControlType.kMAXMotionVelocityControl,
+                    ControlType.kVelocity,
                     ClosedLoopSlot.kSlot0);
           });
-    } else {
-      return this.stop();
-    }
+  
   }
 
   public Command rightFaster() {
-    if (canSpin) {
+    if (!canSpin) { return this.stop();}
       return runOnce(
           () -> {
             this.rightMotor
                 .getClosedLoopController()
                 .setReference(
                     Constants.NDexterConstants.rightFaster,
-                    ControlType.kMAXMotionVelocityControl,
+                    ControlType.kVelocity,
                     ClosedLoopSlot.kSlot0);
             this.leftMotor
                 .getClosedLoopController()
                 .setReference(
                     Constants.NDexterConstants.leftSlower,
-                    ControlType.kMAXMotionVelocityControl,
+                    ControlType.kVelocity,
                     ClosedLoopSlot.kSlot0);
           });
-    } else {
-      return this.stop();
-    }
+
   }
 
   public Command leftFaster() {
-    if (canSpin) {
+    if (!canSpin) {return this.stop();}
       return runOnce(
           () -> {
             this.rightMotor
                 .getClosedLoopController()
                 .setReference(
                     Constants.NDexterConstants.rightSlower,
-                    ControlType.kMAXMotionVelocityControl,
+                    ControlType.kVelocity,
                     ClosedLoopSlot.kSlot0);
             this.leftMotor
                 .getClosedLoopController()
                 .setReference(
                     Constants.NDexterConstants.leftFaster,
-                    ControlType.kMAXMotionVelocityControl,
+                    ControlType.kVelocity,
                     ClosedLoopSlot.kSlot0);
           });
-    } else {
-      return this.stop();
-    }
   }
 
   public Command stop() {
@@ -144,10 +135,10 @@ public class NDexter extends SubsystemBase {
         () -> {
           this.rightMotor
               .getClosedLoopController()
-              .setReference(0, ControlType.kMAXMotionVelocityControl, ClosedLoopSlot.kSlot0);
+              .setReference(0, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
           this.leftMotor
               .getClosedLoopController()
-              .setReference(0, ControlType.kMAXMotionVelocityControl, ClosedLoopSlot.kSlot0);
+              .setReference(0, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
         });
   }
 
@@ -158,13 +149,13 @@ public class NDexter extends SubsystemBase {
               .getClosedLoopController()
               .setReference(
                   -Constants.NDexterConstants.rightFaster,
-                  ControlType.kMAXMotionVelocityControl,
+                  ControlType.kVelocity,
                   ClosedLoopSlot.kSlot0);
           this.leftMotor
               .getClosedLoopController()
               .setReference(
                   -Constants.NDexterConstants.leftFaster,
-                  ControlType.kMAXMotionVelocityControl,
+                  ControlType.kVelocity,
                   ClosedLoopSlot.kSlot0);
         });
   }
