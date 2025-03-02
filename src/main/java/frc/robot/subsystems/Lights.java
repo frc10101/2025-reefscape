@@ -39,7 +39,7 @@ public class Lights extends SubsystemBase {
   }
 
   public Command setColorsCommand(int red, int green, int blue, double strength) {
-    return run(() -> setColors(red, green, blue, strength));
+    return runOnce(() -> setColors(red, green, blue, strength));
   }
 
   @Override
