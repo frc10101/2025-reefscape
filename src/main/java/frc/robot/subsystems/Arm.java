@@ -7,12 +7,10 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.ArmConstants;
-import frc.robot.Constants.SparkMaxCanIDs;;
+import frc.robot.Constants.SparkMaxCanIDs;
 
 public class Arm extends SubsystemBase {
 
@@ -33,7 +31,7 @@ public class Arm extends SubsystemBase {
         .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal);
 
     armConfig.encoder.positionConversionFactor(2.0 * Math.PI / ArmConstants.GEAR_RATIO);
-    
+
     // Set the output limits for PID controllers
     armConfig.closedLoop.outputRange(-ArmConstants.POWER_LIMIT, ArmConstants.POWER_LIMIT);
 
@@ -47,11 +45,12 @@ public class Arm extends SubsystemBase {
   public void stop() {
     armMotor.set(0);
   }
-  
+
   // Method to set power directly with the limit applied
   public void setPower(double power) {
     // Clamp power value between -POWER_LIMIT and POWER_LIMIT
-    double limitedPower = Math.max(-ArmConstants.POWER_LIMIT, Math.min(power, ArmConstants.POWER_LIMIT));
+    double limitedPower =
+        Math.max(-ArmConstants.POWER_LIMIT, Math.min(power, ArmConstants.POWER_LIMIT));
     armMotor.set(limitedPower);
   }
 
