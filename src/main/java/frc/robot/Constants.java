@@ -35,8 +35,6 @@ public final class Constants {
     REPLAY
   }
 
-
-
   public static final class ArmConstants {
     // tuning variables
     public static final double kP = 1.3;
