@@ -35,9 +35,7 @@ public final class Constants {
     REPLAY
   }
 
-  public static final class SparkMaxIDs {
-    public static final int ArmMotor = 6;
-  }
+
 
   public static final class ArmConstants {
     // tuning variables
@@ -63,5 +61,95 @@ public final class Constants {
     public static final double L2POSITION = Math.PI / 2; // 90 degrees
     public static final double L3POSITION = 2 * Math.PI / 3; // 120 degrees
     public static final double L4POSITION = 5 * Math.PI / 6;
+  }
+
+  /** ALL SPARK MAX CAN ID'S = PDH PORT PLUS ONE */
+  public static final class SparkMaxCanIDs {
+    /** Intake Can ID's */
+    public static final int intakeMotorSpinLeft = 10;
+
+    public static final int intakeMotorSpinRight = 14;
+
+    public static final int intakeMotorPivotLeft = 9;
+
+    public static final int intakeMotorPivotRight = 17;
+
+    /** Elevator Can ID's */
+    public static final int ElevatorMotorLeft = 8;
+
+    public static final int ElevatorMotorRight = 18;
+
+    /** NDexter Can ID's */
+    public static final int NDexterMotorLeft = 15;
+
+    public static final int NDexterMotorRight = 16;
+
+    /** Straw Can ID */
+    public static final int StrawPivotMotor = 13;
+
+    /** ICEE Can ID */
+    public static final int IceeMotor = 12;
+  }
+
+  public static final class IntakeConstants {
+    public static final double kMaxVelocity = 1.75;
+    public static final double kMaxAcceleration = 0.75;
+    public static final double RotateKMaxVelocity = 1.75;
+    public static final double RotateKMaxAcceleration = 0.75;
+    public static final double kP = 1.3;
+    public static final double kI = 0.0;
+    public static final double kD = 0.7;
+    public static final double kFF = 1.1;
+    public static final double RotateKP = 1.3;
+    public static final double RotateKI = 0.0;
+    public static final double RotateKD = 0.7;
+    public static final double RotateKFF = 1.1;
+    public static final double IntakeGearRatio = 1.5;
+    public static final double IntakeUpPos = 5;
+    public static final double IntakeDownPos = 0;
+  }
+
+  public static final class ElevatorConstants {
+    public static final double kP = 1.3;
+    public static final double kI = 0.0;
+    public static final double kD = 0.7;
+    public static final double kFF = 1.1;
+    public static final double kMaxVelocity = 1.75;
+    public static final double kMaxAcceleration = 0.75;
+    public static final double ElevatorGearRatio = 1.5;
+    public static final double NDexter = 0;
+    public static final double L1 = 1;
+    public static final double L2 = 2;
+    public static final double L3 = 3;
+    public static final double L4 = 4;
+    public static final double HumanPlayer = 5;
+  }
+
+  public static final class IceeConstants {
+    public static final double IceeInVelocity = 1;
+    public static final double IceeOutVelocity = -1;
+    public static final double Kp = 0;
+    public static final double Ki = 0;
+    public static final double Kd = 0;
+    public static final double ratio = 1;
+    public static final double FF = 1.0 / 5767;
+  }
+
+  public static final class NDexterConstants {
+    public static final double rightFaster = 1;
+    public static final double rightSlower = .5;
+    public static final double rightKp = 0;
+    public static final double rightKi = 0;
+    public static final double rightKd = 0;
+    public static final double rightGearRatio = 5;
+    public static final double leftFF = 1.0 / 5767;
+
+    public static final double leftFaster = 1;
+    public static final double leftSlower = .5;
+    public static final double leftKp = 0;
+    public static final double leftKi = 0;
+    public static final double leftKd = 0;
+    public static final double leftGearRatio = 9;
+    public static final double rightFF = 1.0 / 5767;
   }
 }
