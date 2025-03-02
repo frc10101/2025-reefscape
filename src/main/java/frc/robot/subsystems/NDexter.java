@@ -174,7 +174,7 @@ public class NDexter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    Logger.recordOutput("Left NDexter Motor", leftMotor.get());
-    Logger.recordOutput("Right NDexter Motor", leftMotor.get());
+    Logger.recordOutput("Left NDexter Motor", leftMotor.getEncoder().getVelocity());
+    Logger.recordOutput("Right NDexter Motor", leftMotor.getEncoder().getVelocity());
   }
 }
