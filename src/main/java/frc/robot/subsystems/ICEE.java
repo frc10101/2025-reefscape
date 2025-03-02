@@ -80,7 +80,7 @@ public class ICEE extends SubsystemBase {
 
   @Override
   public void periodic() {
-    Logger.recordOutput("ICEE motor", motor.get());
+    Logger.recordOutput("ICEE motor", motor.getEncoder().getVelocity());
     Logger.recordOutput("ICEE Limit Switch", motor.getForwardLimitSwitch().isPressed());
   }
 }
