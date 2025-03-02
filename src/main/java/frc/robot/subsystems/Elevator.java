@@ -56,6 +56,10 @@ public class Elevator extends SubsystemBase {
     m_motorLeft.getClosedLoopController().setReference(goal, ControlType.kMAXMotionPositionControl);
   }
 
+  private void raiseElevator(double goal) {
+    m_motorLeft.set(goal);
+  }
+
   public Command Ndexter() {
     return runOnce(() -> goToGoal(Constants.ElevatorConstants.NDexter));
   }
