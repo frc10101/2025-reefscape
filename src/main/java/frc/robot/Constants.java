@@ -79,6 +79,7 @@ public final class Constants {
     public static final double IntakeGearRatio = 1.5;
     public static final double IntakeUpPos = 5;
     public static final double IntakeDownPos = 0;
+    public static final double Intakespeed = 1;
   }
 
   public static final class ElevatorConstants {

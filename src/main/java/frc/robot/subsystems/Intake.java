@@ -98,13 +98,13 @@ public class Intake extends SubsystemBase {
   }
 
   private void intake() {
-    m_motorTargetPos = 1;
-    m_motorLeft.getClosedLoopController().setReference(1, ControlType.kMAXMotionVelocityControl);
+    m_motorTargetPos = Constants.IntakeConstants.Intakespeed;
+    m_motorLeft.getClosedLoopController().setReference(Constants.IntakeConstants.Intakespeed, ControlType.kMAXMotionVelocityControl);
   }
 
   private void spitOut() {
-    m_motorTargetPos = -1;
-    m_motorLeft.getClosedLoopController().setReference(-1, ControlType.kMAXMotionVelocityControl);
+    m_motorTargetPos = -Constants.IntakeConstants.Intakespeed;
+    m_motorLeft.getClosedLoopController().setReference(-Constants.IntakeConstants.Intakespeed, ControlType.kMAXMotionVelocityControl);
   }
 
   @Override
