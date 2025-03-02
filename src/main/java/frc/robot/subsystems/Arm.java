@@ -12,14 +12,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.ArmConstants;
-import frc.robot.Constants.SparkMaxIDs;
+import frc.robot.Constants.SparkMaxCanIDs;;
 
 public class Arm extends SubsystemBase {
 
   private final SparkMax armMotor;
 
   public Arm() {
-    armMotor = new SparkMax(SparkMaxIDs.ArmMotor, MotorType.kBrushless);
+    armMotor = new SparkMax(SparkMaxCanIDs.StrawPivotMotor, MotorType.kBrushless);
     armMotor.getEncoder().setPosition(0);
 
     SparkMaxConfig armConfig = new SparkMaxConfig();
