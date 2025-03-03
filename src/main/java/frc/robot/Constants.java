@@ -49,7 +49,7 @@ public final class Constants {
     public static final double ARM_LENGTH_METERS = 0.3; // meters
     public static final double GRAVITY_M_PER_SEC = 9.81; // m/s^2
     public static final double CENTER_OF_MASS = ARM_LENGTH_METERS / 2; // Center of mass
-    public static final double GEAR_RATIO = 1.0; // Motor rotations per arm rotation
+    public static final double GEAR_RATIO = 20.0; // Motor rotations per arm rotation
     public static final double kTorqueToVoltage = 0.1; // Tune: Nm to volts
     public static final double POWER_LIMIT = 0.5;
 

@@ -25,7 +25,9 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.ICEE;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
@@ -55,6 +57,10 @@ public class RobotContainer {
   private final Intake intake = new Intake();
 
   private final Elevator elevator = new Elevator();
+
+  private final ICEE icee = new ICEE();
+
+  private final Arm arm = new Arm();
 
   private final CommandJoystick controller2 = new CommandJoystick(1);
 
@@ -126,11 +132,13 @@ public class RobotContainer {
   private void configureButtonBindings() {
     configureSwerveCommands();
 
-    controller2.button(5).whileTrue(intake.StartSpitout());
-    controller2.button(6).whileTrue(intake.StartIntake());
+    // controller2.button(5).whileTrue(intake.StartSpitout());
+    // controller2.button(6).whileTrue(intake.StartIntake());
+    controller2.button(2).whileTrue(icee.Intake());
+    controller2.button(1).whileTrue(icee.spitOut());
 
-    controller2.axisGreaterThan(2, 0.5).whileTrue(intake.IntakeDown());
-    controller2.axisGreaterThan(3, 0.5).whileTrue(intake.IntakeUp());
+    controller2.axisGreaterThan(1, 0.5).whileTrue(arm.armDown());
+    controller2.axisLessThan(1, -0.5).whileTrue(arm.armUp());
   }
 
   private void configureSwerveCommands() {
