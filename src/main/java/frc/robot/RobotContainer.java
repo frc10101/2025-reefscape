@@ -20,11 +20,14 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Lights;
+import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -52,6 +55,12 @@ public class RobotContainer {
   private final LoggedDashboardChooser<Command> autoChooser;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
+  private final Intake intake = new Intake();
+
+  private final Elevator elevator = new Elevator();
+
+  private final CommandJoystick controller2 = new CommandJoystick(1);
+
   public RobotContainer() {
     switch (Constants.currentMode) {
       case REAL:
@@ -118,6 +127,16 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+    configureSwerveCommands();
+
+    controller2.button(5).whileTrue(intake.StartSpitout());
+    controller2.button(6).whileTrue(intake.StartIntake());
+
+    controller2.axisGreaterThan(2, 0.5).whileTrue(intake.IntakeDown());
+    controller2.axisGreaterThan(3, 0.5).whileTrue(intake.IntakeUp());
+  }
+
+  private void configureSwerveCommands() {
     // Default command, normal field-relative drive
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
