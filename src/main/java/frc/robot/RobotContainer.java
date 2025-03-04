@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
@@ -29,6 +30,7 @@ import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.ICEE;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.NDexter;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -61,6 +63,8 @@ public class RobotContainer {
   private final ICEE icee = new ICEE();
 
   private final Arm arm = new Arm();
+
+  private final NDexter nDexter = new NDexter();
 
   private final CommandJoystick controller2 = new CommandJoystick(1);
 
@@ -134,8 +138,19 @@ public class RobotContainer {
 
     // controller2.button(5).whileTrue(intake.StartSpitout());
     // controller2.button(6).whileTrue(intake.StartIntake());
-    controller2.button(2).whileTrue(icee.Intake());
-    controller2.button(1).whileTrue(icee.spitOut());
+    // controller2.button(2).whileTrue(icee.Intake());
+    // controller2.button(1).whileTrue(icee.spitOut());
+    Trigger button2 = new Trigger(controller2.button(2));
+    Trigger button1 = new Trigger(controller2.button(1));
+    button2.whileTrue(intake.StartIntake());
+    button2.whileTrue(nDexter.NDexterSpinSameForward());
+    button2.whileTrue(icee.Intake());
+
+    button1.whileTrue(intake.StartSpitout());
+    button1.whileTrue(nDexter.NDexterSpinSameReverse());
+    button1.whileTrue(icee.spitOut());
+    controller2.button(3).whileTrue(intake.IntakeUp());
+    controller2.button(4).whileTrue(intake.IntakeDown());
 
     controller2.axisGreaterThan(1, 0.5).whileTrue(arm.armDown());
     controller2.axisLessThan(1, -0.5).whileTrue(arm.armUp());
@@ -173,6 +188,9 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
                     drive)
                 .ignoringDisable(true));
+
+    icee.ICEELimit().onTrue(arm.coralFF());
+    icee.ICEELimit().onFalse(arm.normalFF());
   }
 
   /**

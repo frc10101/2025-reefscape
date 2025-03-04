@@ -40,8 +40,9 @@ public final class Constants {
     public static final double kP = 1.3;
     public static final double kI = 0.0;
     public static final double kD = 0.7;
-    public static final double kFF = 0.0;
-    public static final double kMaxAcceleration = 2.0;
+    public static final double kFF = 1.0;
+    public static final double kFFwithCoral = 1.3;
+    public static final double kMaxAcceleration = 1.0;
     public static final double kMaxVelocity = 1.0;
 
     // arm measurements

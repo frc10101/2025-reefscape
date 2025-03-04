@@ -106,5 +106,6 @@ public class ICEE extends SubsystemBase {
   public void periodic() {
     Logger.recordOutput("ICEE motor", motor.getEncoder().getVelocity());
     Logger.recordOutput("ICEE Limit Switch", motor.getForwardLimitSwitch().isPressed());
+    System.out.println(motor.getForwardLimitSwitch().isPressed());
   }
 }

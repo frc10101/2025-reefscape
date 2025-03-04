@@ -9,9 +9,11 @@ import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.LimitSwitchConfig.Type;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 
 public class Elevator extends SubsystemBase {
@@ -34,6 +36,10 @@ public class Elevator extends SubsystemBase {
     m_motorRight = new SparkMax(Constants.SparkMaxCanIDs.ElevatorMotorRight, MotorType.kBrushless);
     m_motorRight.configure(
         configFollower, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    configFollower
+        .limitSwitch
+        .forwardLimitSwitchEnabled(true)
+        .forwardLimitSwitchType(Type.kNormallyOpen);
   }
 
   private void goToGoal(double goal) {
@@ -78,6 +84,10 @@ public class Elevator extends SubsystemBase {
 
   public Command zero() {
     return runOnce(() -> raiseElevator(0));
+  }
+
+  public Trigger ICEELimit() {
+    return new Trigger(this.m_motorRight.getForwardLimitSwitch()::isPressed);
   }
 
   @Override
