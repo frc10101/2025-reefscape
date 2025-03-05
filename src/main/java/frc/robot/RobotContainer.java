@@ -135,13 +135,26 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     configureSwerveCommands();
-
+    Trigger button1 = new Trigger(controller2.button(1));//output Coral
+    Trigger button2 = new Trigger(controller2.button(2));//intake
+    Trigger button3 = new Trigger(controller2.button(3));//Ndexter Left Faster
+    Trigger button4 = new Trigger(controller2.button(4));//Ndexter Right Faster
+    Trigger button5 = new Trigger(controller2.button(5));//EMPTY
+    Trigger button6 = new Trigger(controller2.button(6));//EMPTY
+    Trigger button7 = new Trigger(controller2.button(7));//EMPTY
+    Trigger button8 = new Trigger(controller2.button(8));//Intake Down
+    Trigger button9 = new Trigger(controller2.button(9));//Intake Up
+    Trigger button10 = new Trigger(controller2.button(10));//EMPTY
+    Trigger button11 = new Trigger(controller2.button(11));//EMPTY
+    Trigger button12 = new Trigger(controller2.button(12));//EMPTY
+    Trigger button13 = new Trigger(controller2.button(13));//EMPTY
+    Trigger button14 = new Trigger(controller2.button(14));//EMPTY
+    Trigger button15 = new Trigger(controller2.button(15));//EMPTY
+    Trigger button16 = new Trigger(controller2.button(16));//EMPTY
     // controller2.button(5).whileTrue(intake.StartSpitout());
     // controller2.button(6).whileTrue(intake.StartIntake());
     // controller2.button(2).whileTrue(icee.Intake());
     // controller2.button(1).whileTrue(icee.spitOut());
-    Trigger button2 = new Trigger(controller2.button(2));
-    Trigger button1 = new Trigger(controller2.button(1));
     button2.whileTrue(intake.StartIntake());
     button2.whileTrue(nDexter.NDexterSpinSameForward());
     button2.whileTrue(icee.Intake());
