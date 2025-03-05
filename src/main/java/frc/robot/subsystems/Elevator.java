@@ -79,14 +79,22 @@ public class Elevator extends SubsystemBase {
   }
 
   public Command lower() {
+
     return runEnd(() -> raiseElevator(-.5), () -> raiseElevator(0));
   }
 
   public Command zero() {
     return runOnce(() -> raiseElevator(0));
   }
+  public Command stop(){
+    return runOnce(()->{
+      m_motorLeft.set(0);
+      m_motorRight.set(0);
 
-  public Trigger ICEELimit() {
+    });
+  }
+
+  public Trigger elevatorLimit() {
     return new Trigger(this.m_motorRight.getForwardLimitSwitch()::isPressed);
   }
 

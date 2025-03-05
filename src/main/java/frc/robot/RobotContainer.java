@@ -167,6 +167,10 @@ public class RobotContainer {
 
     controller2.axisGreaterThan(1, 0.5).whileTrue(arm.armDown());
     controller2.axisLessThan(1, -0.5).whileTrue(arm.armUp());
+    icee.ICEELimit().whileTrue(nDexter.stop());
+    elevator.elevatorLimit().whileTrue(elevator.stop());
+
+
   }
 
   private void configureSwerveCommands() {
