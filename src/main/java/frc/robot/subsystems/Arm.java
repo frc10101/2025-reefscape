@@ -68,6 +68,16 @@ public class Arm extends SubsystemBase {
     return runEnd(() -> moveArm(3.9), () -> moveArm(0));
   }
 
+  public Command stopArm() {
+    return run(
+        () -> {
+          double angle = armMotor.getEncoder().getPosition();
+          double compensation =
+              angle < 0 ? 0 : (armMotor.configAccessor.closedLoop.getFF() * Math.sin(angle));
+          armMotor.setVoltage(0 + compensation);
+        });
+  }
+
   public Command coralFF() {
     return runOnce(
         () -> {

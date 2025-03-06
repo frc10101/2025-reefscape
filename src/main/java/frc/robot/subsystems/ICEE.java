@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.Constants.SparkMaxCanIDs;
+import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
 
 public class ICEE extends SubsystemBase {
@@ -53,6 +54,10 @@ public class ICEE extends SubsystemBase {
 
   public Trigger ICEELimit() {
     return new Trigger(this.motor.getForwardLimitSwitch()::isPressed);
+  }
+
+  public BooleanSupplier getLimitSwitch() {
+    return motor.getForwardLimitSwitch()::isPressed;
   }
 
   public Command runOut() {
@@ -97,6 +102,13 @@ public class ICEE extends SubsystemBase {
         () -> {
           motor.set(-.5);
         },
+        () -> {
+          motor.set(0);
+        });
+  }
+
+  public Command stop() {
+    return runOnce(
         () -> {
           motor.set(0);
         });

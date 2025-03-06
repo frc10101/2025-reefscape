@@ -86,12 +86,13 @@ public class Elevator extends SubsystemBase {
   public Command zero() {
     return runOnce(() -> raiseElevator(0));
   }
-  public Command stop(){
-    return runOnce(()->{
-      m_motorLeft.set(0);
-      m_motorRight.set(0);
 
-    });
+  public Command stop() {
+    return runOnce(
+        () -> {
+          m_motorLeft.set(0);
+          m_motorRight.set(0);
+        });
   }
 
   public Trigger elevatorLimit() {

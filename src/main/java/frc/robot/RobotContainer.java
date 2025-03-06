@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -135,42 +136,62 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     configureSwerveCommands();
-    Trigger button1 = new Trigger(controller2.button(1));//output Coral
-    Trigger button2 = new Trigger(controller2.button(2));//intake
-    Trigger button3 = new Trigger(controller2.button(3));//Ndexter Left Faster
-    Trigger button4 = new Trigger(controller2.button(4));//Ndexter Right Faster
-    Trigger button5 = new Trigger(controller2.button(5));//EMPTY
-    Trigger button6 = new Trigger(controller2.button(6));//EMPTY
-    Trigger button7 = new Trigger(controller2.button(7));//EMPTY
-    Trigger button8 = new Trigger(controller2.button(8));//Intake Down
-    Trigger button9 = new Trigger(controller2.button(9));//Intake Up
-    Trigger button10 = new Trigger(controller2.button(10));//EMPTY
-    Trigger button11 = new Trigger(controller2.button(11));//EMPTY
-    Trigger button12 = new Trigger(controller2.button(12));//EMPTY
-    Trigger button13 = new Trigger(controller2.button(13));//EMPTY
-    Trigger button14 = new Trigger(controller2.button(14));//EMPTY
-    Trigger button15 = new Trigger(controller2.button(15));//EMPTY
-    Trigger button16 = new Trigger(controller2.button(16));//EMPTY
-    // controller2.button(5).whileTrue(intake.StartSpitout());
-    // controller2.button(6).whileTrue(intake.StartIntake());
-    // controller2.button(2).whileTrue(icee.Intake());
-    // controller2.button(1).whileTrue(icee.spitOut());
-    button2.whileTrue(intake.StartIntake());
-    button2.whileTrue(nDexter.NDexterSpinSameForward());
-    button2.whileTrue(icee.Intake());
+    Trigger button1 = new Trigger(controller2.button(1)); // output Coral
+    Trigger button2 = new Trigger(controller2.button(2)); // intake
+    Trigger button3 = new Trigger(controller2.button(3)); // Ndexter Left Faster
+    Trigger button4 = new Trigger(controller2.button(4)); // Ndexter Right Faster
+    Trigger button8 = new Trigger(controller2.button(8)); // Intake Down
+    Trigger button9 = new Trigger(controller2.button(9)); // Intake Up
+    Trigger POVUp0 = new Trigger(controller2.pov(0)); // arm Up
+    Trigger POVUp45 = new Trigger(controller2.pov(45)); // arm Up
+    Trigger POVUp315 = new Trigger(controller2.pov(315)); // arm Up
+    Trigger POVDown225 = new Trigger(controller2.pov(225)); // arm Down
+    Trigger POVDown180 = new Trigger(controller2.pov(180)); // arm Down
+    Trigger POVDown135 = new Trigger(controller2.pov(135)); // arm Down
 
-    button1.whileTrue(intake.StartSpitout());
-    button1.whileTrue(nDexter.NDexterSpinSameReverse());
+    button1.whileTrue(
+        new ConditionalCommand(intake.stop(), intake.StartSpitout(), icee.getLimitSwitch()));
+    button1.whileTrue(
+        new ConditionalCommand(
+            nDexter.stop(), nDexter.NDexterSpinSameReverse(), icee.getLimitSwitch()));
     button1.whileTrue(icee.spitOut());
-    controller2.button(3).whileTrue(intake.IntakeUp());
-    controller2.button(4).whileTrue(intake.IntakeDown());
 
-    controller2.axisGreaterThan(1, 0.5).whileTrue(arm.armDown());
-    controller2.axisLessThan(1, -0.5).whileTrue(arm.armUp());
+    button2.whileTrue(
+        new ConditionalCommand(intake.stop(), intake.StartIntake(), icee.getLimitSwitch()));
+    button2.whileTrue(
+        new ConditionalCommand(
+            nDexter.stop(), nDexter.NDexterSpinSameForward(), icee.getLimitSwitch()));
+    button2.whileTrue(new ConditionalCommand(icee.stop(), icee.Intake(), icee.getLimitSwitch()));
+
+    button3.whileTrue(
+        new ConditionalCommand(
+            nDexter.stop(), nDexter.NDexterSpinLeftFasterForward(), icee.getLimitSwitch()));
+    button4.whileTrue(
+        new ConditionalCommand(
+            nDexter.stop(), nDexter.NDexterSpinRightFasterForward(), icee.getLimitSwitch()));
+
+    button8.whileTrue(
+        new ConditionalCommand(intake.stop(), intake.IntakeDown(), icee.getLimitSwitch()));
+    button9.whileTrue(
+        new ConditionalCommand(intake.stop(), intake.IntakeUp(), icee.getLimitSwitch()));
+
+    POVUp0.whileTrue(arm.armUp());
+    POVUp45.whileTrue(arm.armUp());
+    POVUp315.whileTrue(arm.armUp());
+    POVDown225.whileTrue(arm.armDown());
+    POVDown180.whileTrue(arm.armDown());
+    POVDown135.whileTrue(arm.armDown());
+
+    controller2
+        .axisGreaterThan(1, 0.5)
+        .whileTrue(
+            new ConditionalCommand(elevator.stop(), elevator.raise(), icee.getLimitSwitch()));
+    controller2
+        .axisLessThan(1, -0.5)
+        .whileTrue(
+            new ConditionalCommand(elevator.stop(), elevator.lower(), icee.getLimitSwitch()));
     icee.ICEELimit().whileTrue(nDexter.stop());
     elevator.elevatorLimit().whileTrue(elevator.stop());
-
-
   }
 
   private void configureSwerveCommands() {

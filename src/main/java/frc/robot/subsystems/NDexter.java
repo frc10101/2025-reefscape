@@ -66,7 +66,7 @@ public class NDexter extends SubsystemBase {
         // Set PID values for velocity control in slot 1
         .velocityFF(Constants.NDexterConstants.rightFF)
         .outputRange(-1, 1);
-      rightMotorConfig.inverted(true);
+    rightMotorConfig.inverted(true);
 
     rightMotor.configure(
         rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
@@ -136,16 +136,25 @@ public class NDexter extends SubsystemBase {
         });
   }
 
+  // public Command stop() {
+
+  //   return runOnce(
+  //       () -> {
+  //         this.rightMotor
+  //             .getClosedLoopController()
+  //             .setReference(0, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+  //         this.leftMotor
+  //             .getClosedLoopController()
+  //             .setReference(0, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+  //       });
+  // }
+
   public Command stop() {
 
     return runOnce(
         () -> {
-          this.rightMotor
-              .getClosedLoopController()
-              .setReference(0, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-          this.leftMotor
-              .getClosedLoopController()
-              .setReference(0, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+          this.rightMotor.set(0);
+          this.leftMotor.set(0);
         });
   }
 
