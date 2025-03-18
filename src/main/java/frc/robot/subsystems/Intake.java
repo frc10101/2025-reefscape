@@ -60,10 +60,6 @@ public class Intake extends SubsystemBase {
     m_motorLeft.set(-0.7);
   }
 
-  public void stop() {
-    m_motorLeft.set(0);
-  }
-
   @Override
   public void periodic() {}
 
@@ -81,5 +77,12 @@ public class Intake extends SubsystemBase {
 
   public Command IntakeDown() {
     return runEnd(() -> intakeUp(.2), () -> intakeUp(0));
+  }
+
+  public Command stop() {
+    return runOnce(
+        () -> {
+          m_motorLeft.set(0);
+        });
   }
 }
