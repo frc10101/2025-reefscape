@@ -43,13 +43,13 @@ public final class Constants {
     // tuning variables
     public static final double kP = 3;
     public static final double kI = 0.0;
+
     public static final double kD = 1.2;
     public static final double kFF = 0;
     public static final double kFFwithCoral = 0;
     public static final double kFFTop = 0;
     public static final double kMaxAcceleration = 4500;
     public static final double kMaxVelocity = 4500;
-
     // arm measurements
     public static final double ARM_MASS_KG = 0.5; // kg
     public static final double ARM_LENGTH_METERS = 0.3; // meters

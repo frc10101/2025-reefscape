@@ -19,7 +19,9 @@ public class Arm extends SubsystemBase {
 
   public Arm() {
     armMotor = new SparkMax(Constants.SparkMaxCanIDs.StrawPivotMotor, MotorType.kBrushless);
+
     armMotor.getEncoder().setPosition(Math.PI);
+
 
     SparkMaxConfig armConfig = new SparkMaxConfig();
     armConfig.closedLoop.pidf(ArmConstants.kP, ArmConstants.kI, ArmConstants.kD, ArmConstants.kFF);
@@ -35,7 +37,9 @@ public class Arm extends SubsystemBase {
     armConfig.idleMode(IdleMode.kBrake);
 
     armMotor.configure(armConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
     armMotor.getEncoder().setPosition(Math.PI);
+
   }
 
   public double getAngle() {
@@ -49,18 +53,21 @@ public class Arm extends SubsystemBase {
   public void moveArm(double goal) { // need voltage power from 1-0(duty cycle) * 13
     double angle = armMotor.getEncoder().getPosition();
     double compensation =
+
         angle < 0
             ? 0
             : (armMotor.configAccessor.closedLoop.getFF() * Math.sin(angle) + angle
                     > Math.toRadians(167)
                 ? .5
                 : 0);
+
     armMotor.setVoltage(goal + compensation);
   }
 
   @Override
   public void periodic() {
     // No continuous updates needed
+
     // System.out.println(armMotor.getEncoder().getPosition() * 180 / Math.PI);
   }
 
@@ -70,6 +77,7 @@ public class Arm extends SubsystemBase {
 
   public Command armDown() {
     return runEnd(() -> moveArm(3.0), () -> moveArm(0));
+
   }
 
   public Command stopArm() {
@@ -110,6 +118,8 @@ public class Arm extends SubsystemBase {
           SparkMaxConfig armConfig = new SparkMaxConfig();
           armConfig.closedLoop.pidf(
               ArmConstants.kP, ArmConstants.kI, ArmConstants.kD, ArmConstants.kFF);
+
+
 
           armConfig.inverted(true);
           armConfig.encoder.positionConversionFactor(2.0 * Math.PI / ArmConstants.GEAR_RATIO);

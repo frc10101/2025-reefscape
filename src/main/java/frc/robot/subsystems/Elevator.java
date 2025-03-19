@@ -98,6 +98,7 @@ public class Elevator extends SubsystemBase {
   }
 
   public Command lower() {
+
     return runEnd(() -> raiseElevator(-.5), () -> raiseElevator(0));
   }
 

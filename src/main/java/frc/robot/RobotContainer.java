@@ -30,9 +30,11 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Arm;
+
 import frc.robot.subsystems.CANdleSystem;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.ICEE;
+
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -68,7 +70,9 @@ public class RobotContainer {
 
   private final Arm arm = new Arm();
 
+
   // private final NDexter nDexter = new NDexter();
+
 
   private final CommandJoystick controller2 = new CommandJoystick(1);
 
@@ -152,12 +156,6 @@ public class RobotContainer {
     Trigger button14 = new Trigger(controller2.button(14)); // L1
     Trigger button15 = new Trigger(controller2.button(15)); // elevtor HP
     Trigger button16 = new Trigger(controller2.button(16)); // elevatorL3
-    Trigger POVUp0 = new Trigger(controller2.pov(0)); // arm Up
-    Trigger POVUp45 = new Trigger(controller2.pov(45)); // arm Up
-    Trigger POVUp315 = new Trigger(controller2.pov(315)); // arm Up
-    Trigger POVDown225 = new Trigger(controller2.pov(225)); // arm Down
-    Trigger POVDown180 = new Trigger(controller2.pov(180)); // arm Down
-    Trigger POVDown135 = new Trigger(controller2.pov(135)); // arm Down
 
     // button1.whileTrue(
     //     new ConditionalCommand(intake.stop(), intake.StartSpitout(), icee.getLimitSwitch()));
@@ -188,26 +186,41 @@ public class RobotContainer {
     button14.whileTrue(elevator.L1());
     button15.whileTrue(elevator.HumanPlayer());
     button16.whileTrue(elevator.L3());
-    POVUp0.whileTrue(arm.armUp());
-    POVUp45.whileTrue(arm.armUp());
-    POVUp315.whileTrue(arm.armUp());
-    POVDown225.whileTrue(arm.armDown());
-    POVDown180.whileTrue(arm.armDown());
-    POVDown135.whileTrue(arm.armDown());
 
-    controller2
-        .axisGreaterThan(1, 0.5)
-        .whileTrue(
-            new ConditionalCommand(elevator.stop(), elevator.raise(), icee.getLimitSwitch()));
-    controller2
-        .axisLessThan(1, -0.5)
-        .whileTrue(
-            new ConditionalCommand(elevator.stop(), elevator.lower(), icee.getLimitSwitch()));
+    button1.whileTrue(
+        new ConditionalCommand(intake.stop(), intake.StartSpitout(), icee.getLimitSwitch()));
+    button1.whileTrue(
+        new ConditionalCommand(
+            nDexter.stop(), nDexter.NDexterSpinSameReverse(), icee.getLimitSwitch()));
+    button1.whileTrue(icee.spitOut());
+
+    button2.whileTrue(
+        new ConditionalCommand(intake.stop(), intake.StartIntake(), icee.getLimitSwitch()));
+    button2.whileTrue(
+        new ConditionalCommand(
+            nDexter.stop(), nDexter.NDexterSpinSameForward(), icee.getLimitSwitch()));
+    button2.whileTrue(new ConditionalCommand(icee.stop(), icee.Intake(), icee.getLimitSwitch()));
+
+    button3.whileTrue(
+        new ConditionalCommand(
+            nDexter.stop(), nDexter.NDexterSpinLeftFasterForward(), icee.getLimitSwitch()));
+    button4.whileTrue(
+        new ConditionalCommand(
+            nDexter.stop(), nDexter.NDexterSpinRightFasterForward(), icee.getLimitSwitch()));
+
+    button8.whileTrue(
+        new ConditionalCommand(intake.stop(), intake.IntakeDown(), icee.getLimitSwitch()));
+    button9.whileTrue(
+        new ConditionalCommand(intake.stop(), intake.IntakeUp(), icee.getLimitSwitch()));
+
+
+
     // icee.ICEELimit().whileTrue(nDexter.stop());
     // icee.ICEELimit().whileTrue(nDexter.stop());
 
     icee.ICEELimit().onTrue(candle.haveCoral());
     icee.ICEELimit().onFalse(candle.noCoral());
+
 
     elevator.elevatorLimit().whileTrue(elevator.stop());
   }
@@ -252,6 +265,7 @@ public class RobotContainer {
 
     icee.ICEELimit().onTrue(arm.coralFF());
     icee.ICEELimit().onFalse(arm.normalFF());
+
   }
 
   public void zeroGyro() {
@@ -262,6 +276,7 @@ public class RobotContainer {
             DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
                 ? new Rotation2d(Math.PI)
                 : new Rotation2d()));
+
   }
 
   /**
@@ -271,5 +286,9 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     return autoChooser.get();
+  }
+
+  public Drive getDriveSubsystem() {
+    return drive;
   }
 }
