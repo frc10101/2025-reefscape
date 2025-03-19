@@ -239,4 +239,8 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     return autoChooser.get();
   }
+
+  public Drive getDriveSubsystem() {
+    return drive;
+  }
 }
