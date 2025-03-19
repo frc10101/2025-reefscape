@@ -100,7 +100,9 @@ public class ICEE extends SubsystemBase {
   public Command spitOut() {
     return runEnd(
         () -> {
-          motor.set(-.5);
+
+          motor.set(-.75);
+
         },
         () -> {
           motor.set(0);
@@ -118,6 +120,8 @@ public class ICEE extends SubsystemBase {
   public void periodic() {
     Logger.recordOutput("ICEE motor", motor.getEncoder().getVelocity());
     Logger.recordOutput("ICEE Limit Switch", motor.getForwardLimitSwitch().isPressed());
-    System.out.println(motor.getForwardLimitSwitch().isPressed());
+
+    // System.out.println(motor.getForwardLimitSwitch().isPressed());
+
   }
 }

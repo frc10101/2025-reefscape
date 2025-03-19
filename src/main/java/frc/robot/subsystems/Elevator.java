@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
+import frc.robot.Constants.ElevatorConstants;
 
 public class Elevator extends SubsystemBase {
 
@@ -27,7 +28,10 @@ public class Elevator extends SubsystemBase {
   public Elevator() {
     SparkMaxConfig config = new SparkMaxConfig();
     SparkMaxConfig configFollower = new SparkMaxConfig();
-
+    config.encoder.positionConversionFactor(
+        2 * Math.PI / Constants.ElevatorConstants.ElevatorGearRatio);
+    config.closedLoop.pidf(
+        ElevatorConstants.kP, ElevatorConstants.kI, ElevatorConstants.kD, ElevatorConstants.kFF);
     m_motorLeft = new SparkMax(Constants.SparkMaxCanIDs.ElevatorMotorLeft, MotorType.kBrushless);
     m_motorLeft.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -43,7 +47,7 @@ public class Elevator extends SubsystemBase {
   }
 
   private void goToGoal(double goal) {
-    m_motorLeft.getClosedLoopController().setReference(goal, ControlType.kMAXMotionPositionControl);
+    m_motorLeft.getClosedLoopController().setReference(goal, ControlType.kPosition);
   }
 
   private void raiseElevator(double goal) {
@@ -52,6 +56,21 @@ public class Elevator extends SubsystemBase {
 
   public Command Ndexter() {
     return runOnce(() -> goToGoal(Constants.ElevatorConstants.NDexter));
+  }
+
+  public Command goOut() {
+    return new Command() {
+      @Override
+      public void initialize() {
+        goToGoal(Constants.ElevatorConstants.goOut);
+      }
+
+      @Override
+      public boolean isFinished() {
+        return m_motorLeft.getEncoder().getPosition() >= Constants.ElevatorConstants.goOut
+            && m_motorLeft.getEncoder().getPosition() <= Constants.ElevatorConstants.goOut + 1;
+      }
+    };
   }
 
   public Command L1() {
@@ -102,5 +121,6 @@ public class Elevator extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    System.out.println(m_motorLeft.getOutputCurrent());
   }
 }
