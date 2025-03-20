@@ -18,109 +18,83 @@ import frc.robot.Constants;
 import frc.robot.Constants.ElevatorConstants;
 
 public class Elevator extends SubsystemBase {
-
   private final SparkMax m_motorLeft;
   private final SparkMax m_motorRight;
 
-  /** follower motor */
-
-  /** Creates a new ElevatorSubsystem. */
   public Elevator() {
+    m_motorLeft = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorLeft, false);
+    m_motorRight = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorRight, true);
+  }
+
+  private SparkMax configureMotor(int canID, boolean isFollower) {
     SparkMaxConfig config = new SparkMaxConfig();
-    SparkMaxConfig configFollower = new SparkMaxConfig();
     config.encoder.positionConversionFactor(
         2 * Math.PI / Constants.ElevatorConstants.ElevatorGearRatio);
     config.closedLoop.pidf(
         ElevatorConstants.kP, ElevatorConstants.kI, ElevatorConstants.kD, ElevatorConstants.kFF);
-    m_motorLeft = new SparkMax(Constants.SparkMaxCanIDs.ElevatorMotorLeft, MotorType.kBrushless);
-    m_motorLeft.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    configFollower.follow(m_motorLeft, true);
-
-    m_motorRight = new SparkMax(Constants.SparkMaxCanIDs.ElevatorMotorRight, MotorType.kBrushless);
-    m_motorRight.configure(
-        configFollower, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    configFollower
-        .limitSwitch
-        .forwardLimitSwitchEnabled(true)
-        .forwardLimitSwitchType(Type.kNormallyOpen);
+    SparkMax motor = new SparkMax(canID, MotorType.kBrushless);
+    if (isFollower) {
+      config.follow(m_motorLeft, true);
+      config.limitSwitch.forwardLimitSwitchEnabled(true).forwardLimitSwitchType(Type.kNormallyOpen);
+    }
+    motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    return motor;
   }
 
   private void goToGoal(double goal) {
     m_motorLeft.getClosedLoopController().setReference(goal, ControlType.kPosition);
   }
 
-  private void raiseElevator(double goal) {
-    m_motorLeft.set(goal);
+  private void setElevatorSpeed(double speed) {
+    m_motorLeft.set(speed);
   }
 
-  public Command Ndexter() {
-    return runOnce(() -> goToGoal(Constants.ElevatorConstants.NDexter));
-  }
-
-  public Command goOut() {
-    return new Command() {
-      @Override
-      public void initialize() {
-        goToGoal(Constants.ElevatorConstants.goOut);
-      }
-
-      @Override
-      public boolean isFinished() {
-        return m_motorLeft.getEncoder().getPosition() >= Constants.ElevatorConstants.goOut
-            && m_motorLeft.getEncoder().getPosition() <= Constants.ElevatorConstants.goOut + 1;
-      }
-    };
-  }
-
-  public Command L1() {
-    return runOnce(() -> goToGoal(Constants.ElevatorConstants.L1));
-  }
-
-  public Command L2() {
-    return runOnce(() -> goToGoal(Constants.ElevatorConstants.L2));
-  }
-
-  public Command L3() {
-    return runOnce(() -> goToGoal(Constants.ElevatorConstants.L3));
-  }
-
-  public Command L4() {
-    return runOnce(() -> goToGoal(Constants.ElevatorConstants.L4));
-  }
-
-  public Command HumanPlayer() {
-    return runOnce(() -> goToGoal(Constants.ElevatorConstants.HumanPlayer));
+  public Command moveToPosition(double position) {
+    return runOnce(() -> goToGoal(position));
   }
 
   public Command raise() {
-    return runEnd(() -> raiseElevator(.5), () -> raiseElevator(0));
+    return runEnd(() -> setElevatorSpeed(0.5), () -> setElevatorSpeed(0));
   }
 
   public Command lower() {
-
-    return runEnd(() -> raiseElevator(-.5), () -> raiseElevator(0));
-  }
-
-  public Command zero() {
-    return runOnce(() -> raiseElevator(0));
+    return runEnd(() -> setElevatorSpeed(-0.5), () -> setElevatorSpeed(0));
   }
 
   public Command stop() {
-    return runOnce(
-        () -> {
-          m_motorLeft.set(0);
-          m_motorRight.set(0);
-        });
+    return runOnce(() -> {
+      m_motorLeft.set(0);
+      m_motorRight.set(0);
+    });
   }
 
   public Trigger elevatorLimit() {
-    return new Trigger(this.m_motorRight.getForwardLimitSwitch()::isPressed);
+    return new Trigger(m_motorRight.getForwardLimitSwitch()::isPressed);
+  }
+
+  public Command L1() {
+    return moveToPosition(Constants.ElevatorConstants.L1);
+  }
+
+  public Command L2() {
+    return moveToPosition(Constants.ElevatorConstants.L2);
+  }
+
+  public Command L3() {
+    return moveToPosition(Constants.ElevatorConstants.L3);
+  }
+
+  public Command L4() {
+    return moveToPosition(Constants.ElevatorConstants.L4);
+  }
+
+  public Command HumanPlayer() {
+    return moveToPosition(Constants.ElevatorConstants.HumanPlayer);
   }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
     System.out.println(m_motorLeft.getOutputCurrent());
   }
 }

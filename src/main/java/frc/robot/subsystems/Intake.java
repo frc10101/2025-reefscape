@@ -18,71 +18,59 @@ import frc.robot.Constants;
 public class Intake extends SubsystemBase {
   private final SparkMax m_motorLeft;
   private final SparkMax m_motorRotateLeft;
+  @SuppressWarnings("unused")
   private final SparkMax m_motorRight;
+  @SuppressWarnings("unused")
   private final SparkMax m_motorRotateRight;
 
-  /** Creates a new intake. */
   public Intake() {
-    m_motorLeft = new SparkMax(Constants.SparkMaxCanIDs.intakeMotorSpinLeft, MotorType.kBrushless);
-    m_motorRight =
-        new SparkMax(Constants.SparkMaxCanIDs.intakeMotorSpinRight, MotorType.kBrushless);
-    m_motorRotateLeft =
-        new SparkMax(Constants.SparkMaxCanIDs.intakeMotorPivotLeft, MotorType.kBrushless);
-    m_motorRotateRight =
-        new SparkMax(Constants.SparkMaxCanIDs.intakeMotorPivotRight, MotorType.kBrushless);
+    m_motorLeft = configureMotor(Constants.SparkMaxCanIDs.intakeMotorSpinLeft, false);
+    m_motorRight = configureMotor(Constants.SparkMaxCanIDs.intakeMotorSpinRight, true);
+    m_motorRotateLeft = configureMotor(Constants.SparkMaxCanIDs.intakeMotorPivotLeft, false);
+    m_motorRotateRight = configureMotor(Constants.SparkMaxCanIDs.intakeMotorPivotRight, true);
+  }
 
+  private SparkMax configureMotor(int canID, boolean isFollower) {
     SparkMaxConfig config = new SparkMaxConfig();
-    SparkMaxConfig configRotate = new SparkMaxConfig();
-    SparkMaxConfig configFollower = new SparkMaxConfig();
-    SparkMaxConfig configRotateFollower = new SparkMaxConfig();
-
-    m_motorLeft.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    m_motorRotateLeft.configure(
-        configRotate, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-    configFollower.follow(m_motorLeft, true);
-    configRotateFollower.follow(m_motorRotateLeft, true);
-    m_motorRight.configure(
-        configFollower, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    m_motorRotateRight.configure(
-        configRotateFollower, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    SparkMax motor = new SparkMax(canID, MotorType.kBrushless);
+    if (isFollower) {
+      config.follow(m_motorLeft, true);
+    }
+    motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    return motor;
   }
 
-  private void intakeUp(double goal) {
-    m_motorRotateLeft.set(goal);
+  private void setMotorSpeed(SparkMax motor, double speed) {
+    motor.set(speed);
   }
-
-  private void intake() {
-    m_motorLeft.set(0.7);
-  }
-
-  private void spitOut() {
-    m_motorLeft.set(-0.7);
-  }
-
-  @Override
-  public void periodic() {}
 
   public Command StartIntake() {
-    return runEnd(() -> intake(), () -> stop());
+    return runEnd(() -> setMotorSpeed(m_motorLeft, 0.7), this::stopMotors);
   }
 
   public Command StartSpitout() {
-    return runEnd(() -> spitOut(), () -> stop());
+    return runEnd(() -> setMotorSpeed(m_motorLeft, -0.7), this::stopMotors);
   }
 
   public Command IntakeUp() {
-    return runEnd(() -> intakeUp(-.2), () -> intakeUp(0));
+    return runEnd(() -> setMotorSpeed(m_motorRotateLeft, -0.2), () -> setMotorSpeed(m_motorRotateLeft, 0));
   }
 
   public Command IntakeDown() {
-    return runEnd(() -> intakeUp(.2), () -> intakeUp(0));
+    return runEnd(() -> setMotorSpeed(m_motorRotateLeft, 0.2), () -> setMotorSpeed(m_motorRotateLeft, 0));
   }
 
   public Command stop() {
-    return runOnce(
-        () -> {
-          m_motorLeft.set(0);
-        });
+    return runOnce(this::stopMotors);
+  }
+
+  private void stopMotors() {
+    setMotorSpeed(m_motorLeft, 0);
+    setMotorSpeed(m_motorRotateLeft, 0);
+  }
+
+  @Override
+  public void periodic() {
+    // No periodic updates needed
   }
 }

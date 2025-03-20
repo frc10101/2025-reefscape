@@ -22,38 +22,30 @@ import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
 
 public class ICEE extends SubsystemBase {
-
   private final SparkMax motor;
 
-  /** Creates a new ICEE. */
   public ICEE() {
+    motor = new SparkMax(SparkMaxCanIDs.IceeMotor, MotorType.kBrushless);
+    configureMotor();
+  }
 
-    this.motor = new SparkMax(SparkMaxCanIDs.IceeMotor, MotorType.kBrushless);
+  private void configureMotor() {
     SparkMaxConfig motorConfig = new SparkMaxConfig();
-
     motorConfig.encoder.velocityConversionFactor(Constants.IceeConstants.ratio);
-
-    motorConfig
-        .limitSwitch
-        .forwardLimitSwitchEnabled(true)
-        .forwardLimitSwitchType(Type.kNormallyOpen);
-
+    motorConfig.limitSwitch.forwardLimitSwitchEnabled(true).forwardLimitSwitchType(Type.kNormallyOpen);
     motorConfig.smartCurrentLimit(50);
-
-    motorConfig
-        .closedLoop
+    motorConfig.closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         .p(Constants.IceeConstants.Kp)
         .i(Constants.IceeConstants.Ki)
         .d(Constants.IceeConstants.Kd)
         .velocityFF(Constants.IceeConstants.FF)
         .outputRange(-1, 1);
-
     motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
   }
 
   public Trigger ICEELimit() {
-    return new Trigger(this.motor.getForwardLimitSwitch()::isPressed);
+    return new Trigger(motor.getForwardLimitSwitch()::isPressed);
   }
 
   public BooleanSupplier getLimitSwitch() {
@@ -61,67 +53,37 @@ public class ICEE extends SubsystemBase {
   }
 
   public Command runOut() {
-
-    return runOnce(
-        () -> {
-          motor
-              .getClosedLoopController()
-              .setReference(
-                  Constants.IceeConstants.IceeOutVelocity,
-                  ControlType.kVelocity,
-                  ClosedLoopSlot.kSlot0);
-        });
+    return setMotorVelocity(Constants.IceeConstants.IceeOutVelocity);
   }
 
   public Command runIn() {
-    return runOnce(
-        () -> {
-          motor
-              .getClosedLoopController()
-              .setReference(
-                  motor.getForwardLimitSwitch().isPressed()
-                      ? 0
-                      : Constants.IceeConstants.IceeInVelocity,
-                  ControlType.kVelocity,
-                  ClosedLoopSlot.kSlot0);
-        });
+    return setMotorVelocity(
+        motor.getForwardLimitSwitch().isPressed() ? 0 : Constants.IceeConstants.IceeInVelocity);
+  }
+
+  private Command setMotorVelocity(double velocity) {
+    return runOnce(() -> motor.getClosedLoopController().setReference(velocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0));
   }
 
   public Command Intake() {
-    return runEnd(
-        () -> {
-          motor.set(.5);
-        },
-        () -> {
-          motor.set(0);
-        });
+    return runMotor(0.5);
   }
 
   public Command spitOut() {
-    return runEnd(
-        () -> {
+    return runMotor(-0.75);
+  }
 
-          motor.set(-.75);
-
-        },
-        () -> {
-          motor.set(0);
-        });
+  private Command runMotor(double speed) {
+    return runEnd(() -> motor.set(speed), () -> motor.set(0));
   }
 
   public Command stop() {
-    return runOnce(
-        () -> {
-          motor.set(0);
-        });
+    return runOnce(() -> motor.set(0));
   }
 
   @Override
   public void periodic() {
     Logger.recordOutput("ICEE motor", motor.getEncoder().getVelocity());
     Logger.recordOutput("ICEE Limit Switch", motor.getForwardLimitSwitch().isPressed());
-
-    // System.out.println(motor.getForwardLimitSwitch().isPressed());
-
   }
 }

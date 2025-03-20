@@ -13,9 +13,7 @@ import frc.robot.Constants;
 
 public class CANdleSystem extends SubsystemBase {
   private final CANdle m_candle = new CANdle(Constants.CANids.CANdleID);
-  private final int LedCount = 300;
-
-  private Animation m_toAnimate = null;
+  private static final double DEFAULT_BRIGHTNESS = 0.1;
 
   public enum AnimationTypes {
     ColorFlow,
@@ -31,16 +29,19 @@ public class CANdleSystem extends SubsystemBase {
   }
 
   public CANdleSystem() {
-    CANdleConfiguration configAll = new CANdleConfiguration();
-    configAll.statusLedOffWhenActive = true;
-    configAll.disableWhenLOS = false;
-    configAll.stripType = LEDStripType.RGB;
-    configAll.brightnessScalar = 0.1;
-    configAll.vBatOutputMode = VBatOutputMode.Modulated;
-    m_candle.configAllSettings(configAll, 100);
+    configureCANdle();
   }
 
-  /* Wrappers so we can access the CANdle from the subsystem */
+  private void configureCANdle() {
+    CANdleConfiguration config = new CANdleConfiguration();
+    config.statusLedOffWhenActive = true;
+    config.disableWhenLOS = false;
+    config.stripType = LEDStripType.RGB;
+    config.brightnessScalar = DEFAULT_BRIGHTNESS;
+    config.vBatOutputMode = VBatOutputMode.Modulated;
+    m_candle.configAllSettings(config, 100);
+  }
+
   public double getVbat() {
     return m_candle.getBusVoltage();
   }
@@ -73,31 +74,21 @@ public class CANdleSystem extends SubsystemBase {
     m_candle.configStatusLedState(offWhenActive, 0);
   }
 
+  public Command setLEDColor(int red, int green, int blue) {
+    return runOnce(() -> m_candle.setLEDs(red, green, blue));
+  }
+
   public Command haveCoral() {
-    return runOnce(
-        () -> {
-          this.m_candle.setLEDs(202, 251, 19);
-        });
+    return setLEDColor(202, 251, 19);
   }
 
   public Command noCoral() {
-    return runOnce(
-        () -> {
-          this.m_candle.setLEDs(193, 0, 193);
-        });
+    return setLEDColor(193, 0, 193);
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    //     if(m_toAnimate == null) {
-    //         m_candle.setLEDs((int)(joystick.getLeftTriggerAxis() * 255),
-    //                           (int)(joystick.getRightTriggerAxis() * 255),
-    //                           (int)(joystick.getLeftX() * 255));
-    //     } else {
-    //         m_candle.animate(m_toAnimate);
-    //     }
-    //     m_candle.modulateVBatOutput(joystick.getRightY());
   }
 
   @Override

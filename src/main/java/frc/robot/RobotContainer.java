@@ -18,8 +18,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
@@ -52,181 +50,102 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
+  private final CANdleSystem candle = new CANdleSystem();
+  private final Elevator elevator = new Elevator();
+  private final ICEE icee = new ICEE();
+  private final Arm arm = new Arm();
 
-  // Controller
+  // Controllers
   private final CommandXboxController controller = new CommandXboxController(0);
+  private final CommandJoystick controller2 = new CommandJoystick(1);
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
 
-  /** The container for the robot. Contains subsystems, OI devices, and commands. */
-  // private final Intake intake = new Intake();
-
-  private final CANdleSystem candle = new CANdleSystem();
-
-  private final Elevator elevator = new Elevator();
-
-  private final ICEE icee = new ICEE();
-
-  private final Arm arm = new Arm();
-
-
-  // private final NDexter nDexter = new NDexter();
-
-
-  private final CommandJoystick controller2 = new CommandJoystick(1);
-
   public RobotContainer() {
-    switch (Constants.currentMode) {
-      case REAL:
-        // Real robot, instantiate hardware IO implementations
-        drive =
-            new Drive(
-                new GyroIOPigeon2(),
-                new ModuleIOTalonFX(TunerConstants.FrontLeft),
-                new ModuleIOTalonFX(TunerConstants.FrontRight),
-                new ModuleIOTalonFX(TunerConstants.BackLeft),
-                new ModuleIOTalonFX(TunerConstants.BackRight));
-        break;
-
-      case SIM:
-        // Sim robot, instantiate physics sim IO implementations
-        drive =
-            new Drive(
-                new GyroIO() {},
-                new ModuleIOSim(TunerConstants.FrontLeft),
-                new ModuleIOSim(TunerConstants.FrontRight),
-                new ModuleIOSim(TunerConstants.BackLeft),
-                new ModuleIOSim(TunerConstants.BackRight));
-        break;
-
-      default:
-        // Replayed robot, disable IO implementations
-        drive =
-            new Drive(
-                new GyroIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {});
-        break;
-    }
+    drive = initializeDriveSubsystem();
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+    setupAutoOptions();
 
-    // Set up SysId routines
+    // Configure button bindings
+    configureButtonBindings();
+  }
+
+  private Drive initializeDriveSubsystem() {
+    switch (Constants.currentMode) {
+      case REAL:
+        return new Drive(
+            new GyroIOPigeon2(),
+            new ModuleIOTalonFX(TunerConstants.FrontLeft),
+            new ModuleIOTalonFX(TunerConstants.FrontRight),
+            new ModuleIOTalonFX(TunerConstants.BackLeft),
+            new ModuleIOTalonFX(TunerConstants.BackRight));
+      case SIM:
+        return new Drive(
+            new GyroIO() {},
+            new ModuleIOSim(TunerConstants.FrontLeft),
+            new ModuleIOSim(TunerConstants.FrontRight),
+            new ModuleIOSim(TunerConstants.BackLeft),
+            new ModuleIOSim(TunerConstants.BackRight));
+      default:
+        return new Drive(
+            new GyroIO() {},
+            new ModuleIO() {},
+            new ModuleIO() {},
+            new ModuleIO() {},
+            new ModuleIO() {});
+    }
+  }
+
+  private void setupAutoOptions() {
     autoChooser.addOption(
         "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
     autoChooser.addOption(
         "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
     autoChooser.addOption(
-        "Drive SysId (Quasistatic Forward)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        "Drive SysId (Quasistatic Forward)", drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
-        "Drive SysId (Quasistatic Reverse)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        "Drive SysId (Quasistatic Reverse)", drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
     autoChooser.addOption(
         "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     autoChooser.addOption("blueAuto", drive.getAuto("blue leave"));
     autoChooser.addOption("redAuto", drive.getAuto("blue leave"));
-
     autoChooser.addOption("Leave Auto", drive.getAuto("blue leave"));
-
-    // Configure the button bindings
-    configureButtonBindings();
   }
 
-  /**
-   * Use this method to define your button->command mappings. Buttons can be created by
-   * instantiating a {@link GenericHID} or one of its subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
-   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
-   */
   private void configureButtonBindings() {
     configureSwerveCommands();
-    Trigger button1 = new Trigger(controller2.button(1)); // output Coral
-    Trigger button2 = new Trigger(controller2.button(2)); // intake
-    Trigger button3 = new Trigger(controller2.button(3)); // Ndexter Left Faster
-    Trigger button4 = new Trigger(controller2.button(4)); // Ndexter Right Faster
-    Trigger button8 = new Trigger(controller2.button(8)); // Intake Down
-    Trigger button9 = new Trigger(controller2.button(9)); // Intake Up
-    Trigger button14 = new Trigger(controller2.button(14)); // L1
-    Trigger button15 = new Trigger(controller2.button(15)); // elevtor HP
-    Trigger button16 = new Trigger(controller2.button(16)); // elevatorL3
 
-    // button1.whileTrue(
-    //     new ConditionalCommand(intake.stop(), intake.StartSpitout(), icee.getLimitSwitch()));
-    // button1.whileTrue(
-    //     new ConditionalCommand(
-    //         nDexter.stop(), nDexter.NDexterSpinSameReverse(), icee.getLimitSwitch()));
-    button1.whileTrue(icee.spitOut());
+    // Controller 2 button bindings
+    bindController2Buttons();
 
-    // button1.onFalse(intake.stop());
-
-    // button2.whileTrue(
-    // new ConditionalCommand(intake.stop(), intake.StartIntake(), icee.getLimitSwitch()));
-    // button2.whileTrue(
-    // new ConditionalCommand(
-    // nDexter.stop(), nDexter.NDexterSpinSameForward(), icee.getLimitSwitch()));
-    button2.whileTrue(new ConditionalCommand(icee.stop(), icee.Intake(), icee.getLimitSwitch()));
-    // button2.onFalse(intake.stop());
-
-    // button3.whileTrue(
-    //     new ConditionalCommand(
-    //         nDexter.stop(), nDexter.NDexterSpinLeftFasterForward(), icee.getLimitSwitch()));
-    // button4.whileTrue(
-    //     new ConditionalCommand(
-    //         nDexter.stop(), nDexter.NDexterSpinRightFasterForward(), icee.getLimitSwitch()));
-
-    // button8.whileTrue(intake.IntakeDown());
-    // button9.whileTrue(intake.IntakeUp());
-    button14.whileTrue(elevator.L1());
-    button15.whileTrue(elevator.HumanPlayer());
-    button16.whileTrue(elevator.L3());
-
-    button1.whileTrue(
-        new ConditionalCommand(intake.stop(), intake.StartSpitout(), icee.getLimitSwitch()));
-    button1.whileTrue(
-        new ConditionalCommand(
-            nDexter.stop(), nDexter.NDexterSpinSameReverse(), icee.getLimitSwitch()));
-    button1.whileTrue(icee.spitOut());
-
-    button2.whileTrue(
-        new ConditionalCommand(intake.stop(), intake.StartIntake(), icee.getLimitSwitch()));
-    button2.whileTrue(
-        new ConditionalCommand(
-            nDexter.stop(), nDexter.NDexterSpinSameForward(), icee.getLimitSwitch()));
-    button2.whileTrue(new ConditionalCommand(icee.stop(), icee.Intake(), icee.getLimitSwitch()));
-
-    button3.whileTrue(
-        new ConditionalCommand(
-            nDexter.stop(), nDexter.NDexterSpinLeftFasterForward(), icee.getLimitSwitch()));
-    button4.whileTrue(
-        new ConditionalCommand(
-            nDexter.stop(), nDexter.NDexterSpinRightFasterForward(), icee.getLimitSwitch()));
-
-    button8.whileTrue(
-        new ConditionalCommand(intake.stop(), intake.IntakeDown(), icee.getLimitSwitch()));
-    button9.whileTrue(
-        new ConditionalCommand(intake.stop(), intake.IntakeUp(), icee.getLimitSwitch()));
-
-
-
-    // icee.ICEELimit().whileTrue(nDexter.stop());
-    // icee.ICEELimit().whileTrue(nDexter.stop());
-
+    // ICEE and CANdle interactions
     icee.ICEELimit().onTrue(candle.haveCoral());
     icee.ICEELimit().onFalse(candle.noCoral());
-
 
     elevator.elevatorLimit().whileTrue(elevator.stop());
   }
 
+  private void bindController2Buttons() {
+    Trigger button1 = new Trigger(controller2.button(1)); // output Coral
+    Trigger button2 = new Trigger(controller2.button(2)); // intake Coral
+    Trigger button14 = new Trigger(controller2.button(14)); // L1
+    Trigger button15 = new Trigger(controller2.button(15)); // elevator HP
+    Trigger button16 = new Trigger(controller2.button(16)); // elevator L3
+
+    button1.whileTrue(icee.spitOut());
+    button2.whileTrue(new ConditionalCommand(icee.stop(), icee.Intake(), icee.getLimitSwitch()));
+    button14.whileTrue(elevator.L1());
+    button15.whileTrue(elevator.HumanPlayer());
+    button16.whileTrue(elevator.L3());
+  }
+
   private void configureSwerveCommands() {
-    // Default command, normal field-relative drive\
+    // Default command, normal field-relative drive
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,
@@ -235,55 +154,41 @@ public class RobotContainer {
             () -> -controller.getRightX()));
 
     // Lock to 0° when A button is held
-    controller
-        .a()
-        .whileTrue(
-            DriveCommands.joystickDriveAtAngle(
-                drive,
-                () -> controller.getLeftY(),
-                () -> controller.getLeftX(),
-                () -> new Rotation2d()));
+    controller.a().whileTrue(
+        DriveCommands.joystickDriveAtAngle(
+            drive,
+            () -> controller.getLeftY(),
+            () -> controller.getLeftX(),
+            () -> new Rotation2d()));
 
     // Switch to X pattern when X button is pressed
     controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
     // Reset gyro to 0° when B button is pressed
-    controller
-        .b()
-        .onTrue(
-            Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            new Pose2d(
-                                drive.getPose().getTranslation(),
-                                // new Rotation2d()
-                                DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-                                    ? new Rotation2d(Math.PI)
-                                    : new Rotation2d())),
-                    drive)
-                .ignoringDisable(true));
+    controller.b().onTrue(
+        Commands.runOnce(
+                () -> drive.setPose(
+                    new Pose2d(
+                        drive.getPose().getTranslation(),
+                        DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                            ? new Rotation2d(Math.PI)
+                            : new Rotation2d())),
+                drive)
+            .ignoringDisable(true));
 
     icee.ICEELimit().onTrue(arm.coralFF());
     icee.ICEELimit().onFalse(arm.normalFF());
-
   }
 
   public void zeroGyro() {
     drive.setPose(
         new Pose2d(
             drive.getPose().getTranslation(),
-            // new Rotation2d()
             DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
                 ? new Rotation2d(Math.PI)
                 : new Rotation2d()));
-
   }
 
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
   public Command getAutonomousCommand() {
     return autoChooser.get();
   }

@@ -19,27 +19,26 @@ public class Arm extends SubsystemBase {
 
   public Arm() {
     armMotor = new SparkMax(Constants.SparkMaxCanIDs.StrawPivotMotor, MotorType.kBrushless);
+    configureArmMotor();
+  }
 
+  private void configureArmMotor() {
+    SparkMaxConfig armConfig = createArmConfig(ArmConstants.kFF);
+    armMotor.configure(armConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     armMotor.getEncoder().setPosition(Math.PI);
+  }
 
-
-    SparkMaxConfig armConfig = new SparkMaxConfig();
-    armConfig.closedLoop.pidf(ArmConstants.kP, ArmConstants.kI, ArmConstants.kD, ArmConstants.kFF);
-
-    armConfig
-        .closedLoop
-        .maxMotion
+  private SparkMaxConfig createArmConfig(double feedForward) {
+    SparkMaxConfig config = new SparkMaxConfig();
+    config.closedLoop.pidf(ArmConstants.kP, ArmConstants.kI, ArmConstants.kD, feedForward);
+    config.closedLoop.maxMotion
         .maxAcceleration(ArmConstants.kMaxAcceleration)
         .maxVelocity(ArmConstants.kMaxVelocity)
         .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal);
-    armConfig.inverted(true);
-    armConfig.encoder.positionConversionFactor(2.0 * Math.PI / ArmConstants.GEAR_RATIO);
-    armConfig.idleMode(IdleMode.kBrake);
-
-    armMotor.configure(armConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-    armMotor.getEncoder().setPosition(Math.PI);
-
+    config.inverted(true);
+    config.encoder.positionConversionFactor(2.0 * Math.PI / ArmConstants.GEAR_RATIO);
+    config.idleMode(IdleMode.kBrake);
+    return config;
   }
 
   public double getAngle() {
@@ -50,84 +49,44 @@ public class Arm extends SubsystemBase {
     armMotor.set(0);
   }
 
-  public void moveArm(double goal) { // need voltage power from 1-0(duty cycle) * 13
+  public void moveArm(double goal) {
     double angle = armMotor.getEncoder().getPosition();
-    double compensation =
-
-        angle < 0
-            ? 0
-            : (armMotor.configAccessor.closedLoop.getFF() * Math.sin(angle) + angle
-                    > Math.toRadians(167)
-                ? .5
-                : 0);
-
+    double compensation = calculateCompensation(angle);
     armMotor.setVoltage(goal + compensation);
   }
 
-  @Override
-  public void periodic() {
-    // No continuous updates needed
-
-    // System.out.println(armMotor.getEncoder().getPosition() * 180 / Math.PI);
+  private double calculateCompensation(double angle) {
+    if (angle < 0) {
+      return 0;
+    }
+    if (angle > Math.toRadians(167)) {
+      return 0.5;
+    }
+    return armMotor.configAccessor.closedLoop.getFF() * Math.sin(angle);
   }
 
   public Command armUp() {
-    return runEnd(() -> moveArm(-3.0), () -> moveArm(0));
+    return runEnd(() -> moveArm(-3.0), this::stop);
   }
 
   public Command armDown() {
-    return runEnd(() -> moveArm(3.0), () -> moveArm(0));
-
+    return runEnd(() -> moveArm(3.0), this::stop);
   }
 
   public Command stopArm() {
-    return run(
-        () -> {
-          double angle = armMotor.getEncoder().getPosition();
-          double compensation =
-              angle < 0 ? 0 : (armMotor.configAccessor.closedLoop.getFF() * Math.sin(angle));
-          armMotor.setVoltage(0 + compensation);
-        });
+    return run(() -> {
+      double angle = armMotor.getEncoder().getPosition();
+      double compensation = calculateCompensation(angle);
+      armMotor.setVoltage(compensation);
+    });
   }
 
   public Command coralFF() {
-    return runOnce(
-        () -> {
-          SparkMaxConfig armConfig = new SparkMaxConfig();
-          armConfig.closedLoop.pidf(
-              ArmConstants.kP, ArmConstants.kI, ArmConstants.kD, ArmConstants.kFFwithCoral);
-
-          armConfig
-              .closedLoop
-              .maxMotion
-              .maxAcceleration(ArmConstants.kMaxAcceleration)
-              .maxVelocity(ArmConstants.kMaxVelocity)
-              .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal);
-          armConfig.inverted(true);
-          armConfig.encoder.positionConversionFactor(2.0 * Math.PI / ArmConstants.GEAR_RATIO);
-          armConfig.idleMode(IdleMode.kBrake);
-
-          armMotor.configure(
-              armConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        });
+    return runOnce(() -> armMotor.configure(createArmConfig(ArmConstants.kFFwithCoral), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
   }
 
   public Command normalFF() {
-    return runOnce(
-        () -> {
-          SparkMaxConfig armConfig = new SparkMaxConfig();
-          armConfig.closedLoop.pidf(
-              ArmConstants.kP, ArmConstants.kI, ArmConstants.kD, ArmConstants.kFF);
-
-
-
-          armConfig.inverted(true);
-          armConfig.encoder.positionConversionFactor(2.0 * Math.PI / ArmConstants.GEAR_RATIO);
-          armConfig.idleMode(IdleMode.kBrake);
-
-          armMotor.configure(
-              armConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        });
+    return runOnce(() -> armMotor.configure(createArmConfig(ArmConstants.kFF), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
   }
 
   public Command setArmPosition(double position) {
@@ -137,9 +96,7 @@ public class Arm extends SubsystemBase {
       @Override
       public void initialize() {
         targetPosition = position;
-        armMotor
-            .getClosedLoopController()
-            .setReference(position, ControlType.kMAXMotionPositionControl);
+        armMotor.getClosedLoopController().setReference(position, ControlType.kMAXMotionPositionControl);
       }
 
       @Override
@@ -155,5 +112,10 @@ public class Arm extends SubsystemBase {
         }
       }
     }.withName("SetArmPosition");
+  }
+
+  @Override
+  public void periodic() {
+    // No continuous updates needed
   }
 }
