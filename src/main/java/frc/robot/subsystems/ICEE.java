@@ -32,9 +32,13 @@ public class ICEE extends SubsystemBase {
   private void configureMotor() {
     SparkMaxConfig motorConfig = new SparkMaxConfig();
     motorConfig.encoder.velocityConversionFactor(Constants.IceeConstants.ratio);
-    motorConfig.limitSwitch.forwardLimitSwitchEnabled(true).forwardLimitSwitchType(Type.kNormallyOpen);
+    motorConfig
+        .limitSwitch
+        .forwardLimitSwitchEnabled(true)
+        .forwardLimitSwitchType(Type.kNormallyOpen);
     motorConfig.smartCurrentLimit(50);
-    motorConfig.closedLoop
+    motorConfig
+        .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         .p(Constants.IceeConstants.Kp)
         .i(Constants.IceeConstants.Ki)
@@ -62,7 +66,11 @@ public class ICEE extends SubsystemBase {
   }
 
   private Command setMotorVelocity(double velocity) {
-    return runOnce(() -> motor.getClosedLoopController().setReference(velocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0));
+    return runOnce(
+        () ->
+            motor
+                .getClosedLoopController()
+                .setReference(velocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0));
   }
 
   public Command Intake() {

@@ -31,7 +31,9 @@ public class Arm extends SubsystemBase {
   private SparkMaxConfig createArmConfig(double feedForward) {
     SparkMaxConfig config = new SparkMaxConfig();
     config.closedLoop.pidf(ArmConstants.kP, ArmConstants.kI, ArmConstants.kD, feedForward);
-    config.closedLoop.maxMotion
+    config
+        .closedLoop
+        .maxMotion
         .maxAcceleration(ArmConstants.kMaxAcceleration)
         .maxVelocity(ArmConstants.kMaxVelocity)
         .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal);
@@ -74,19 +76,30 @@ public class Arm extends SubsystemBase {
   }
 
   public Command stopArm() {
-    return run(() -> {
-      double angle = armMotor.getEncoder().getPosition();
-      double compensation = calculateCompensation(angle);
-      armMotor.setVoltage(compensation);
-    });
+    return run(
+        () -> {
+          double angle = armMotor.getEncoder().getPosition();
+          double compensation = calculateCompensation(angle);
+          armMotor.setVoltage(compensation);
+        });
   }
 
   public Command coralFF() {
-    return runOnce(() -> armMotor.configure(createArmConfig(ArmConstants.kFFwithCoral), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+    return runOnce(
+        () ->
+            armMotor.configure(
+                createArmConfig(ArmConstants.kFFwithCoral),
+                ResetMode.kResetSafeParameters,
+                PersistMode.kPersistParameters));
   }
 
   public Command normalFF() {
-    return runOnce(() -> armMotor.configure(createArmConfig(ArmConstants.kFF), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+    return runOnce(
+        () ->
+            armMotor.configure(
+                createArmConfig(ArmConstants.kFF),
+                ResetMode.kResetSafeParameters,
+                PersistMode.kPersistParameters));
   }
 
   public Command setArmPosition(double position) {
@@ -96,7 +109,9 @@ public class Arm extends SubsystemBase {
       @Override
       public void initialize() {
         targetPosition = position;
-        armMotor.getClosedLoopController().setReference(position, ControlType.kMAXMotionPositionControl);
+        armMotor
+            .getClosedLoopController()
+            .setReference(position, ControlType.kMAXMotionPositionControl);
       }
 
       @Override

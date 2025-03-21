@@ -24,15 +24,33 @@ public class NDexter extends SubsystemBase {
   private boolean canSpin = true;
 
   public NDexter() {
-    leftMotor = configureMotor(SparkMaxCanIDs.NDexterMotorLeft, false, Constants.NDexterConstants.leftGearRatio, Constants.NDexterConstants.leftKp, Constants.NDexterConstants.leftKi, Constants.NDexterConstants.leftKd, Constants.NDexterConstants.leftFF);
-    rightMotor = configureMotor(SparkMaxCanIDs.NDexterMotorRight, true, Constants.NDexterConstants.rightGearRatio, Constants.NDexterConstants.rightKp, Constants.NDexterConstants.rightKi, Constants.NDexterConstants.rightKd, Constants.NDexterConstants.rightFF);
+    leftMotor =
+        configureMotor(
+            SparkMaxCanIDs.NDexterMotorLeft,
+            false,
+            Constants.NDexterConstants.leftGearRatio,
+            Constants.NDexterConstants.leftKp,
+            Constants.NDexterConstants.leftKi,
+            Constants.NDexterConstants.leftKd,
+            Constants.NDexterConstants.leftFF);
+    rightMotor =
+        configureMotor(
+            SparkMaxCanIDs.NDexterMotorRight,
+            true,
+            Constants.NDexterConstants.rightGearRatio,
+            Constants.NDexterConstants.rightKp,
+            Constants.NDexterConstants.rightKi,
+            Constants.NDexterConstants.rightKd,
+            Constants.NDexterConstants.rightFF);
   }
 
-  private SparkMax configureMotor(int canID, boolean inverted, double gearRatio, double kp, double ki, double kd, double ff) {
+  private SparkMax configureMotor(
+      int canID, boolean inverted, double gearRatio, double kp, double ki, double kd, double ff) {
     SparkMaxConfig config = new SparkMaxConfig();
     config.encoder.velocityConversionFactor(1 / gearRatio);
     config.smartCurrentLimit(60);
-    config.closedLoop
+    config
+        .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         .p(kp)
         .i(ki)
@@ -50,33 +68,43 @@ public class NDexter extends SubsystemBase {
     if (!canSpin) {
       return stop();
     }
-    return runOnce(() -> {
-      leftMotor.getClosedLoopController().setReference(leftVelocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-      rightMotor.getClosedLoopController().setReference(rightVelocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-    });
+    return runOnce(
+        () -> {
+          leftMotor
+              .getClosedLoopController()
+              .setReference(leftVelocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+          rightMotor
+              .getClosedLoopController()
+              .setReference(rightVelocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+        });
   }
 
   public Command runSame() {
-    return setMotorVelocities(Constants.NDexterConstants.leftFaster, Constants.NDexterConstants.rightFaster);
+    return setMotorVelocities(
+        Constants.NDexterConstants.leftFaster, Constants.NDexterConstants.rightFaster);
   }
 
   public Command rightFaster() {
-    return setMotorVelocities(Constants.NDexterConstants.leftSlower, Constants.NDexterConstants.rightFaster);
+    return setMotorVelocities(
+        Constants.NDexterConstants.leftSlower, Constants.NDexterConstants.rightFaster);
   }
 
   public Command leftFaster() {
-    return setMotorVelocities(Constants.NDexterConstants.leftFaster, Constants.NDexterConstants.rightSlower);
+    return setMotorVelocities(
+        Constants.NDexterConstants.leftFaster, Constants.NDexterConstants.rightSlower);
   }
 
   public Command stop() {
-    return runOnce(() -> {
-      leftMotor.set(0);
-      rightMotor.set(0);
-    });
+    return runOnce(
+        () -> {
+          leftMotor.set(0);
+          rightMotor.set(0);
+        });
   }
 
   public Command Out() {
-    return setMotorVelocities(-Constants.NDexterConstants.leftFaster, -Constants.NDexterConstants.rightFaster);
+    return setMotorVelocities(
+        -Constants.NDexterConstants.leftFaster, -Constants.NDexterConstants.rightFaster);
   }
 
   public Command canSpin(boolean spin) {
@@ -84,10 +112,12 @@ public class NDexter extends SubsystemBase {
   }
 
   private Command runMotors(double leftSpeed, double rightSpeed) {
-    return runEnd(() -> {
-      leftMotor.set(leftSpeed);
-      rightMotor.set(rightSpeed);
-    }, this::stopMotors);
+    return runEnd(
+        () -> {
+          leftMotor.set(leftSpeed);
+          rightMotor.set(rightSpeed);
+        },
+        this::stopMotors);
   }
 
   public Command NDexterSpinSameForward() {

@@ -18,8 +18,10 @@ import frc.robot.Constants;
 public class Intake extends SubsystemBase {
   private final SparkMax m_motorLeft;
   private final SparkMax m_motorRotateLeft;
+
   @SuppressWarnings("unused")
   private final SparkMax m_motorRight;
+
   @SuppressWarnings("unused")
   private final SparkMax m_motorRotateRight;
 
@@ -53,11 +55,13 @@ public class Intake extends SubsystemBase {
   }
 
   public Command IntakeUp() {
-    return runEnd(() -> setMotorSpeed(m_motorRotateLeft, -0.2), () -> setMotorSpeed(m_motorRotateLeft, 0));
+    return runEnd(
+        () -> setMotorSpeed(m_motorRotateLeft, -0.2), () -> setMotorSpeed(m_motorRotateLeft, 0));
   }
 
   public Command IntakeDown() {
-    return runEnd(() -> setMotorSpeed(m_motorRotateLeft, 0.2), () -> setMotorSpeed(m_motorRotateLeft, 0));
+    return runEnd(
+        () -> setMotorSpeed(m_motorRotateLeft, 0.2), () -> setMotorSpeed(m_motorRotateLeft, 0));
   }
 
   public Command stop() {
