@@ -57,6 +57,4 @@
     "edu.wpi.first.math.**.proto.*",
     "edu.wpi.first.math.**.struct.*",
   ],
-  "workbench.iconTheme": "vs-seti",
-  "java.debug.settings.onBuildFailureProceed": true
 }
