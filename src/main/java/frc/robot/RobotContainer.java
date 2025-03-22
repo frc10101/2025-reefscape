@@ -18,6 +18,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
@@ -60,12 +62,16 @@ public class RobotContainer {
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
 
+  //Field
+  private final Field2d m_field = new Field2d();
+
   public RobotContainer() {
     drive = initializeDriveSubsystem();
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     setupAutoOptions();
+    SmartDashboard.putData("Field", m_field);
 
     // Configure button bindings
     configureButtonBindings();
@@ -79,21 +85,24 @@ public class RobotContainer {
             new ModuleIOTalonFX(TunerConstants.FrontLeft),
             new ModuleIOTalonFX(TunerConstants.FrontRight),
             new ModuleIOTalonFX(TunerConstants.BackLeft),
-            new ModuleIOTalonFX(TunerConstants.BackRight));
+            new ModuleIOTalonFX(TunerConstants.BackRight),
+            m_field);
       case SIM:
         return new Drive(
             new GyroIO() {},
             new ModuleIOSim(TunerConstants.FrontLeft),
             new ModuleIOSim(TunerConstants.FrontRight),
             new ModuleIOSim(TunerConstants.BackLeft),
-            new ModuleIOSim(TunerConstants.BackRight));
+            new ModuleIOSim(TunerConstants.BackRight),
+            m_field);
       default:
         return new Drive(
             new GyroIO() {},
             new ModuleIO() {},
             new ModuleIO() {},
             new ModuleIO() {},
-            new ModuleIO() {});
+            new ModuleIO() {},
+            m_field);
     }
   }
 
@@ -112,9 +121,7 @@ public class RobotContainer {
         "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption("blueAuto", drive.getAuto("blue leave"));
-    autoChooser.addOption("redAuto", drive.getAuto("blue leave"));
-    autoChooser.addOption("Leave Auto", drive.getAuto("blue leave"));
+    autoChooser.addOption("Leave Auto", drive.getAuto("leave"));
   }
 
   private void configureButtonBindings() {
