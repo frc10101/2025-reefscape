@@ -14,8 +14,11 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Lights extends SubsystemBase {
   private final CANdle candle = new CANdle(1, "rio");
 
-  /** Creates a new Lights. */
   public Lights() {
+    configureCANdle();
+  }
+
+  private void configureCANdle() {
     CANdleConfiguration config = new CANdleConfiguration();
     config.statusLedOffWhenActive = true;
     config.disableWhenLOS = false;
@@ -26,16 +29,21 @@ public class Lights extends SubsystemBase {
   }
 
   private void setColors(int red, int green, int blue, double strength) {
-    if (red < 0) red = 0;
-    if (red > 255) red = 255;
-    if (green < 0) green = 0;
-    if (green > 255) green = 255;
-    if (blue < 0) blue = 0;
-    if (blue > 255) blue = 255;
-    if (strength > 1) strength = 1;
-    if (strength < 0) strength = 0;
+    red = clamp(red, 0, 255);
+    green = clamp(green, 0, 255);
+    blue = clamp(blue, 0, 255);
+    strength = clamp(strength, 0, 1);
+
     candle.setLEDs(red, green, blue);
     candle.modulateVBatOutput(strength);
+  }
+
+  private int clamp(int value, int min, int max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  private double clamp(double value, double min, double max) {
+    return Math.max(min, Math.min(max, value));
   }
 
   public Command setColorsCommand(int red, int green, int blue, double strength) {

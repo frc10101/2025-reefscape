@@ -35,21 +35,27 @@ public final class Constants {
     REPLAY
   }
 
+  public static final class CANids {
+    public static final int CANdleID = 25;
+  }
+
   public static final class ArmConstants {
     // tuning variables
-    public static final double kP = 1.3;
+    public static final double kP = 3;
     public static final double kI = 0.0;
-    public static final double kD = 0.7;
-    public static final double kFF = 0.0;
-    public static final double kMaxAcceleration = 2.0;
-    public static final double kMaxVelocity = 1.0;
 
+    public static final double kD = 1.2;
+    public static final double kFF = 0;
+    public static final double kFFwithCoral = 0;
+    public static final double kFFTop = 0;
+    public static final double kMaxAcceleration = 4500;
+    public static final double kMaxVelocity = 4500;
     // arm measurements
     public static final double ARM_MASS_KG = 0.5; // kg
     public static final double ARM_LENGTH_METERS = 0.3; // meters
     public static final double GRAVITY_M_PER_SEC = 9.81; // m/s^2
     public static final double CENTER_OF_MASS = ARM_LENGTH_METERS / 2; // Center of mass
-    public static final double GEAR_RATIO = 1.0; // Motor rotations per arm rotation
+    public static final double GEAR_RATIO = 20.0; // Motor rotations per arm rotation
     public static final double kTorqueToVoltage = 0.1; // Tune: Nm to volts
     public static final double POWER_LIMIT = 0.5;
 
@@ -57,8 +63,8 @@ public final class Constants {
     public static final double INTAKEPOSITION = 0.0; // 0 degrees
     public static final double HUMANPLAYERPOSITION = (Math.PI / 6) * -1; // -30 degrees
     public static final double L1POSITION = Math.PI / 6; // 30 degrees
-    public static final double L2POSITION = Math.PI / 4; // 45 degrees
-    public static final double L3POSITION = Math.PI / 3; // 60 degrees
+    public static final double L2POSITION = 3; // 45 degrees
+    public static final double L3POSITION = 3; // 60 degrees
     public static final double L4POSITION = 5 * Math.PI / 12; // 75 degrees
   }
 
@@ -109,19 +115,20 @@ public final class Constants {
   }
 
   public static final class ElevatorConstants {
-    public static final double kP = 1.3;
+    public static final double kP = 0.17;
     public static final double kI = 0.0;
-    public static final double kD = 0.7;
-    public static final double kFF = 1.1;
+    public static final double kD = 0;
+    public static final double kFF = 0.003;
     public static final double kMaxVelocity = 1.75;
     public static final double kMaxAcceleration = 0.75;
-    public static final double ElevatorGearRatio = 1.5;
+    public static final double ElevatorGearRatio = 20;
     public static final double NDexter = 0;
-    public static final double L1 = 1;
-    public static final double L2 = 2;
-    public static final double L3 = 3;
-    public static final double L4 = 4;
-    public static final double HumanPlayer = 5;
+    public static final double goOut = -16;
+    public static final double L1 = -1;
+    public static final double L2 = -2;
+    public static final double L3 = -9;
+    public static final double L4 = -4;
+    public static final double HumanPlayer = -5;
   }
 
   public static final class IceeConstants {
