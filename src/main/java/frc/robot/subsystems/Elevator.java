@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -14,16 +16,30 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.ElevatorConstants;
+import org.littletonrobotics.junction.Logger;
 
 public class Elevator extends SubsystemBase {
   private final SparkMax m_motorLeft;
   private final SparkMax m_motorRight;
+  private final SysIdRoutine sysIdRoutine;
 
   public Elevator() {
     m_motorLeft = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorLeft, false);
     m_motorRight = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorRight, true);
+    sysIdRoutine =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) -> Logger.recordOutput("SysIdTestState", state.toString())),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> runVolts(voltage.in(Volts)),
+                null, // No log consumer, since data is recorded by URCL
+                this));
   }
 
   private SparkMax configureMotor(int canID, boolean isFollower) {
@@ -92,6 +108,27 @@ public class Elevator extends SubsystemBase {
 
   public Command HumanPlayer() {
     return moveToPosition(Constants.ElevatorConstants.HumanPlayer);
+  }
+
+  public Command sysIdQuasistaticForward() {
+    return sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward);
+  }
+
+  public Command sysIdQuasistaticReverse() {
+    return sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse);
+  }
+
+  public Command sysIdDynamicForward() {
+    return sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward);
+  }
+
+  public Command sysIdDynamicReverse() {
+    return sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse);
+  }
+
+  private void runVolts(double volts) {
+    m_motorLeft.setVoltage(volts);
+    m_motorRight.setVoltage(volts);
   }
 
   @Override
