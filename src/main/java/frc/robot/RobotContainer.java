@@ -15,33 +15,36 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
+import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.ICEE;
-import frc.robot.subsystems.NDexter;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.util.Pathfind;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
 
+  private final Field2d field;
+
+  private Command pather = null;
+
+  private Pathfind pathfind;
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
 
@@ -49,12 +52,17 @@ public class RobotContainer {
   private final LoggedDashboardChooser<Command> autoChooser;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
-  private NDexter nDexter = new NDexter();
+  // private NDexter nDexter = new NDexter();
 
-  private ICEE icee = new ICEE();
-  private CommandJoystick controller2 = new CommandJoystick(1);
+  // private ICEE icee = new ICEE();
 
   public RobotContainer() {
+    try {
+      pathfind = new Pathfind();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
     switch (Constants.currentMode) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
@@ -109,6 +117,29 @@ public class RobotContainer {
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
+    field = new Field2d();
+    SmartDashboard.putData("Field", field);
+
+    // Logging callback for current robot pose
+    PathPlannerLogging.setLogCurrentPoseCallback(
+        (pose) -> {
+          // Do whatever you want with the pose here
+          field.setRobotPose(pose);
+        });
+
+    // Logging callback for target robot pose
+    PathPlannerLogging.setLogTargetPoseCallback(
+        (pose) -> {
+          // Do whatever you want with the pose here
+          field.getObject("target pose").setPose(pose);
+        });
+
+    // Logging callback for the active path, this is sent as a list of poses
+    PathPlannerLogging.setLogActivePathCallback(
+        (poses) -> {
+          // Do whatever you want with the poses here
+          field.getObject("path").setPoses(poses);
+        });
     // Configure the button bindings
     configureButtonBindings();
   }
@@ -121,55 +152,71 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     // Default command, normal field-relative drive
-    drive.setDefaultCommand(
-        DriveCommands.joystickDrive(
-            drive,
-            () -> -controller.getLeftY(),
-            () -> -controller.getLeftX(),
-            () -> -controller.getRightX()));
+    // drive.setDefaultCommand(
+    //     DriveCommands.joystickDrive(
+    //         drive,
+    //         () -> -controller.getLeftY(),
+    //         () -> -controller.getLeftX(),
+    //         () -> -controller.getRightX()));
 
-    // Lock to 0° when A button is held
+    // // Lock to 0° when A button is held
+    // controller
+    //     .a()
+    //     .whileTrue(
+    //         DriveCommands.joystickDriveAtAngle(
+    //             drive,
+    //             () -> -controller.getLeftY(),
+    //             () -> -controller.getLeftX(),
+    //             () -> new Rotation2d()));
+
+    // // Switch to X pattern when X button is pressed
+    // controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+
+    // // Reset gyro to 0° when B button is pressed
+    // controller
+    //     .b()
+    //     .onTrue(
+    //         Commands.runOnce(
+    //                 () ->
+    //                     drive.setPose(
+    //                         new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+    //                 drive)
+    //             .ignoringDisable(true));
+
+    // nDexter.setDefaultCommand(nDexter.stop());
+
+    // Trigger x_bot = controller2.button(1);
+    // x_bot.whileTrue(nDexter.Out());
+    // Trigger circle_bot = controller2.button(2);
+    // circle_bot.whileTrue(nDexter.rightFaster());
+    // Trigger square_bot = controller2.button(3);
+    // square_bot.whileTrue(nDexter.leftFaster());
+    // Trigger triangle_bot = controller2.button(4);
+    // triangle_bot.whileTrue(nDexter.runSame());
+
+    // Trigger iCeeTriggerIn = controller2.button(5);
+    // iCeeTriggerIn.whileTrue(icee.runIn());
+    // Trigger iCeeTriggerOut = controller2.button(6);
+    // iCeeTriggerOut.whileTrue(icee.runOut());
+
+    // icee.ICEELimit().debounce(.1).onTrue(nDexter.canSpin(false));
+    // icee.ICEELimit().debounce(.1).onFalse(nDexter.canSpin(true));
+
     controller
         .a()
-        .whileTrue(
-            DriveCommands.joystickDriveAtAngle(
-                drive,
-                () -> -controller.getLeftY(),
-                () -> -controller.getLeftX(),
-                () -> new Rotation2d()));
-
-    // Switch to X pattern when X button is pressed
-    controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
-
-    // Reset gyro to 0° when B button is pressed
-    controller
-        .b()
         .onTrue(
             Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
-                    drive)
-                .ignoringDisable(true));
+                () -> {
+                  pather = pathfind.pathToPose(Constants.Poses.ReefAPose);
+                  pather.schedule();
+                }))
+        .onFalse(
+            Commands.runOnce(
+                () -> {
+                  pather.cancel();
+                }));
 
-    nDexter.setDefaultCommand(nDexter.stop());
-
-    Trigger x_bot = controller2.button(1);
-    x_bot.whileTrue(nDexter.Out());
-    Trigger circle_bot = controller2.button(2);
-    circle_bot.whileTrue(nDexter.rightFaster());
-    Trigger square_bot = controller2.button(3);
-    square_bot.whileTrue(nDexter.leftFaster());
-    Trigger triangle_bot = controller2.button(4);
-    triangle_bot.whileTrue(nDexter.runSame());
-
-    Trigger iCeeTriggerIn = controller2.button(5);
-    iCeeTriggerIn.whileTrue(icee.runIn());
-    Trigger iCeeTriggerOut = controller2.button(6);
-    iCeeTriggerOut.whileTrue(icee.runOut());
-
-    icee.ICEELimit().debounce(.1).onTrue(nDexter.canSpin(false));
-    icee.ICEELimit().debounce(.1).onFalse(nDexter.canSpin(true));
+    controller.x().onTrue(drive.reLocalize());
   }
 
   /**

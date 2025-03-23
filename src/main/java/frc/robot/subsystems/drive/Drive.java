@@ -44,10 +44,12 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.LimelightHelpers;
 import frc.robot.generated.TunerConstants;
 import frc.robot.util.LocalADStarAK;
 import java.util.concurrent.locks.Lock;
@@ -156,10 +158,50 @@ public class Drive extends SubsystemBase {
                 (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+
+    RobotConfig config = null;
+
+    try {
+      config = RobotConfig.fromGUISettings();
+    } catch (Exception e) {
+      // Handle exception as needed
+      e.printStackTrace();
+    }
+
+    // Configure AutoBuilder last
+    AutoBuilder.configure(
+        this::getPose, // Robot pose supplier
+        this::setPose, // Method to reset odometry (will be called if your auto has a starting pose)
+        this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+        (speeds, feedforwards) ->
+            runVelocity(
+                speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds.
+        // Also optionally outputs individual module feedforwards
+        new PPHolonomicDriveController( // PPHolonomicController is the built in path following
+            // controller for holonomic drive trains
+            new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+            new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+            ),
+        config, // The robot configuration
+        () -> {
+          // Boolean supplier that controls when the path will be mirrored for the red alliance
+          // This will flip the path being followed to the red side of the field.
+          // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+          var alliance = DriverStation.getAlliance();
+          if (alliance.isPresent()) {
+            return alliance.get() == DriverStation.Alliance.Red;
+          }
+          return false;
+        },
+        this // Reference to this subsystem to set requirements
+        );
   }
 
   @Override
   public void periodic() {
+    // this.aprilTagReLocalize();
+
     odometryLock.lock(); // Prevents odometry updates while reading data
     gyroIO.updateInputs(gyroInputs);
     Logger.processInputs("Drive/Gyro", gyroInputs);
@@ -364,5 +406,19 @@ public class Drive extends SubsystemBase {
       new Translation2d(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
       new Translation2d(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)
     };
+  }
+
+  private void aprilTagReLocalize() {
+    if (LimelightHelpers.getTargetCount(Constants.LimeLights.aprilTagLimeLight) > 1) {
+      this.setPose(LimelightHelpers.getBotPose2d(Constants.LimeLights.aprilTagLimeLight));
+    }
+  }
+
+  public Command reLocalize() {
+    System.out.println("it works");
+    return Commands.runOnce(
+        () -> {
+          aprilTagReLocalize();
+        });
   }
 }
