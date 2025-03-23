@@ -23,10 +23,10 @@ public class TunerConstants {
   // output type specified by SwerveModuleConstants.SteerMotorClosedLoopOutput
   private static final Slot0Configs steerGains =
       new Slot0Configs()
-          .withKP(SmartDashboard.getNumber("KSP", 100))
+          .withKP(SmartDashboard.getNumber("KSP", 100))//100
           .withKI(SmartDashboard.getNumber("KSI", 0))
-          .withKD(SmartDashboard.getNumber("KSD", 0.5))
-          .withKS(SmartDashboard.getNumber("KSS", 0.1))
+          .withKD(SmartDashboard.getNumber("KSD", 4.0))//0.5
+          .withKS(SmartDashboard.getNumber("KSS", 4.0))
           .withKV(SmartDashboard.getNumber("KSV", 0))
           .withKA(SmartDashboard.getNumber("KSA", 0))
           .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
@@ -34,11 +34,11 @@ public class TunerConstants {
   // output type specified by SwerveModuleConstants.DriveMotorClosedLoopOutput
   private static final Slot0Configs driveGains =
       new Slot0Configs()
-          .withKP(SmartDashboard.getNumber("kDP", .8))
+          .withKP(SmartDashboard.getNumber("kDP", .86106))
           .withKI(SmartDashboard.getNumber("kDI", 0))
           .withKD(SmartDashboard.getNumber("KDD", 0.075))
-          .withKS(SmartDashboard.getNumber("KDS", 0))
-          .withKV(SmartDashboard.getNumber("KDV", 0.124))
+          .withKS(SmartDashboard.getNumber("KDS", 3.41851))
+          .withKV(SmartDashboard.getNumber("KDV",  1.44468))
           .withKA(SmartDashboard.getNumber("KDA", 0));
 
   // The closed-loop output type to use for the steer motors;
