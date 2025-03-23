@@ -19,10 +19,10 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+import org.littletonrobotics.urcl.URCL;
 
 public class Robot extends LoggedRobot {
   private Command m_autonomousCommand;
-
   private final RobotContainer m_robotContainer;
 
   public Robot() {
@@ -70,6 +70,7 @@ public class Robot extends LoggedRobot {
     }
 
     // Start AdvantageKit logger
+    Logger.registerURCL(URCL.startExternal());
     Logger.start();
 
     // Check for valid swerve config
@@ -137,6 +138,8 @@ public class Robot extends LoggedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+
+    m_robotContainer.zeroGyro();
   }
 
   @Override

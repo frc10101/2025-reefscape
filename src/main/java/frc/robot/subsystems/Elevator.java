@@ -9,75 +9,89 @@ import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
+import com.revrobotics.spark.config.LimitSwitchConfig.Type;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
+import frc.robot.Constants.ElevatorConstants;
 
 public class Elevator extends SubsystemBase {
-
   private final SparkMax m_motorLeft;
   private final SparkMax m_motorRight;
 
-  /** follower motor */
-
-  /** Creates a new ElevatorSubsystem. */
   public Elevator() {
+    m_motorLeft = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorLeft, false);
+    m_motorRight = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorRight, true);
+  }
+
+  private SparkMax configureMotor(int canID, boolean isFollower) {
     SparkMaxConfig config = new SparkMaxConfig();
-    SparkMaxConfig configFollower = new SparkMaxConfig();
-    config.closedLoop.pidf(
-        Constants.ElevatorConstants.kP,
-        Constants.ElevatorConstants.kI,
-        Constants.ElevatorConstants.kD,
-        Constants.ElevatorConstants.kFF);
-
-    config
-        .closedLoop
-        .maxMotion
-        .maxAcceleration(Constants.ElevatorConstants.kMaxAcceleration)
-        .maxVelocity(Constants.ElevatorConstants.kMaxVelocity)
-        .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal);
-
     config.encoder.positionConversionFactor(
-        2.0 * Math.PI * Constants.ElevatorConstants.ElevatorGearRatio);
+        2 * Math.PI / Constants.ElevatorConstants.ElevatorGearRatio);
+    config.closedLoop.pidf(
+        ElevatorConstants.kP, ElevatorConstants.kI, ElevatorConstants.kD, ElevatorConstants.kFF);
 
-    m_motorLeft = new SparkMax(Constants.SparkMaxCanIDs.ElevatorMotorLeft, MotorType.kBrushless);
-    m_motorLeft.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-    configFollower.follow(m_motorLeft, true);
-
-    m_motorRight = new SparkMax(Constants.SparkMaxCanIDs.ElevatorMotorRight, MotorType.kBrushless);
-    m_motorRight.configure(
-        configFollower, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    SparkMax motor = new SparkMax(canID, MotorType.kBrushless);
+    if (isFollower) {
+      config.follow(m_motorLeft, true);
+      config.limitSwitch.forwardLimitSwitchEnabled(true).forwardLimitSwitchType(Type.kNormallyOpen);
+    }
+    motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    return motor;
   }
 
   private void goToGoal(double goal) {
-    m_motorLeft.getClosedLoopController().setReference(goal, ControlType.kMAXMotionPositionControl);
+    m_motorLeft.getClosedLoopController().setReference(goal, ControlType.kPosition);
   }
 
-  public Command Ndexter() {
-    return runOnce(() -> goToGoal(Constants.ElevatorConstants.NDexter));
+  private void setElevatorSpeed(double speed) {
+    m_motorLeft.set(speed);
+  }
+
+  public Command moveToPosition(double position) {
+    return runOnce(() -> goToGoal(position));
+  }
+
+  public Command raise() {
+    return runEnd(() -> setElevatorSpeed(0.5), () -> setElevatorSpeed(0));
+  }
+
+  public Command lower() {
+    return runEnd(() -> setElevatorSpeed(-0.5), () -> setElevatorSpeed(0));
+  }
+
+  public Command stop() {
+    return runOnce(
+        () -> {
+          m_motorLeft.set(0);
+          m_motorRight.set(0);
+        });
+  }
+
+  public Trigger elevatorLimit() {
+    return new Trigger(m_motorRight.getForwardLimitSwitch()::isPressed);
   }
 
   public Command L1() {
-    return runOnce(() -> goToGoal(Constants.ElevatorConstants.L1));
+    return moveToPosition(Constants.ElevatorConstants.L1);
   }
 
   public Command L2() {
-    return runOnce(() -> goToGoal(Constants.ElevatorConstants.L2));
+    return moveToPosition(Constants.ElevatorConstants.L2);
   }
 
   public Command L3() {
-    return runOnce(() -> goToGoal(Constants.ElevatorConstants.L3));
+    return moveToPosition(Constants.ElevatorConstants.L3);
   }
 
   public Command L4() {
-    return runOnce(() -> goToGoal(Constants.ElevatorConstants.L4));
+    return moveToPosition(Constants.ElevatorConstants.L4);
   }
 
   public Command HumanPlayer() {
-    return runOnce(() -> goToGoal(Constants.ElevatorConstants.HumanPlayer));
+    return moveToPosition(Constants.ElevatorConstants.HumanPlayer);
   }
 
   @Override

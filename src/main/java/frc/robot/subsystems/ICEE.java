@@ -11,30 +11,32 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.config.LimitSwitchConfig.Type;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.Constants.SparkMaxCanIDs;
+import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
 
 public class ICEE extends SubsystemBase {
-
   private final SparkMax motor;
 
-  /** Creates a new ICEE. */
   public ICEE() {
+    motor = new SparkMax(SparkMaxCanIDs.IceeMotor, MotorType.kBrushless);
+    configureMotor();
+  }
 
-    this.motor = new SparkMax(SparkMaxCanIDs.IceeMotor, MotorType.kBrushless);
+  private void configureMotor() {
     SparkMaxConfig motorConfig = new SparkMaxConfig();
-
     motorConfig.encoder.velocityConversionFactor(Constants.IceeConstants.ratio);
-
-    motorConfig.limitSwitch.forwardLimitSwitchEnabled(true);
-
+    motorConfig
+        .limitSwitch
+        .forwardLimitSwitchEnabled(true)
+        .forwardLimitSwitchType(Type.kNormallyOpen);
     motorConfig.smartCurrentLimit(50);
-
     motorConfig
         .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
@@ -43,39 +45,48 @@ public class ICEE extends SubsystemBase {
         .d(Constants.IceeConstants.Kd)
         .velocityFF(Constants.IceeConstants.FF)
         .outputRange(-1, 1);
-
     motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
   }
 
   public Trigger ICEELimit() {
-    return new Trigger(this.motor.getForwardLimitSwitch()::isPressed);
+    return new Trigger(motor.getForwardLimitSwitch()::isPressed);
+  }
+
+  public BooleanSupplier getLimitSwitch() {
+    return motor.getForwardLimitSwitch()::isPressed;
   }
 
   public Command runOut() {
-
-    return runOnce(
-        () -> {
-          motor
-              .getClosedLoopController()
-              .setReference(
-                  Constants.IceeConstants.IceeOutVelocity,
-                  ControlType.kVelocity,
-                  ClosedLoopSlot.kSlot0);
-        });
+    return setMotorVelocity(Constants.IceeConstants.IceeOutVelocity);
   }
 
   public Command runIn() {
+    return setMotorVelocity(
+        motor.getForwardLimitSwitch().isPressed() ? 0 : Constants.IceeConstants.IceeInVelocity);
+  }
+
+  private Command setMotorVelocity(double velocity) {
     return runOnce(
-        () -> {
-          motor
-              .getClosedLoopController()
-              .setReference(
-                  motor.getForwardLimitSwitch().isPressed()
-                      ? 0
-                      : Constants.IceeConstants.IceeInVelocity,
-                  ControlType.kVelocity,
-                  ClosedLoopSlot.kSlot0);
-        });
+        () ->
+            motor
+                .getClosedLoopController()
+                .setReference(velocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0));
+  }
+
+  public Command Intake() {
+    return runMotor(0.5);
+  }
+
+  public Command spitOut() {
+    return runMotor(-0.75);
+  }
+
+  private Command runMotor(double speed) {
+    return runEnd(() -> motor.set(speed), () -> motor.set(0));
+  }
+
+  public Command stop() {
+    return runOnce(() -> motor.set(0));
   }
 
   @Override

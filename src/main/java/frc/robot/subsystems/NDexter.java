@@ -19,162 +19,139 @@ import frc.robot.Constants.SparkMaxCanIDs;
 import org.littletonrobotics.junction.Logger;
 
 public class NDexter extends SubsystemBase {
-  /** Creates a new nDexter. */
   private final SparkMax leftMotor;
-
   private final SparkMax rightMotor;
   private boolean canSpin = true;
 
   public NDexter() {
-    this.leftMotor = new SparkMax(SparkMaxCanIDs.NDexterMotorLeft, MotorType.kBrushless);
-    this.rightMotor = new SparkMax(SparkMaxCanIDs.NDexterMotorRight, MotorType.kBrushless);
-    SparkMaxConfig leftMotorConfig = new SparkMaxConfig();
-    SparkMaxConfig rightMotorConfig = new SparkMaxConfig();
+    leftMotor =
+        configureMotor(
+            SparkMaxCanIDs.NDexterMotorLeft,
+            false,
+            Constants.NDexterConstants.leftGearRatio,
+            Constants.NDexterConstants.leftKp,
+            Constants.NDexterConstants.leftKi,
+            Constants.NDexterConstants.leftKd,
+            Constants.NDexterConstants.leftFF);
+    rightMotor =
+        configureMotor(
+            SparkMaxCanIDs.NDexterMotorRight,
+            true,
+            Constants.NDexterConstants.rightGearRatio,
+            Constants.NDexterConstants.rightKp,
+            Constants.NDexterConstants.rightKi,
+            Constants.NDexterConstants.rightKd,
+            Constants.NDexterConstants.rightFF);
+  }
 
-    leftMotorConfig.encoder.velocityConversionFactor(1 / Constants.NDexterConstants.leftGearRatio);
-
-    leftMotorConfig.smartCurrentLimit(60);
-    rightMotorConfig.smartCurrentLimit(60);
-
-    rightMotorConfig.encoder.velocityConversionFactor(
-        1 / Constants.NDexterConstants.rightGearRatio);
-
-    leftMotorConfig
+  private SparkMax configureMotor(
+      int canID, boolean inverted, double gearRatio, double kp, double ki, double kd, double ff) {
+    SparkMaxConfig config = new SparkMaxConfig();
+    config.encoder.velocityConversionFactor(1 / gearRatio);
+    config.smartCurrentLimit(60);
+    config
         .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        // Set PID values for position control. We don't need to pass a closed loop
-        // slot, as it will default to slot 0.
-        .p(Constants.NDexterConstants.leftKp)
-        .i(Constants.NDexterConstants.leftKi)
-        .d(Constants.NDexterConstants.leftKd)
-        .outputRange(-1, 1)
-        // Set PID values for velocity control in slot 1
-        .velocityFF(Constants.NDexterConstants.leftFF);
-
-    leftMotor.configure(
-        leftMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
-
-    rightMotorConfig
-        .closedLoop
-        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        // Set PID values for position control. We don't need to pass a closed loop
-        // slot, as it will default to slot 0.
-        .p(Constants.NDexterConstants.rightKp)
-        .i(Constants.NDexterConstants.rightKi)
-        .d(Constants.NDexterConstants.rightKd)
-        .outputRange(-1, 1)
-        // Set PID values for velocity control in slot 1
-        .velocityFF(Constants.NDexterConstants.rightFF)
+        .p(kp)
+        .i(ki)
+        .d(kd)
+        .velocityFF(ff)
         .outputRange(-1, 1);
-    rightMotor.configure(
-        rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+    config.inverted(inverted);
+
+    SparkMax motor = new SparkMax(canID, MotorType.kBrushless);
+    motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+    return motor;
+  }
+
+  private Command setMotorVelocities(double leftVelocity, double rightVelocity) {
+    if (!canSpin) {
+      return stop();
+    }
+    return runOnce(
+        () -> {
+          leftMotor
+              .getClosedLoopController()
+              .setReference(leftVelocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+          rightMotor
+              .getClosedLoopController()
+              .setReference(rightVelocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+        });
   }
 
   public Command runSame() {
-    if (!canSpin) {
-      return this.stop();
-    }
-
-    return runOnce(
-        () -> {
-          this.rightMotor
-              .getClosedLoopController()
-              .setReference(
-                  Constants.NDexterConstants.rightFaster,
-                  ControlType.kVelocity,
-                  ClosedLoopSlot.kSlot0);
-          this.leftMotor
-              .getClosedLoopController()
-              .setReference(
-                  Constants.NDexterConstants.leftFaster,
-                  ControlType.kVelocity,
-                  ClosedLoopSlot.kSlot0);
-        });
+    return setMotorVelocities(
+        Constants.NDexterConstants.leftFaster, Constants.NDexterConstants.rightFaster);
   }
 
   public Command rightFaster() {
-    if (!canSpin) {
-      return this.stop();
-    }
-    return runOnce(
-        () -> {
-          this.rightMotor
-              .getClosedLoopController()
-              .setReference(
-                  Constants.NDexterConstants.rightFaster,
-                  ControlType.kVelocity,
-                  ClosedLoopSlot.kSlot0);
-          this.leftMotor
-              .getClosedLoopController()
-              .setReference(
-                  Constants.NDexterConstants.leftSlower,
-                  ControlType.kVelocity,
-                  ClosedLoopSlot.kSlot0);
-        });
+    return setMotorVelocities(
+        Constants.NDexterConstants.leftSlower, Constants.NDexterConstants.rightFaster);
   }
 
   public Command leftFaster() {
-    if (!canSpin) {
-      return this.stop();
-    }
-    return runOnce(
-        () -> {
-          this.rightMotor
-              .getClosedLoopController()
-              .setReference(
-                  Constants.NDexterConstants.rightSlower,
-                  ControlType.kVelocity,
-                  ClosedLoopSlot.kSlot0);
-          this.leftMotor
-              .getClosedLoopController()
-              .setReference(
-                  Constants.NDexterConstants.leftFaster,
-                  ControlType.kVelocity,
-                  ClosedLoopSlot.kSlot0);
-        });
+    return setMotorVelocities(
+        Constants.NDexterConstants.leftFaster, Constants.NDexterConstants.rightSlower);
   }
 
   public Command stop() {
-
     return runOnce(
         () -> {
-          this.rightMotor
-              .getClosedLoopController()
-              .setReference(0, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-          this.leftMotor
-              .getClosedLoopController()
-              .setReference(0, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+          leftMotor.set(0);
+          rightMotor.set(0);
         });
   }
 
   public Command Out() {
-    return runOnce(
-        () -> {
-          this.rightMotor
-              .getClosedLoopController()
-              .setReference(
-                  -Constants.NDexterConstants.rightFaster,
-                  ControlType.kVelocity,
-                  ClosedLoopSlot.kSlot0);
-          this.leftMotor
-              .getClosedLoopController()
-              .setReference(
-                  -Constants.NDexterConstants.leftFaster,
-                  ControlType.kVelocity,
-                  ClosedLoopSlot.kSlot0);
-        });
+    return setMotorVelocities(
+        -Constants.NDexterConstants.leftFaster, -Constants.NDexterConstants.rightFaster);
   }
 
   public Command canSpin(boolean spin) {
-    return runOnce(
+    return runOnce(() -> canSpin = spin);
+  }
+
+  private Command runMotors(double leftSpeed, double rightSpeed) {
+    return runEnd(
         () -> {
-          canSpin = spin;
-        });
+          leftMotor.set(leftSpeed);
+          rightMotor.set(rightSpeed);
+        },
+        this::stopMotors);
+  }
+
+  public Command NDexterSpinSameForward() {
+    return runMotors(0.3, 0.3);
+  }
+
+  public Command NDexterSpinLeftFasterForward() {
+    return runMotors(0.3, 0.2);
+  }
+
+  public Command NDexterSpinRightFasterForward() {
+    return runMotors(0.2, 0.3);
+  }
+
+  public Command NDexterSpinSameReverse() {
+    return runMotors(-0.3, -0.3);
+  }
+
+  public Command NDexterSpinLeftFasterReverse() {
+    return runMotors(-0.3, -0.2);
+  }
+
+  public Command NDexterSpinRightFasterReverse() {
+    return runMotors(-0.2, -0.3);
+  }
+
+  private void stopMotors() {
+    leftMotor.set(0);
+    rightMotor.set(0);
   }
 
   @Override
   public void periodic() {
     Logger.recordOutput("Left NDexter Motor", leftMotor.getEncoder().getVelocity());
-    Logger.recordOutput("Right NDexter Motor", leftMotor.getEncoder().getVelocity());
+    Logger.recordOutput("Right NDexter Motor", rightMotor.getEncoder().getVelocity());
   }
 }

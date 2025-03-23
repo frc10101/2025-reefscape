@@ -23,10 +23,17 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.CANdleSystem;
+import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.ICEE;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -39,17 +46,24 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
+  private final CANdleSystem candle = new CANdleSystem();
+  private final Elevator elevator = new Elevator();
+  private final ICEE icee = new ICEE();
+  private final Arm arm = new Arm();
 
-  private final Field2d field;
+  private Field2d field;
 
   private Command pather = null;
 
   private Pathfind pathfind;
   // Controller
+  // Controllers
   private final CommandXboxController controller = new CommandXboxController(0);
+  private final CommandJoystick controller2 = new CommandJoystick(1);
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
+  private final Field2d m_field;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   // private NDexter nDexter = new NDexter();
@@ -57,51 +71,59 @@ public class RobotContainer {
   // private ICEE icee = new ICEE();
 
   public RobotContainer() {
+    
+
     try {
       pathfind = new Pathfind();
     } catch (Exception e) {
       e.printStackTrace();
     }
 
-    switch (Constants.currentMode) {
-      case REAL:
-        // Real robot, instantiate hardware IO implementations
-        drive =
-            new Drive(
-                new GyroIOPigeon2(),
-                new ModuleIOTalonFX(TunerConstants.FrontLeft),
-                new ModuleIOTalonFX(TunerConstants.FrontRight),
-                new ModuleIOTalonFX(TunerConstants.BackLeft),
-                new ModuleIOTalonFX(TunerConstants.BackRight));
-        break;
-
-      case SIM:
-        // Sim robot, instantiate physics sim IO implementations
-        drive =
-            new Drive(
-                new GyroIO() {},
-                new ModuleIOSim(TunerConstants.FrontLeft),
-                new ModuleIOSim(TunerConstants.FrontRight),
-                new ModuleIOSim(TunerConstants.BackLeft),
-                new ModuleIOSim(TunerConstants.BackRight));
-        break;
-
-      default:
-        // Replayed robot, disable IO implementations
-        drive =
-            new Drive(
-                new GyroIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {});
-        break;
-    }
+    // Field
+    drive = initializeDriveSubsystem();
+    m_field = new Field2d();
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+    setupAutoOptions();
+    SmartDashboard.putData("Field", m_field);
 
-    // Set up SysId routines
+    // Configure button bindings
+    configureButtonBindings();
+    setupAutoOptions();
+    configureSwerveCommands();
+  }
+
+  private Drive initializeDriveSubsystem() {
+    switch (Constants.currentMode) {
+      case REAL:
+        return new Drive(
+            new GyroIOPigeon2(),
+            new ModuleIOTalonFX(TunerConstants.FrontLeft),
+            new ModuleIOTalonFX(TunerConstants.FrontRight),
+            new ModuleIOTalonFX(TunerConstants.BackLeft),
+            new ModuleIOTalonFX(TunerConstants.BackRight),
+            m_field);
+      case SIM:
+        return new Drive(
+            new GyroIO() {},
+            new ModuleIOSim(TunerConstants.FrontLeft),
+            new ModuleIOSim(TunerConstants.FrontRight),
+            new ModuleIOSim(TunerConstants.BackLeft),
+            new ModuleIOSim(TunerConstants.BackRight),
+            m_field);
+      default:
+        return new Drive(
+            new GyroIO() {},
+            new ModuleIO() {},
+            new ModuleIO() {},
+            new ModuleIO() {},
+            new ModuleIO() {},
+            m_field);
+    }
+  }
+
+  private void setupAutoOptions() {
     autoChooser.addOption(
         "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
     autoChooser.addOption(
@@ -144,13 +166,34 @@ public class RobotContainer {
     configureButtonBindings();
   }
 
-  /**
-   * Use this method to define your button->command mappings. Buttons can be created by
-   * instantiating a {@link GenericHID} or one of its subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
-   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
-   */
   private void configureButtonBindings() {
+    configureSwerveCommands();
+
+    // Controller 2 button bindings
+    bindController2Buttons();
+
+    // ICEE and CANdle interactions
+    // icee.ICEELimit().onTrue(candle.haveCoral());
+    // icee.ICEELimit().onFalse(candle.noCoral());
+
+    // elevator.elevatorLimit().whileTrue(elevator.stop());
+  }
+
+  private void bindController2Buttons() {
+    // Trigger button1 = new Trigger(controller2.button(1)); // output Coral
+    // Trigger button2 = new Trigger(controller2.button(2)); // intake Coral
+    // Trigger button14 = new Trigger(controller2.button(14)); // L1
+    // Trigger button15 = new Trigger(controller2.button(15)); // elevator HP
+    // Trigger button16 = new Trigger(controller2.button(16)); // elevator L3
+
+    // button1.whileTrue(icee.spitOut());
+    // button2.whileTrue(new ConditionalCommand(icee.stop(), icee.Intake(), icee.getLimitSwitch()));
+    // button14.whileTrue(elevator.L1());
+    // button15.whileTrue(elevator.HumanPlayer());
+    // button16.whileTrue(elevator.L3());
+  }
+
+  private void configureSwerveCommands() {
     // Default command, normal field-relative drive
     // drive.setDefaultCommand(
     //     DriveCommands.joystickDrive(
@@ -219,11 +262,6 @@ public class RobotContainer {
     controller.x().onTrue(drive.reLocalize());
   }
 
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
   public Command getAutonomousCommand() {
     try {
       // Load the path you want to follow using its name in the GUI

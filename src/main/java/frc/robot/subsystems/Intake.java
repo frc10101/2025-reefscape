@@ -19,115 +19,63 @@ import org.littletonrobotics.junction.Logger; // import for Logger
 public class Intake extends SubsystemBase {
   private final SparkMax m_motorLeft;
   private final SparkMax m_motorRotateLeft;
+
+  @SuppressWarnings("unused")
   private final SparkMax m_motorRight;
+
+  @SuppressWarnings("unused")
   private final SparkMax m_motorRotateRight;
-  private double m_motorTargetPos = 0, m_motorRotateTarget = 0;
 
-  /** Creates a new intake. */
   public Intake() {
-    m_motorLeft = new SparkMax(Constants.SparkMaxCanIDs.intakeMotorSpinLeft, MotorType.kBrushless);
-    m_motorRight =
-        new SparkMax(Constants.SparkMaxCanIDs.intakeMotorSpinRight, MotorType.kBrushless);
-    m_motorRotateLeft =
-        new SparkMax(Constants.SparkMaxCanIDs.intakeMotorPivotLeft, MotorType.kBrushless);
-    m_motorRotateRight =
-        new SparkMax(Constants.SparkMaxCanIDs.intakeMotorPivotRight, MotorType.kBrushless);
+    m_motorLeft = configureMotor(Constants.SparkMaxCanIDs.intakeMotorSpinLeft, false);
+    m_motorRight = configureMotor(Constants.SparkMaxCanIDs.intakeMotorSpinRight, true);
+    m_motorRotateLeft = configureMotor(Constants.SparkMaxCanIDs.intakeMotorPivotLeft, false);
+    m_motorRotateRight = configureMotor(Constants.SparkMaxCanIDs.intakeMotorPivotRight, true);
+  }
 
+  private SparkMax configureMotor(int canID, boolean isFollower) {
     SparkMaxConfig config = new SparkMaxConfig();
-    SparkMaxConfig configRotate = new SparkMaxConfig();
-    SparkMaxConfig configFollower = new SparkMaxConfig();
-    SparkMaxConfig configRotateFollower = new SparkMaxConfig();
-    config.closedLoop.pidf(
-        Constants.IntakeConstants.kP,
-        Constants.IntakeConstants.kI,
-        Constants.IntakeConstants.kD,
-        Constants.IntakeConstants.kFF);
-
-    config
-        .closedLoop
-        .maxMotion
-        .maxAcceleration(Constants.IntakeConstants.kMaxAcceleration)
-        .maxVelocity(Constants.IntakeConstants.kMaxVelocity)
-        .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal);
-
-    m_motorLeft.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-    configRotate.closedLoop.pidf(
-        Constants.IntakeConstants.RotateKP,
-        Constants.IntakeConstants.RotateKI,
-        Constants.IntakeConstants.RotateKD,
-        Constants.IntakeConstants.RotateKFF);
-
-    configRotate
-        .closedLoop
-        .maxMotion
-        .maxAcceleration(Constants.IntakeConstants.RotateKMaxAcceleration)
-        .maxVelocity(Constants.IntakeConstants.RotateKMaxVelocity)
-        .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal);
-
-    configRotate.encoder.positionConversionFactor(
-        2.0 * Math.PI * Constants.IntakeConstants.IntakeGearRatio);
-
-    m_motorRight.configure(
-        configRotate, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-    configFollower.follow(m_motorLeft, true);
-
-    m_motorRight.configure(
-        configFollower, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-    configRotateFollower.follow(m_motorRotateLeft, true);
-
-    m_motorRotateRight.configure(
-        configFollower, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    SparkMax motor = new SparkMax(canID, MotorType.kBrushless);
+    if (isFollower) {
+      config.follow(m_motorLeft, true);
+    }
+    motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    return motor;
   }
 
-  private void goToGoal(double goal) {
-    m_motorRotateTarget = goal;
-    m_motorRotateLeft
-        .getClosedLoopController()
-        .setReference(goal, ControlType.kMAXMotionPositionControl);
+  private void setMotorSpeed(SparkMax motor, double speed) {
+    motor.set(speed);
   }
 
-  private void intakeUp() {
-    goToGoal(Constants.IntakeConstants.IntakeUpPos);
+  public Command StartIntake() {
+    return runEnd(() -> setMotorSpeed(m_motorLeft, 0.7), this::stopMotors);
   }
 
-  private void intakeDown() {
-    goToGoal(Constants.IntakeConstants.IntakeDownPos);
+  public Command StartSpitout() {
+    return runEnd(() -> setMotorSpeed(m_motorLeft, -0.7), this::stopMotors);
   }
 
-  private void intake() {
-    m_motorTargetPos = 1;
-    m_motorLeft.getClosedLoopController().setReference(1, ControlType.kMAXMotionVelocityControl);
+  public Command IntakeUp() {
+    return runEnd(
+        () -> setMotorSpeed(m_motorRotateLeft, -0.2), () -> setMotorSpeed(m_motorRotateLeft, 0));
   }
 
-  private void spitOut() {
-    m_motorTargetPos = -1;
-    m_motorLeft.getClosedLoopController().setReference(-1, ControlType.kMAXMotionVelocityControl);
+  public Command IntakeDown() {
+    return runEnd(
+        () -> setMotorSpeed(m_motorRotateLeft, 0.2), () -> setMotorSpeed(m_motorRotateLeft, 0));
+  }
+
+  public Command stop() {
+    return runOnce(this::stopMotors);
+  }
+
+  private void stopMotors() {
+    setMotorSpeed(m_motorLeft, 0);
+    setMotorSpeed(m_motorRotateLeft, 0);
   }
 
   @Override
   public void periodic() {
-    Logger.recordOutput(
-        "M_MotorRotate Error", m_motorTargetPos - m_motorLeft.getEncoder().getPosition());
-    Logger.recordOutput(
-        "M_MotorRotate Error", m_motorRotateTarget - m_motorRotateLeft.getEncoder().getPosition());
-  }
-
-  public Command StartIntake() {
-    return runOnce(() -> intake());
-  }
-
-  public Command StartSpitout() {
-    return runOnce(() -> spitOut());
-  }
-
-  public Command IntakeUp() {
-    return runOnce(() -> intakeUp());
-  }
-
-  public Command IntakeDown() {
-    return runOnce(() -> intakeDown());
+    // No periodic updates needed
   }
 }
