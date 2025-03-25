@@ -53,6 +53,8 @@ public class Elevator extends SubsystemBase {
     if (isFollower) {
       config.follow(m_motorLeft, true);
       config.limitSwitch.forwardLimitSwitchEnabled(true).forwardLimitSwitchType(Type.kNormallyOpen);
+    } else {
+      config.inverted(true);
     }
     motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     return motor;
