@@ -122,6 +122,8 @@ public class RobotContainer {
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     autoChooser.addOption("Leave Auto", drive.getAuto("leave"));
+    autoChooser.addOption("blueAuto", drive.getAuto("blueAutoL4"));
+    autoChooser.addOption("redAuto", drive.getAuto("redAutoL4"));
   }
 
   private void configureButtonBindings() {
@@ -140,15 +142,21 @@ public class RobotContainer {
   private void bindController2Buttons() {
     Trigger button1 = new Trigger(controller2.button(1)); // output Coral
     Trigger button2 = new Trigger(controller2.button(2)); // intake Coral
-    Trigger button14 = new Trigger(controller2.button(14)); // L1
-    Trigger button15 = new Trigger(controller2.button(15)); // elevator HP
-    Trigger button16 = new Trigger(controller2.button(16)); // elevator L3
+    Trigger button5 = new Trigger(controller2.button(5)); // L1
+    Trigger button6 = new Trigger(controller2.button(6)); // elevator HP
+    Trigger button7 = new Trigger(controller2.button(7)); // elevator L3
+    Trigger button8 = new Trigger(controller2.button(8)); // elevator L4
+    Trigger button9 = new Trigger(controller2.button(9)); // elevator L2
+    Trigger button10 = new Trigger(controller2.button(10)); // elevator L1
 
     button1.whileTrue(icee.spitOut());
     button2.whileTrue(new ConditionalCommand(icee.stop(), icee.Intake(), icee.getLimitSwitch()));
-    button14.whileTrue(elevator.L1());
-    button15.whileTrue(elevator.HumanPlayer());
-    button16.whileTrue(elevator.L3());
+    button5.whileTrue(elevator.L1());
+    button6.whileTrue(elevator.HumanPlayer());
+    button7.whileTrue(elevator.L3());
+    button8.whileTrue(elevator.L4());
+    button9.whileTrue(elevator.L2());
+    button10.whileTrue(elevator.L1());
   }
 
   private void configureSwerveCommands() {
@@ -175,8 +183,14 @@ public class RobotContainer {
         .whileTrue(
             DriveCommands.joystickDriveAtAngle(
                 drive,
-                () -> controller.getLeftY(),
-                () -> controller.getLeftX(),
+                () -> {
+                  var magnitude = controller.getLeftY();
+                  return Math.copySign(magnitude * magnitude, magnitude);
+                },
+                () -> {
+                  var magnitude = controller.getLeftX();
+                  return Math.copySign(magnitude * magnitude, magnitude);
+                },
                 () -> new Rotation2d()));
 
     // Switch to X pattern when X button is pressed
