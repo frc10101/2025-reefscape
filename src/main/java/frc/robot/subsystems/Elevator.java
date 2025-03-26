@@ -29,6 +29,9 @@ public class Elevator extends SubsystemBase {
   public Elevator() {
     m_motorLeft = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorLeft, false);
     m_motorRight = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorRight, true);
+
+    m_motorLeft.getEncoder().setPosition(0);
+    m_motorRight.getEncoder().setPosition(0);
     sysIdRoutine =
         new SysIdRoutine(
             new SysIdRoutine.Config(
@@ -40,6 +43,15 @@ public class Elevator extends SubsystemBase {
                 (voltage) -> runVolts(voltage.in(Volts)),
                 null, // No log consumer, since data is recorded by URCL
                 this));
+
+    new Trigger(m_motorLeft.getForwardLimitSwitch()::isPressed)
+        .onTrue(
+            runOnce(
+                    () -> {
+                      m_motorLeft.getEncoder().setPosition(0);
+                      m_motorRight.getEncoder().setPosition(0);
+                    })
+                .ignoringDisable(true));
   }
 
   private SparkMax configureMotor(int canID, boolean isFollower) {
@@ -51,10 +63,10 @@ public class Elevator extends SubsystemBase {
 
     SparkMax motor = new SparkMax(canID, MotorType.kBrushless);
     if (isFollower) {
-      config.follow(m_motorLeft, true);
-      config.limitSwitch.forwardLimitSwitchEnabled(true).forwardLimitSwitchType(Type.kNormallyOpen);
-    } else {
       config.inverted(true);
+      config.follow(m_motorLeft, true);
+    } else {
+      config.limitSwitch.forwardLimitSwitchEnabled(true).forwardLimitSwitchType(Type.kNormallyOpen);
     }
     motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     return motor;
@@ -78,18 +90,6 @@ public class Elevator extends SubsystemBase {
 
   public Command lower() {
     return runEnd(() -> setElevatorSpeed(-0.5), () -> setElevatorSpeed(0));
-  }
-
-  public Command stop() {
-    return runOnce(
-        () -> {
-          m_motorLeft.set(0);
-          m_motorRight.set(0);
-        });
-  }
-
-  public Trigger elevatorLimit() {
-    return new Trigger(m_motorRight.getForwardLimitSwitch()::isPressed);
   }
 
   public Command L1() {
@@ -136,5 +136,7 @@ public class Elevator extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    Logger.recordOutput("ElevatorPosition", m_motorLeft.getEncoder().getPosition());
+    Logger.recordOutput("Elevator Limit", m_motorLeft.getForwardLimitSwitch().isPressed());
   }
 }

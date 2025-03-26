@@ -135,8 +135,6 @@ public class RobotContainer {
     // ICEE and CANdle interactions
     icee.ICEELimit().onTrue(candle.haveCoral());
     icee.ICEELimit().onFalse(candle.noCoral());
-
-    elevator.elevatorLimit().whileTrue(elevator.stop());
   }
 
   private void bindController2Buttons() {
@@ -151,10 +149,10 @@ public class RobotContainer {
 
     button1.whileTrue(icee.spitOut());
     button2.whileTrue(new ConditionalCommand(icee.stop(), icee.Intake(), icee.getLimitSwitch()));
-    button5.whileTrue(elevator.L1());
+    button5.onTrue(elevator.L1());
     button6.whileTrue(elevator.HumanPlayer());
     button7.whileTrue(elevator.L3());
-    button8.whileTrue(elevator.L4());
+    button8.onTrue(elevator.L4());
     button9.whileTrue(elevator.L2());
     button10.whileTrue(elevator.L1());
   }

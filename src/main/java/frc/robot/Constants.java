@@ -125,9 +125,9 @@ public final class Constants {
     public static final double NDexter = 0;
     public static final double goOut = 16;
     public static final double L1 = 0;
-    public static final double L2 = 5;
-    public static final double L3 = 15;
-    public static final double L4 = 29;
+    public static final double L2 = -5;
+    public static final double L3 = -15;
+    public static final double L4 = -28;
     public static final double HumanPlayer = 5;
   }
 
