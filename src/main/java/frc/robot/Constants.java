@@ -118,17 +118,17 @@ public final class Constants {
     public static final double kP = 0.17;
     public static final double kI = 0.0;
     public static final double kD = 0;
-    public static final double kFF = 0.003;
+    public static final double kFF = 0.01;
     public static final double kMaxVelocity = 1.75;
     public static final double kMaxAcceleration = 0.75;
     public static final double ElevatorGearRatio = 20;
     public static final double NDexter = 0;
-    public static final double goOut = -16;
-    public static final double L1 = -1;
-    public static final double L2 = -2;
-    public static final double L3 = -9;
-    public static final double L4 = -4;
-    public static final double HumanPlayer = -5;
+    public static final double goOut = 16;
+    public static final double L1 = 0;
+    public static final double L2 = -5;
+    public static final double L3 = -15;
+    public static final double L4 = -28;
+    public static final double HumanPlayer = 5;
   }
 
   public static final class IceeConstants {
