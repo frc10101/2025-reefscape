@@ -188,7 +188,8 @@ public class Drive extends SubsystemBase {
             ),
         config, // The robot configuration
         () -> {
-          // Boolean supplier that controls when the path will be mirrored for the red alliance
+          // Boolean supplier that controls when the path will be mirrored for the red
+          // alliance
           // This will flip the path being followed to the red side of the field.
           // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
 
@@ -204,8 +205,18 @@ public class Drive extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // this.aprilTagReLocalize();
 
+    // this.aprilTagReLocalize();
+    LimelightHelpers.SetRobotOrientation(
+        Constants.LimeLights.aprilTagLimeLight,
+        this.rawGyroRotation.getDegrees(),
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0);
+
+    Logger.recordMetadata("Drive/position", this.getPose().toString());
     odometryLock.lock(); // Prevents odometry updates while reading data
     field.setRobotPose(getPose());
     gyroIO.updateInputs(gyroInputs);
@@ -270,6 +281,7 @@ public class Drive extends SubsystemBase {
    * @param speeds Speeds in meters/sec
    */
   public void runVelocity(ChassisSpeeds speeds) {
+
     // Calculate module setpoints
     ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
     SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
@@ -414,8 +426,23 @@ public class Drive extends SubsystemBase {
   }
 
   private void aprilTagReLocalize() {
-    if (LimelightHelpers.getTargetCount(Constants.LimeLights.aprilTagLimeLight) > 1) {
-      this.setPose(LimelightHelpers.getBotPose2d(Constants.LimeLights.aprilTagLimeLight));
+    if (LimelightHelpers.getTargetCount(Constants.LimeLights.aprilTagLimeLight) < 2) return;
+
+    if (DriverStation.isTeleop()) {
+      var estimate =
+          LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(
+              Constants.LimeLights.aprilTagLimeLight);
+      if (estimate == null || estimate.pose == null) return;
+      this.addVisionMeasurement(
+          estimate.pose, estimate.timestampSeconds, Constants.LimeLights.visionDev);
+      // this.setPose(estimate.pose);
+    } else {
+      var estimate =
+          LimelightHelpers.getBotPoseEstimate_wpiBlue(Constants.LimeLights.aprilTagLimeLight);
+      if (estimate == null || estimate.pose == null) return;
+      this.addVisionMeasurement(
+          estimate.pose, estimate.timestampSeconds, Constants.LimeLights.visionDev);
+      // this.setPose(estimate.pose);
     }
   }
 

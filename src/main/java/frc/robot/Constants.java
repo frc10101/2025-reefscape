@@ -13,8 +13,12 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
@@ -96,6 +100,8 @@ public final class Constants {
 
     /** ICEE Can ID */
     public static final int IceeMotor = 12;
+
+    public static final int DeepHang = 19;
   }
 
   public static final class IntakeConstants {
@@ -187,8 +193,9 @@ public final class Constants {
   }
 
   public static final class LimeLights {
-    public static final String aprilTagLimeLight = "johnny";
-    public static final String objectLimeLight = "may";
+    public static final String aprilTagLimeLight = "limelight-johnny";
+    public static final String objectLimeLight = "limelight-may";
+    public static final Matrix<N3, N1> visionDev = VecBuilder.fill(0, 0, 0);
   }
 
   public static final class Poses {
@@ -203,5 +210,16 @@ public final class Constants {
     public static final Pose2d ReefJPose = new Pose2d(1, 1, new Rotation2d(0));
     public static final Pose2d ReefKPose = new Pose2d(1, 1, new Rotation2d(0));
     public static final Pose2d ReefLPose = new Pose2d(1, 1, new Rotation2d(0));
+  }
+
+  public static final class DeepHangConstants {
+    public static final double GEAR_RATIO = 125;
+    public static final double armIn = 0;
+    public static final double armOut = Math.toRadians(90);
+    public static final double kP = 0;
+    public static final double kI = 0;
+    public static final double kD = 0;
+    public static final double kFUnloaded = 0;
+    public static final double kFLoaded = 0;
   }
 }
