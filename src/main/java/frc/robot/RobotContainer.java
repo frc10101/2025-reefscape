@@ -14,8 +14,7 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.pathplanner.lib.util.PathPlannerLogging;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -77,7 +76,7 @@ public class RobotContainer {
     // Field
     m_field = new Field2d();
     drive = initializeDriveSubsystem();
-
+    NamedCommands.registerCommand("L4", elevator.L4());
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     setupAutoOptions();
@@ -133,32 +132,10 @@ public class RobotContainer {
         "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-
-    field = new Field2d();
-    SmartDashboard.putData("Field", field);
-
-    // Logging callback for current robot pose
-    PathPlannerLogging.setLogCurrentPoseCallback(
-        (pose) -> {
-          // Do whatever you want with the pose here
-          field.setRobotPose(pose);
-        });
-
-    // Logging callback for target robot pose
-    PathPlannerLogging.setLogTargetPoseCallback(
-        (pose) -> {
-          // Do whatever you want with the pose here
-          field.getObject("target pose").setPose(pose);
-        });
-
-    // Logging callback for the active path, this is sent as a list of poses
-    PathPlannerLogging.setLogActivePathCallback(
-        (poses) -> {
-          // Do whatever you want with the poses here
-          field.getObject("path").setPoses(poses);
-        });
-    // Configure the button bindings
-
+    autoChooser.addOption("redCenter Auto", drive.getAuto("redCenter"));
+    autoChooser.addOption("blueCenter Auto", drive.getAuto("blueCenter"));
+    autoChooser.addOption("blueAuto", drive.getAuto("blueAutoL4"));
+    autoChooser.addOption("redAuto", drive.getAuto("redAutoL4"));
   }
 
   private void configureButtonBindings() {
@@ -168,69 +145,63 @@ public class RobotContainer {
     bindController2Buttons();
 
     // ICEE and CANdle interactions
-    // icee.ICEELimit().onTrue(candle.haveCoral());
-    // icee.ICEELimit().onFalse(candle.noCoral());
-
-    // elevator.elevatorLimit().whileTrue(elevator.stop());
+    icee.ICEELimit().onTrue(candle.haveCoral());
+    icee.ICEELimit().onFalse(candle.noCoral());
   }
 
   private void bindController2Buttons() {
-    // Trigger button1 = new Trigger(controller2.button(1)); // output Coral
-    // Trigger button2 = new Trigger(controller2.button(2)); // intake Coral
-    // Trigger button14 = new Trigger(controller2.button(14)); // L1
-    // Trigger button15 = new Trigger(controller2.button(15)); // elevator HP
-    // Trigger button16 = new Trigger(controller2.button(16)); // elevator L3
+    Trigger button1 = new Trigger(controller2.button(1)); // output Coral
+    Trigger button2 = new Trigger(controller2.button(2)); // intake Coral
+    Trigger button5 = new Trigger(controller2.button(5)); // L1
+    Trigger button6 = new Trigger(controller2.button(6)); // elevator HP
+    Trigger button7 = new Trigger(controller2.button(7)); // elevator L3
+    Trigger button8 = new Trigger(controller2.button(8)); // elevator L4
+    Trigger button9 = new Trigger(controller2.button(9)); // elevator L2
+    Trigger button10 = new Trigger(controller2.button(10)); // elevator L1
 
-    // button1.whileTrue(icee.spitOut());
-    // button2.whileTrue(new ConditionalCommand(icee.stop(), icee.Intake(), icee.getLimitSwitch()));
-    // button14.whileTrue(elevator.L1());
-    // button15.whileTrue(elevator.HumanPlayer());
-    // button16.whileTrue(elevator.L3());
+    button1.whileTrue(icee.spitOut());
+    button2.whileTrue(new ConditionalCommand(icee.stop(), icee.Intake(), icee.getLimitSwitch()));
+    button5.onTrue(elevator.L1());
+    button6.whileTrue(elevator.HumanPlayer());
+    button7.whileTrue(elevator.L3());
+    button8.onTrue(elevator.L4());
+    button9.whileTrue(elevator.L2());
+    button10.whileTrue(elevator.L1());
   }
 
   private void configureSwerveCommands() {
     // Default command, normal field-relative drive
-    // drive.setDefaultCommand(
-    //     DriveCommands.joystickDrive(
-    //         drive,
-    //         () -> -controller.getLeftY(),
-    //         () -> -controller.getLeftX(),
-    //         () -> -controller.getRightX()));
+    drive.setDefaultCommand(
+        DriveCommands.joystickDrive(
+            drive,
+            () -> {
+              var magnitude = controller.getLeftY();
+              return Math.copySign(magnitude * magnitude, magnitude);
+            },
+            () -> {
+              var magnitude = controller.getLeftX();
+              return Math.copySign(magnitude * magnitude, magnitude);
+            },
+            () -> {
+              var magnitude = controller.getRightX();
+              return -1 * Math.copySign(magnitude * magnitude, magnitude);
+            }));
 
-    // // Lock to 0° when A button is held
-    // controller
-    //     .a()
-    //     .whileTrue(
-    //         DriveCommands.joystickDriveAtAngle(
-    //             drive,
-    //             () -> -controller.getLeftY(),
-    //             () -> -controller.getLeftX(),
-    //             () -> new Rotation2d()));
-
-    // // Switch to X pattern when X button is pressed
-    // controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
-
-    // // Reset gyro to 0° when B button is pressed
-    // controller
-    //     .b()
-    //     .onTrue(
-    //         Commands.runOnce(
-    //                 () ->
-    //                     drive.setPose(
-    //                         new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
-    //                 drive)
-    //             .ignoringDisable(true));
-
-    // nDexter.setDefaultCommand(nDexter.stop());
-
-    // Trigger x_bot = controller2.button(1);
-    // x_bot.whileTrue(nDexter.Out());
-    // Trigger circle_bot = controller2.button(2);
-    // circle_bot.whileTrue(nDexter.rightFaster());
-    // Trigger square_bot = controller2.button(3);
-    // square_bot.whileTrue(nDexter.leftFaster());
-    // Trigger triangle_bot = controller2.button(4);
-    // triangle_bot.whileTrue(nDexter.runSame());
+    // Lock to 0° when A button is held
+    controller
+        .a()
+        .whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                drive,
+                () -> {
+                  var magnitude = controller.getLeftY();
+                  return Math.copySign(magnitude * magnitude, magnitude);
+                },
+                () -> {
+                  var magnitude = controller.getLeftX();
+                  return Math.copySign(magnitude * magnitude, magnitude);
+                },
+                () -> new Rotation2d()));
 
     // Trigger iCeeTriggerIn = controller2.button(5);
     // iCeeTriggerIn.whileTrue(icee.runIn());
