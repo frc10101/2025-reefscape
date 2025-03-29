@@ -123,7 +123,8 @@ public class RobotContainer {
         "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption("Leave Auto", drive.getAuto("leave"));
+    autoChooser.addOption("redCenter Auto", drive.getAuto("redCenter"));
+    autoChooser.addOption("blueCenter Auto", drive.getAuto("blueCenter"));
     autoChooser.addOption("blueAuto", drive.getAuto("blueAutoL4"));
     autoChooser.addOption("redAuto", drive.getAuto("redAutoL4"));
   }
