@@ -15,7 +15,6 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -143,17 +142,17 @@ public class RobotContainer {
     Trigger button1 = new Trigger(controller2.button(1)); // output Coral
     Trigger button2 = new Trigger(controller2.button(2)); // intake Coral
     Trigger button5 = new Trigger(controller2.button(5)); // L1
-    Trigger button6 = new Trigger(controller2.button(6)); // elevator HP
-    Trigger button7 = new Trigger(controller2.button(7)); // elevator L3
+    Trigger button6 = new Trigger(controller2.button(6)); // elevator L3
+    Trigger button7 = new Trigger(controller2.button(7)); // elevator HP
     Trigger button8 = new Trigger(controller2.button(8)); // elevator L4
     Trigger button9 = new Trigger(controller2.button(9)); // elevator L2
     Trigger button10 = new Trigger(controller2.button(10)); // elevator L1
 
-    button1.whileTrue(icee.spitOut());
-    button2.whileTrue(new ConditionalCommand(icee.stop(), icee.Intake(), icee.getLimitSwitch()));
+    button2.whileTrue(icee.spitOut());
+    button1.whileTrue(new ConditionalCommand(icee.stop(), icee.Intake(), icee.getLimitSwitch()));
     button5.onTrue(elevator.L1());
-    button6.whileTrue(elevator.HumanPlayer());
-    button7.whileTrue(elevator.L3());
+    button6.whileTrue(elevator.L3());
+    button7.whileTrue(elevator.HumanPlayer());
     button8.onTrue(elevator.L4());
     button9.whileTrue(elevator.L2());
     button10.whileTrue(elevator.L1());
