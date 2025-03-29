@@ -75,8 +75,8 @@ public class RobotContainer {
     }
 
     // Field
-    drive = initializeDriveSubsystem();
     m_field = new Field2d();
+    drive = initializeDriveSubsystem();
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -158,7 +158,7 @@ public class RobotContainer {
           field.getObject("path").setPoses(poses);
         });
     // Configure the button bindings
-    configureButtonBindings();
+
   }
 
   private void configureButtonBindings() {

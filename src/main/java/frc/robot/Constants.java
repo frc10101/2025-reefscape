@@ -195,7 +195,7 @@ public final class Constants {
   public static final class LimeLights {
     public static final String aprilTagLimeLight = "limelight-johnny";
     public static final String objectLimeLight = "limelight-may";
-    public static final Matrix<N3, N1> visionDev = VecBuilder.fill(0, 0, 0);
+    public static final Matrix<N3, N1> visionDev = VecBuilder.fill(0.7, 0.7, 9999999);
   }
 
   public static final class Poses {

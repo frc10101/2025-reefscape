@@ -47,6 +47,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
@@ -206,7 +207,7 @@ public class Drive extends SubsystemBase {
   @Override
   public void periodic() {
 
-    // this.aprilTagReLocalize();
+    this.seeTags().onTrue(this.reLocalize());
     LimelightHelpers.SetRobotOrientation(
         Constants.LimeLights.aprilTagLimeLight,
         this.rawGyroRotation.getDegrees(),
@@ -429,20 +430,27 @@ public class Drive extends SubsystemBase {
     if (LimelightHelpers.getTargetCount(Constants.LimeLights.aprilTagLimeLight) < 2) return;
 
     if (DriverStation.isTeleop()) {
-      var estimate =
-          LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(
-              Constants.LimeLights.aprilTagLimeLight);
-      if (estimate == null || estimate.pose == null) return;
+      double robotYaw = this.gyroInputs.yawPosition.getDegrees();
+      LimelightHelpers.SetRobotOrientation(
+          Constants.LimeLights.aprilTagLimeLight, robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
+      // Get the pose estimate
+      LimelightHelpers.PoseEstimate limelightMeasurement =
+          LimelightHelpers.getBotPoseEstimate_wpiBlue(Constants.LimeLights.aprilTagLimeLight);
+
+      if (limelightMeasurement == null || limelightMeasurement.pose == null) return;
       this.addVisionMeasurement(
-          estimate.pose, estimate.timestampSeconds, Constants.LimeLights.visionDev);
+          limelightMeasurement.pose,
+          limelightMeasurement.timestampSeconds,
+          Constants.LimeLights.visionDev);
       // this.setPose(estimate.pose);
     } else {
-      var estimate =
+      LimelightHelpers.PoseEstimate limelightMeasurement =
           LimelightHelpers.getBotPoseEstimate_wpiBlue(Constants.LimeLights.aprilTagLimeLight);
-      if (estimate == null || estimate.pose == null) return;
+      if (limelightMeasurement == null || limelightMeasurement.pose == null) return;
       this.addVisionMeasurement(
-          estimate.pose, estimate.timestampSeconds, Constants.LimeLights.visionDev);
-      // this.setPose(estimate.pose);
+          limelightMeasurement.pose,
+          limelightMeasurement.timestampSeconds,
+          Constants.LimeLights.visionDev);
     }
   }
 
@@ -452,5 +460,11 @@ public class Drive extends SubsystemBase {
         () -> {
           aprilTagReLocalize();
         });
+  }
+  private Boolean see2Tags(){
+    return LimelightHelpers.getTargetCount(Constants.LimeLights.aprilTagLimeLight) < 2;
+  }
+  private Trigger seeTags(){
+    return new Trigger(this::see2Tags);
   }
 }
