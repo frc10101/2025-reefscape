@@ -231,8 +231,8 @@ public class RobotContainer {
   }
 
   /**
-   * Applies an S-curve motion profile to controller inputs using the function 4x³-3x⁴.
-   * This creates smoother acceleration and deceleration with a unique response curve.
+   * Applies an S-curve motion profile to controller inputs using the function 4x³-3x⁴. This creates
+   * smoother acceleration and deceleration with a unique response curve.
    *
    * @param input Raw controller input (-1.0 to 1.0)
    * @return Processed input with S-curve applied
@@ -243,18 +243,18 @@ public class RobotContainer {
     if (Math.abs(input) < deadband) {
       return 0.0;
     }
-    
+
     // Normalize input to account for deadband
     double normalizedInput = (Math.abs(input) - deadband) / (1.0 - deadband);
     if (normalizedInput > 1.0) {
       normalizedInput = 1.0; // Clamp to ensure we don't exceed 1.0
     }
-    
+
     // Apply the new S-curve formula: f(x) = 4x³-3x⁴
     // This gives a different acceleration profile than the standard smoothstep
     double x = normalizedInput;
     double processed = 4 * Math.pow(x, 3) - 3 * Math.pow(x, 4);
-    
+
     // Return processed input with original sign
     return Math.copySign(processed, input);
   }
