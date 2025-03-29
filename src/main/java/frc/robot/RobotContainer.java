@@ -23,50 +23,58 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.Arm;
+// import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.CANdleSystem;
-import frc.robot.subsystems.Elevator;
-import frc.robot.subsystems.ICEE;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.util.Pathfind;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
-/**
- * This class is where the bulk of the robot should be declared. Since Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
- * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
- * subsystems, commands, and button mappings) should be declared here.
- */
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final CANdleSystem candle = new CANdleSystem();
-  private final Elevator elevator = new Elevator();
-  private final ICEE icee = new ICEE();
-  private final Arm arm = new Arm();
+  // private final Elevator elevator = new Elevator();
+  // private final ICEE icee = new ICEE();
+  // private final Arm arm = new Arm();
 
+  private Field2d field;
+
+  private Command pather = null;
+
+  private Pathfind pathfind;
+  // Controller
   // Controllers
   private final CommandXboxController controller = new CommandXboxController(0);
-  private final CommandJoystick controller2 = new CommandJoystick(1);
+  private final CommandXboxController controller2 = new CommandXboxController(1);
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
+  private final Field2d m_field;
 
-  // Field
-  private final Field2d m_field = new Field2d();
+  /** The container for the robot. Contains subsystems, OI devices, and commands. */
+  // private NDexter nDexter = new NDexter();
+
+  // private ICEE icee = new ICEE();
 
   public RobotContainer() {
+
+    try {
+      pathfind = new Pathfind();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    // Field
+    m_field = new Field2d();
     drive = initializeDriveSubsystem();
     NamedCommands.registerCommand("L4", elevator.L4());
     // Set up auto routines
@@ -76,6 +84,8 @@ public class RobotContainer {
 
     // Configure button bindings
     configureButtonBindings();
+    setupAutoOptions();
+    configureSwerveCommands();
   }
 
   private Drive initializeDriveSubsystem() {
@@ -193,26 +203,29 @@ public class RobotContainer {
                 },
                 () -> new Rotation2d()));
 
-    // Switch to X pattern when X button is pressed
-    controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+    // Trigger iCeeTriggerIn = controller2.button(5);
+    // iCeeTriggerIn.whileTrue(icee.runIn());
+    // Trigger iCeeTriggerOut = controller2.button(6);
+    // iCeeTriggerOut.whileTrue(icee.runOut());
 
-    // Reset gyro to 0° when B button is pressed
+    // icee.ICEELimit().debounce(.1).onTrue(nDexter.canSpin(false));
+    // icee.ICEELimit().debounce(.1).onFalse(nDexter.canSpin(true));
+
     controller
-        .b()
+        .a()
         .onTrue(
             Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            new Pose2d(
-                                drive.getPose().getTranslation(),
-                                DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-                                    ? new Rotation2d(Math.PI)
-                                    : new Rotation2d())),
-                    drive)
-                .ignoringDisable(true));
+                () -> {
+                  pather = pathfind.pathToPose(Constants.Poses.ReefAPose);
+                  pather.schedule();
+                }))
+        .onFalse(
+            Commands.runOnce(
+                () -> {
+                  pather.cancel();
+                }));
 
-    icee.ICEELimit().onTrue(arm.coralFF());
-    icee.ICEELimit().onFalse(arm.normalFF());
+    controller.y().onTrue(drive.reLocalize());
   }
 
   public void zeroGyro() {
@@ -225,6 +238,16 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return autoChooser.get();
+    try {
+      // Load the path you want to follow using its name in the GUI
+      // PathPlannerPath path = PathPlannerPath.fromPathFile("basic");
+
+      // Create a path following command using AutoBuilder. This will also trigger event markers.
+      // return AutoBuilder.followPath(path);
+      return new PathPlannerAuto("2Choral");
+    } catch (Exception e) {
+      DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
+      return Commands.none();
+    }
   }
 }

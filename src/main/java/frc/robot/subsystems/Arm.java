@@ -1,50 +1,52 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkMaxConfig;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Constants.ArmConstants;
 
 public class Arm extends SubsystemBase {
 
-  private final SparkMax armMotor;
+  private final TalonFX armMotor;
+  private Double kF = Constants.ArmConstants.kFF;
+  private PositionVoltage pidControl = null;
+
+  //   private final SysIdRoutine sysid;
 
   public Arm() {
-    armMotor = new SparkMax(Constants.SparkMaxCanIDs.StrawPivotMotor, MotorType.kBrushless);
-    configureArmMotor();
+    armMotor = new TalonFX(Constants.SparkMaxCanIDs.StrawPivotMotor);
+    this.configureArmMotor();
+    //     sysid = new SysIdRoutine(
+    //       new SysIdRoutine.Config(),
+    //       new SysIdRoutine.Mechanism(this::voltageDrive,
+
+    //        ,
+
+    //        this)
+    //     );
   }
 
   private void configureArmMotor() {
-    SparkMaxConfig armConfig = createArmConfig(ArmConstants.kFF);
-    armMotor.configure(armConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    armMotor.getEncoder().setPosition(Math.PI);
+    Slot0Configs config = new Slot0Configs();
+    config.kP = Constants.ArmConstants.kP;
+    config.kI = Constants.ArmConstants.kI;
+    config.kD = Constants.ArmConstants.kD;
+    armMotor.getConfigurator().apply(config);
+    this.pidControl = new PositionVoltage(0).withSlot(0);
   }
 
-  private SparkMaxConfig createArmConfig(double feedForward) {
-    SparkMaxConfig config = new SparkMaxConfig();
-    config.closedLoop.pidf(ArmConstants.kP, ArmConstants.kI, ArmConstants.kD, feedForward);
-    config
-        .closedLoop
-        .maxMotion
-        .maxAcceleration(ArmConstants.kMaxAcceleration)
-        .maxVelocity(ArmConstants.kMaxVelocity)
-        .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal);
-    config.inverted(true);
-    config.encoder.positionConversionFactor(2.0 * Math.PI / ArmConstants.GEAR_RATIO);
-    config.idleMode(IdleMode.kBrake);
-    return config;
+  private Command voltageDrive(double pow) {
+    return Commands.runOnce(
+        () -> {
+          armMotor.setVoltage(pow);
+        });
   }
 
   public double getAngle() {
-    return armMotor.getEncoder().getPosition();
+    return (armMotor.getPosition().getValueAsDouble()) * 2 * Math.PI;
   }
 
   public void stop() {
@@ -52,7 +54,7 @@ public class Arm extends SubsystemBase {
   }
 
   public void moveArm(double goal) {
-    double angle = armMotor.getEncoder().getPosition();
+    double angle = armMotor.getPosition().getValueAsDouble();
     double compensation = calculateCompensation(angle);
     armMotor.setVoltage(goal + compensation);
   }
@@ -64,7 +66,7 @@ public class Arm extends SubsystemBase {
     if (angle > Math.toRadians(167)) {
       return 0.5;
     }
-    return armMotor.configAccessor.closedLoop.getFF() * Math.sin(angle);
+    return armMotor.getClosedLoopFeedForward().getValueAsDouble() * Math.sin(angle);
   }
 
   public Command armUp() {
@@ -78,7 +80,7 @@ public class Arm extends SubsystemBase {
   public Command stopArm() {
     return run(
         () -> {
-          double angle = armMotor.getEncoder().getPosition();
+          double angle = armMotor.getPosition().getValueAsDouble();
           double compensation = calculateCompensation(angle);
           armMotor.setVoltage(compensation);
         });
@@ -86,20 +88,16 @@ public class Arm extends SubsystemBase {
 
   public Command coralFF() {
     return runOnce(
-        () ->
-            armMotor.configure(
-                createArmConfig(ArmConstants.kFFwithCoral),
-                ResetMode.kResetSafeParameters,
-                PersistMode.kPersistParameters));
+        () -> {
+          this.kF = Constants.ArmConstants.kFFwithCoral;
+        });
   }
 
   public Command normalFF() {
     return runOnce(
-        () ->
-            armMotor.configure(
-                createArmConfig(ArmConstants.kFF),
-                ResetMode.kResetSafeParameters,
-                PersistMode.kPersistParameters));
+        () -> {
+          this.kF = Constants.ArmConstants.kFF;
+        });
   }
 
   public Command setArmPosition(double position) {
@@ -109,14 +107,12 @@ public class Arm extends SubsystemBase {
       @Override
       public void initialize() {
         targetPosition = position;
-        armMotor
-            .getClosedLoopController()
-            .setReference(position, ControlType.kMAXMotionPositionControl);
+        armMotor.setControl(pidControl.withPosition(targetPosition).withFeedForward(kF));
       }
 
       @Override
       public boolean isFinished() {
-        double currentPosition = armMotor.getEncoder().getPosition();
+        double currentPosition = armMotor.getPosition().getValueAsDouble();
         return Math.abs(currentPosition - targetPosition) < 0.05;
       }
 
