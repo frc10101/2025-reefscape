@@ -23,7 +23,7 @@ public class DeepHang extends SubsystemBase {
   private double kF;
 
   public DeepHang() {
-    motor = new SparkMax(SparkMaxCanIDs.IceeMotor, MotorType.kBrushless);
+    motor = new SparkMax(SparkMaxCanIDs.DeepHang, MotorType.kBrushless);
     configureMotor();
     kF = Constants.DeepHangConstants.kFUnloaded;
   }

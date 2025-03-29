@@ -101,7 +101,7 @@ public final class Constants {
     /** ICEE Can ID */
     public static final int IceeMotor = 12;
 
-    public static final int DeepHang = 19;
+    public static final int DeepHang = 17;
   }
 
   public static final class IntakeConstants {
@@ -213,6 +213,7 @@ public final class Constants {
   }
 
   public static final class DeepHangConstants {
+    
     public static final double GEAR_RATIO = 125;
     public static final double armIn = 0;
     public static final double armOut = Math.toRadians(90);
