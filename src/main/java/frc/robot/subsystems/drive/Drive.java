@@ -480,7 +480,11 @@ public class Drive extends SubsystemBase {
   }
 
   private Boolean see2Tags() {
-    return LimelightHelpers.getTargetCount(Constants.LimeLights.aprilTagLimeLight) < 2;
+    if (DriverStation.isAutonomous()) {
+      return LimelightHelpers.getTargetCount(Constants.LimeLights.aprilTagLimeLight) > 0;
+    } else {
+      return LimelightHelpers.getTargetCount(Constants.LimeLights.aprilTagLimeLight) > 1;
+    }
   }
 
   private Trigger seeTags() {
