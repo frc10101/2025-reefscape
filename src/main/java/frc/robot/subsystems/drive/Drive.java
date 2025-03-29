@@ -427,15 +427,17 @@ public class Drive extends SubsystemBase {
   }
 
   private void aprilTagReLocalize() {
-    if (LimelightHelpers.getTargetCount(Constants.LimeLights.aprilTagLimeLight) < 2) return;
 
     if (DriverStation.isTeleop()) {
+      if (LimelightHelpers.getTargetCount(Constants.LimeLights.aprilTagLimeLight) < 2) return;
+
       double robotYaw = this.gyroInputs.yawPosition.getDegrees();
       LimelightHelpers.SetRobotOrientation(
           Constants.LimeLights.aprilTagLimeLight, robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
       // Get the pose estimate
       LimelightHelpers.PoseEstimate limelightMeasurement =
-          LimelightHelpers.getBotPoseEstimate_wpiBlue(Constants.LimeLights.aprilTagLimeLight);
+          LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(
+              Constants.LimeLights.aprilTagLimeLight);
 
       if (limelightMeasurement == null || limelightMeasurement.pose == null) return;
       this.addVisionMeasurement(
@@ -443,7 +445,22 @@ public class Drive extends SubsystemBase {
           limelightMeasurement.timestampSeconds,
           Constants.LimeLights.visionDev);
       // this.setPose(estimate.pose);
+    } else if (DriverStation.isAutonomousEnabled()) {
+      double robotYaw = this.gyroInputs.yawPosition.getDegrees();
+      LimelightHelpers.SetRobotOrientation(
+          Constants.LimeLights.aprilTagLimeLight, robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
+      // Get the pose estimate
+      LimelightHelpers.PoseEstimate limelightMeasurement =
+          LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(
+              Constants.LimeLights.aprilTagLimeLight);
+
+      if (limelightMeasurement == null || limelightMeasurement.pose == null) return;
+      this.addVisionMeasurement(
+          limelightMeasurement.pose,
+          limelightMeasurement.timestampSeconds,
+          Constants.LimeLights.visionDev);
     } else {
+      if (LimelightHelpers.getTargetCount(Constants.LimeLights.aprilTagLimeLight) < 2) return;
       LimelightHelpers.PoseEstimate limelightMeasurement =
           LimelightHelpers.getBotPoseEstimate_wpiBlue(Constants.LimeLights.aprilTagLimeLight);
       if (limelightMeasurement == null || limelightMeasurement.pose == null) return;
@@ -461,10 +478,12 @@ public class Drive extends SubsystemBase {
           aprilTagReLocalize();
         });
   }
-  private Boolean see2Tags(){
+
+  private Boolean see2Tags() {
     return LimelightHelpers.getTargetCount(Constants.LimeLights.aprilTagLimeLight) < 2;
   }
-  private Trigger seeTags(){
+
+  private Trigger seeTags() {
     return new Trigger(this::see2Tags);
   }
 }
