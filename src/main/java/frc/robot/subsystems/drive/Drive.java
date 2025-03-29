@@ -204,6 +204,14 @@ public class Drive extends SubsystemBase {
         );
   }
 
+  public Command getAuto(String autoName) {
+    try {
+      return AutoBuilder.buildAuto(autoName);
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
   @Override
   public void periodic() {
 
@@ -461,10 +469,12 @@ public class Drive extends SubsystemBase {
           aprilTagReLocalize();
         });
   }
-  private Boolean see2Tags(){
+
+  private Boolean see2Tags() {
     return LimelightHelpers.getTargetCount(Constants.LimeLights.aprilTagLimeLight) < 2;
   }
-  private Trigger seeTags(){
+
+  private Trigger seeTags() {
     return new Trigger(this::see2Tags);
   }
 }

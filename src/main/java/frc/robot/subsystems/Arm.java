@@ -38,6 +38,7 @@ public class Arm extends SubsystemBase {
     this.pidControl = new PositionVoltage(0).withSlot(0);
   }
 
+  @SuppressWarnings("unused")
   private Command voltageDrive(double pow) {
     return Commands.runOnce(
         () -> {

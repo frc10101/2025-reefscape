@@ -23,12 +23,15 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
-// import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.CANdleSystem;
+import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.ICEE;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -42,16 +45,13 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final CANdleSystem candle = new CANdleSystem();
-  // private final Elevator elevator = new Elevator();
-  // private final ICEE icee = new ICEE();
+  private final Elevator elevator = new Elevator();
+  private final ICEE icee = new ICEE();
   // private final Arm arm = new Arm();
 
-  private Field2d field;
-
   private Command pather = null;
-
   private Pathfind pathfind;
-  // Controller
+
   // Controllers
   private final CommandXboxController controller = new CommandXboxController(0);
   private final CommandXboxController controller2 = new CommandXboxController(1);
@@ -61,31 +61,31 @@ public class RobotContainer {
   private final Field2d m_field;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
-  // private NDexter nDexter = new NDexter();
-
-  // private ICEE icee = new ICEE();
-
   public RobotContainer() {
+    // Initialize field
+    m_field = new Field2d();
+    SmartDashboard.putData("Field", m_field);
 
+    // Initialize drivetrain
+    drive = initializeDriveSubsystem();
+
+    // Register commands for PathPlanner
+    NamedCommands.registerCommand("L4", elevator.L4());
+
+    // Set up auto chooser
+    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+    setupAutoOptions();
+
+    // Initialize pathfinding
     try {
       pathfind = new Pathfind();
     } catch (Exception e) {
-      e.printStackTrace();
+      DriverStation.reportError(
+          "Failed to initialize Pathfind: " + e.getMessage(), e.getStackTrace());
     }
-
-    // Field
-    m_field = new Field2d();
-    drive = initializeDriveSubsystem();
-    NamedCommands.registerCommand("L4", elevator.L4());
-    // Set up auto routines
-    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-    setupAutoOptions();
-    SmartDashboard.putData("Field", m_field);
 
     // Configure button bindings
     configureButtonBindings();
-    setupAutoOptions();
-    configureSwerveCommands();
   }
 
   private Drive initializeDriveSubsystem() {
@@ -170,62 +170,93 @@ public class RobotContainer {
   }
 
   private void configureSwerveCommands() {
-    // Default command, normal field-relative drive
+    // Default command, normal field-relative drive with S-curve motion profile
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,
             () -> {
-              var magnitude = controller.getLeftY();
-              return Math.copySign(magnitude * magnitude, magnitude);
+              // Apply S-curve profile to Y input (forward/backward)
+              double rawY = controller.getLeftY();
+              return applySCurveProfile(rawY);
             },
             () -> {
-              var magnitude = controller.getLeftX();
-              return Math.copySign(magnitude * magnitude, magnitude);
+              // Apply S-curve profile to X input (strafe)
+              double rawX = controller.getLeftX();
+              return applySCurveProfile(rawX);
             },
             () -> {
-              var magnitude = controller.getRightX();
-              return -1 * Math.copySign(magnitude * magnitude, magnitude);
+              // Apply S-curve profile to rotation input
+              double rawRotation = controller.getRightX();
+              return -1 * applySCurveProfile(rawRotation);
             }));
 
-    // Lock to 0° when A button is held
+    // Lock to 0° when A button is held (also with S-curve profile)
     controller
         .a()
         .whileTrue(
             DriveCommands.joystickDriveAtAngle(
                 drive,
                 () -> {
-                  var magnitude = controller.getLeftY();
-                  return Math.copySign(magnitude * magnitude, magnitude);
+                  double rawY = controller.getLeftY();
+                  return applySCurveProfile(rawY);
                 },
                 () -> {
-                  var magnitude = controller.getLeftX();
-                  return Math.copySign(magnitude * magnitude, magnitude);
+                  double rawX = controller.getLeftX();
+                  return applySCurveProfile(rawX);
                 },
                 () -> new Rotation2d()));
 
-    // Trigger iCeeTriggerIn = controller2.button(5);
-    // iCeeTriggerIn.whileTrue(icee.runIn());
-    // Trigger iCeeTriggerOut = controller2.button(6);
-    // iCeeTriggerOut.whileTrue(icee.runOut());
-
-    // icee.ICEELimit().debounce(.1).onTrue(nDexter.canSpin(false));
-    // icee.ICEELimit().debounce(.1).onFalse(nDexter.canSpin(true));
-
+    // Controller B button for pathfinding to reef A pose (if defined in Constants.Poses)
     controller
-        .a()
+        .b()
         .onTrue(
             Commands.runOnce(
                 () -> {
-                  pather = pathfind.pathToPose(Constants.Poses.ReefAPose);
-                  pather.schedule();
+                  if (pathfind != null && Constants.Poses.ReefAPose != null) {
+                    pather = pathfind.pathToPose(Constants.Poses.ReefAPose);
+                    if (pather != null) {
+                      pather.schedule();
+                    }
+                  }
                 }))
         .onFalse(
             Commands.runOnce(
                 () -> {
-                  pather.cancel();
+                  if (pather != null) {
+                    pather.cancel();
+                  }
                 }));
 
     controller.y().onTrue(drive.reLocalize());
+  }
+
+  /**
+   * Applies an S-curve motion profile to controller inputs using the function 4x³-3x⁴.
+   * This creates smoother acceleration and deceleration with a unique response curve.
+   *
+   * @param input Raw controller input (-1.0 to 1.0)
+   * @return Processed input with S-curve applied
+   */
+  private double applySCurveProfile(double input) {
+    // Apply deadband to prevent drift
+    final double deadband = 0.05;
+    if (Math.abs(input) < deadband) {
+      return 0.0;
+    }
+    
+    // Normalize input to account for deadband
+    double normalizedInput = (Math.abs(input) - deadband) / (1.0 - deadband);
+    if (normalizedInput > 1.0) {
+      normalizedInput = 1.0; // Clamp to ensure we don't exceed 1.0
+    }
+    
+    // Apply the new S-curve formula: f(x) = 4x³-3x⁴
+    // This gives a different acceleration profile than the standard smoothstep
+    double x = normalizedInput;
+    double processed = 4 * Math.pow(x, 3) - 3 * Math.pow(x, 4);
+    
+    // Return processed input with original sign
+    return Math.copySign(processed, input);
   }
 
   public void zeroGyro() {
@@ -238,16 +269,6 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    try {
-      // Load the path you want to follow using its name in the GUI
-      // PathPlannerPath path = PathPlannerPath.fromPathFile("basic");
-
-      // Create a path following command using AutoBuilder. This will also trigger event markers.
-      // return AutoBuilder.followPath(path);
-      return new PathPlannerAuto("2Choral");
-    } catch (Exception e) {
-      DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
-      return Commands.none();
-    }
+    return autoChooser.get();
   }
 }
