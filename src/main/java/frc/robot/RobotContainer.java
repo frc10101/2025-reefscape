@@ -70,7 +70,7 @@ public class RobotContainer {
     drive = initializeDriveSubsystem();
 
     // Register commands for PathPlanner
-    NamedCommands.registerCommand("L4", elevator.L4());
+    registerAutoCommands();
 
     // Set up auto chooser
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -118,20 +118,22 @@ public class RobotContainer {
   }
 
   private void setupAutoOptions() {
-    autoChooser.addOption(
-        "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
-    autoChooser.addOption(
-        "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Forward)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Reverse)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    if (Constants.isSysID) {
+      autoChooser.addOption(
+          "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
+      autoChooser.addOption(
+          "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
+      autoChooser.addOption(
+          "Drive SysId (Quasistatic Forward)",
+          drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+      autoChooser.addOption(
+          "Drive SysId (Quasistatic Reverse)",
+          drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+      autoChooser.addOption(
+          "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+      autoChooser.addOption(
+          "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    }
     autoChooser.addOption("redCenter Auto", drive.getAuto("redCenter"));
     autoChooser.addOption("blueCenter Auto", drive.getAuto("blueCenter"));
     autoChooser.addOption("blueAuto", drive.getAuto("blueAutoL4"));
@@ -270,5 +272,14 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
     return autoChooser.get();
+  }
+
+  private void registerAutoCommands() {
+    NamedCommands.registerCommand("L4", elevator.L4());
+    NamedCommands.registerCommand("iceeSpitOut", icee.spitOut());
+    NamedCommands.registerCommand("iceeIntake", icee.Intake());
+    NamedCommands.registerCommand("iceeStop", icee.stop());
+    NamedCommands.registerCommand("relocalize", drive.reLocalize());
+    NamedCommands.registerCommand("L1", elevator.L1());
   }
 }

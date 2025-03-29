@@ -443,7 +443,7 @@ public class Drive extends SubsystemBase {
           Constants.LimeLights.aprilTagLimeLight, robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
       // Get the pose estimate
       LimelightHelpers.PoseEstimate limelightMeasurement =
-          LimelightHelpers.getBotPoseEstimate_wpiBlue(Constants.LimeLights.aprilTagLimeLight);
+          LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(Constants.LimeLights.aprilTagLimeLight);
 
       if (limelightMeasurement == null || limelightMeasurement.pose == null) return;
       this.addVisionMeasurement(

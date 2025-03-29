@@ -41,6 +41,9 @@ public final class Constants {
     REPLAY
   }
 
+  /** enables SYSID Tuning */
+  public static final boolean isSysID = false;
+
   public static final class CANids {
     public static final int CANdleID = 25;
   }
