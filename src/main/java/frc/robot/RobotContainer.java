@@ -24,13 +24,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.CANdleSystem;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.ICEE;
@@ -40,39 +38,51 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.util.Pathfind;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
-/**
- * This class is where the bulk of the robot should be declared. Since Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
- * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
- * subsystems, commands, and button mappings) should be declared here.
- */
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final CANdleSystem candle = new CANdleSystem();
   private final Elevator elevator = new Elevator();
   private final ICEE icee = new ICEE();
-  private final Arm arm = new Arm();
+  // private final Arm arm = new Arm();
+
+  private Command pather = null;
+  private Pathfind pathfind;
 
   // Controllers
   private final CommandXboxController controller = new CommandXboxController(0);
-  private final CommandJoystick controller2 = new CommandJoystick(1);
+  private final CommandXboxController controller2 = new CommandXboxController(1);
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
+  private final Field2d m_field;
 
-  // Field
-  private final Field2d m_field = new Field2d();
-
+  /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    // Initialize field
+    m_field = new Field2d();
+    SmartDashboard.putData("Field", m_field);
+
+    // Initialize drivetrain
     drive = initializeDriveSubsystem();
-    NamedCommands.registerCommand("L4", elevator.L4());
-    // Set up auto routines
+
+    // Register commands for PathPlanner
+    registerAutoCommands();
+
+    // Set up auto chooser
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     setupAutoOptions();
-    SmartDashboard.putData("Field", m_field);
+
+    // Initialize pathfinding
+    try {
+      pathfind = new Pathfind();
+    } catch (Exception e) {
+      DriverStation.reportError(
+          "Failed to initialize Pathfind: " + e.getMessage(), e.getStackTrace());
+    }
 
     // Configure button bindings
     configureButtonBindings();
@@ -108,21 +118,24 @@ public class RobotContainer {
   }
 
   private void setupAutoOptions() {
-    autoChooser.addOption(
-        "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
-    autoChooser.addOption(
-        "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Forward)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Reverse)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption("Leave Auto", drive.getAuto("leave"));
+    if (Constants.isSysID) {
+      autoChooser.addOption(
+          "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
+      autoChooser.addOption(
+          "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
+      autoChooser.addOption(
+          "Drive SysId (Quasistatic Forward)",
+          drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+      autoChooser.addOption(
+          "Drive SysId (Quasistatic Reverse)",
+          drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+      autoChooser.addOption(
+          "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+      autoChooser.addOption(
+          "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    }
+    autoChooser.addOption("redCenter Auto", drive.getAuto("redCenter"));
+    autoChooser.addOption("blueCenter Auto", drive.getAuto("blueCenter"));
     autoChooser.addOption("blueAuto", drive.getAuto("blueAutoL4"));
     autoChooser.addOption("redAuto", drive.getAuto("redAutoL4"));
   }
@@ -159,59 +172,93 @@ public class RobotContainer {
   }
 
   private void configureSwerveCommands() {
-    // Default command, normal field-relative drive
+    // Default command, normal field-relative drive with S-curve motion profile
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,
             () -> {
-              var magnitude = controller.getLeftY();
-              return Math.copySign(magnitude * magnitude, magnitude);
+              // Apply S-curve profile to Y input (forward/backward)
+              double rawY = controller.getLeftY();
+              return applySCurveProfile(rawY);
             },
             () -> {
-              var magnitude = controller.getLeftX();
-              return Math.copySign(magnitude * magnitude, magnitude);
+              // Apply S-curve profile to X input (strafe)
+              double rawX = controller.getLeftX();
+              return applySCurveProfile(rawX);
             },
             () -> {
-              var magnitude = controller.getRightX();
-              return -1 * Math.copySign(magnitude * magnitude, magnitude);
+              // Apply S-curve profile to rotation input
+              double rawRotation = controller.getRightX();
+              return -1 * applySCurveProfile(rawRotation);
             }));
 
-    // Lock to 0° when A button is held
+    // Lock to 0° when A button is held (also with S-curve profile)
     controller
         .a()
         .whileTrue(
             DriveCommands.joystickDriveAtAngle(
                 drive,
                 () -> {
-                  var magnitude = controller.getLeftY();
-                  return Math.copySign(magnitude * magnitude, magnitude);
+                  double rawY = controller.getLeftY();
+                  return applySCurveProfile(rawY);
                 },
                 () -> {
-                  var magnitude = controller.getLeftX();
-                  return Math.copySign(magnitude * magnitude, magnitude);
+                  double rawX = controller.getLeftX();
+                  return applySCurveProfile(rawX);
                 },
                 () -> new Rotation2d()));
 
-    // Switch to X pattern when X button is pressed
-    controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
-
-    // Reset gyro to 0° when B button is pressed
+    // Controller B button for pathfinding to reef A pose (if defined in Constants.Poses)
     controller
         .b()
         .onTrue(
             Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            new Pose2d(
-                                drive.getPose().getTranslation(),
-                                DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-                                    ? new Rotation2d(Math.PI)
-                                    : new Rotation2d())),
-                    drive)
-                .ignoringDisable(true));
+                () -> {
+                  if (pathfind != null && Constants.Poses.ReefAPose != null) {
+                    pather = pathfind.pathToPose(Constants.Poses.ReefAPose);
+                    if (pather != null) {
+                      pather.schedule();
+                    }
+                  }
+                }))
+        .onFalse(
+            Commands.runOnce(
+                () -> {
+                  if (pather != null) {
+                    pather.cancel();
+                  }
+                }));
 
-    icee.ICEELimit().onTrue(arm.coralFF());
-    icee.ICEELimit().onFalse(arm.normalFF());
+    controller.y().onTrue(drive.reLocalize());
+  }
+
+  /**
+   * Applies an S-curve motion profile to controller inputs using the function 4x³-3x⁴. This creates
+   * smoother acceleration and deceleration with a unique response curve.
+   *
+   * @param input Raw controller input (-1.0 to 1.0)
+   * @return Processed input with S-curve applied
+   */
+  private double applySCurveProfile(double input) {
+    // Apply deadband to prevent drift
+    final double deadband = 0.05;
+    if (Math.abs(input) < deadband) {
+      return 0.0;
+    }
+
+    // Normalize input to account for deadband
+    double normalizedInput = (Math.abs(input) - deadband) / (1.0 - deadband);
+    if (normalizedInput > 1.0) {
+      normalizedInput = 1.0; // Clamp to ensure we don't exceed 1.0
+    }
+
+    // Apply the new S-curve formula: f(x) = 4x³-3x⁴
+    // This gives a different acceleration profile than the standard smoothstep
+    double x = normalizedInput;
+    double processed = 4 * Math.pow(x, 3) - 3 * Math.pow(x, 4);
+
+    // Return processed input with original sign
+    return Math.copySign(processed, input);
   }
 
   public void zeroGyro() {
@@ -225,5 +272,14 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
     return autoChooser.get();
+  }
+
+  private void registerAutoCommands() {
+    NamedCommands.registerCommand("L4", elevator.L4());
+    NamedCommands.registerCommand("iceeSpitOut", icee.spitOut());
+    NamedCommands.registerCommand("iceeIntake", icee.Intake());
+    NamedCommands.registerCommand("iceeStop", icee.stop());
+    NamedCommands.registerCommand("relocalize", drive.reLocalize());
+    NamedCommands.registerCommand("L1", elevator.L1());
   }
 }

@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 9.962029109589041,
-        "y": 4.160231164383561
+        "x": 9.961245298032408,
+        "y": 3.7808912037037032
       },
       "prevControl": null,
       "nextControl": {
-        "x": 10.783161740660754,
-        "y": 4.156308355410063
+        "x": 10.243634890392416,
+        "y": 3.7830344823808355
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 11.674957191780823,
-        "y": 4.160231164383561
+        "x": 11.66371780960648,
+        "y": 3.7808912037037032
       },
       "prevControl": {
-        "x": 10.882602581855027,
-        "y": 4.1646808584129325
+        "x": 11.412625607495503,
+        "y": 3.7778738168918453
       },
       "nextControl": null,
       "isLocked": false,
@@ -31,10 +31,22 @@
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "relocalize",
+      "waypointRelativePos": 0.5,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "relocalize"
+        }
+      }
+    }
+  ],
   "globalConstraints": {
-    "maxVelocity": 0.24,
-    "maxAcceleration": 0.25,
+    "maxVelocity": 1.5,
+    "maxAcceleration": 1.5,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,

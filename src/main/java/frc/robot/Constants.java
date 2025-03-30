@@ -13,6 +13,12 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
@@ -34,6 +40,9 @@ public final class Constants {
     /** Replaying from a log file. */
     REPLAY
   }
+
+  /** enables SYSID Tuning */
+  public static final boolean isSysID = false;
 
   public static final class CANids {
     public static final int CANdleID = 25;
@@ -94,6 +103,8 @@ public final class Constants {
 
     /** ICEE Can ID */
     public static final int IceeMotor = 12;
+
+    public static final int DeepHang = 19;
   }
 
   public static final class IntakeConstants {
@@ -157,5 +168,61 @@ public final class Constants {
     public static final double leftKd = 0;
     public static final double leftGearRatio = 9;
     public static final double rightFF = 1.0 / 5767;
+  }
+
+  public static final class AprilTagIds {
+    public static final int redSideLeftCoralStation = 1;
+    public static final int redSideRightCoralStation = 2;
+    public static final int redSideProcessor = 3;
+    public static final int redSideBlueBarge = 4;
+    public static final int redSideRedBarge = 5;
+    public static final int redSideNearLeftReef = 6;
+    public static final int redSideNearCenterReef = 7;
+    public static final int redSideNearRightReef = 8;
+    public static final int redSideFarRightReef = 9;
+    public static final int redSideFarCenterReef = 10;
+    public static final int redSideFarLeftReef = 11;
+    public static final int blueSideRightProcessor = 12;
+    public static final int blueSideLeftProcessor = 13;
+    public static final int blueSideBlueBarge = 14;
+    public static final int blueSideRedBarge = 15;
+    public static final int blueSideProcessor = 16;
+    public static final int blueSideNearRightReef = 17;
+    public static final int blueSideNearCenterReef = 18;
+    public static final int blueSideNearLeftReef = 19;
+    public static final int blueSideFarLeftReef = 20;
+    public static final int blueSideFarCenterReef = 21;
+    public static final int blueSideFarRightReef = 22;
+  }
+
+  public static final class LimeLights {
+    public static final String aprilTagLimeLight = "limelight-johnny";
+    public static final String objectLimeLight = "limelight-may";
+    public static final Matrix<N3, N1> visionDev = VecBuilder.fill(0.7, 0.7, 9999999);
+  }
+
+  public static final class Poses {
+    public static final Pose2d ReefAPose = new Pose2d(1, 1, new Rotation2d(0));
+    public static final Pose2d ReefCPose = new Pose2d(1, 1, new Rotation2d(0));
+    public static final Pose2d ReefDPose = new Pose2d(1, 1, new Rotation2d(0));
+    public static final Pose2d ReefEPose = new Pose2d(1, 1, new Rotation2d(0));
+    public static final Pose2d ReefFPose = new Pose2d(1, 1, new Rotation2d(0));
+    public static final Pose2d ReefGPose = new Pose2d(1, 1, new Rotation2d(0));
+    public static final Pose2d ReefHPose = new Pose2d(1, 1, new Rotation2d(0));
+    public static final Pose2d ReefIPose = new Pose2d(1, 1, new Rotation2d(0));
+    public static final Pose2d ReefJPose = new Pose2d(1, 1, new Rotation2d(0));
+    public static final Pose2d ReefKPose = new Pose2d(1, 1, new Rotation2d(0));
+    public static final Pose2d ReefLPose = new Pose2d(1, 1, new Rotation2d(0));
+  }
+
+  public static final class DeepHangConstants {
+    public static final double GEAR_RATIO = 125;
+    public static final double armIn = 0;
+    public static final double armOut = Math.toRadians(90);
+    public static final double kP = 0;
+    public static final double kI = 0;
+    public static final double kD = 0;
+    public static final double kFUnloaded = 0;
+    public static final double kFLoaded = 0;
   }
 }
