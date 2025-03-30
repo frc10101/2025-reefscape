@@ -45,7 +45,7 @@ public class Elevator extends SubsystemBase {
                 this));
 
     new Trigger(m_motorLeft.getForwardLimitSwitch()::isPressed)
-        .onTrue(
+        .whileTrue(
             runOnce(
                     () -> {
                       m_motorLeft.getEncoder().setPosition(0);

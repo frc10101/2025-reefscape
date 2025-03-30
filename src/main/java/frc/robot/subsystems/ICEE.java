@@ -34,8 +34,8 @@ public class ICEE extends SubsystemBase {
     motorConfig.encoder.velocityConversionFactor(Constants.IceeConstants.ratio);
     motorConfig
         .limitSwitch
-        .forwardLimitSwitchEnabled(true)
-        .forwardLimitSwitchType(Type.kNormallyOpen);
+        .reverseLimitSwitchEnabled(true)
+        .reverseLimitSwitchType(Type.kNormallyOpen);
     motorConfig.smartCurrentLimit(50);
     motorConfig
         .closedLoop
@@ -49,7 +49,7 @@ public class ICEE extends SubsystemBase {
   }
 
   public Trigger ICEELimit() {
-    return new Trigger(motor.getForwardLimitSwitch()::isPressed);
+    return new Trigger(motor.getReverseLimitSwitch()::isPressed);
   }
 
   public BooleanSupplier getLimitSwitch() {
