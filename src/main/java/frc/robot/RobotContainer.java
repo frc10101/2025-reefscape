@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.CANdleSystem;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.ICEE;
@@ -47,7 +48,7 @@ public class RobotContainer {
   private final CANdleSystem candle = new CANdleSystem();
   private final Elevator elevator = new Elevator();
   private final ICEE icee = new ICEE();
-  // private final Arm arm = new Arm();
+  private final Arm arm = new Arm();
 
   private Command pather = null;
   private Pathfind pathfind;

@@ -1,8 +1,12 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.FeedbackConfigs;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -11,8 +15,11 @@ import frc.robot.Constants;
 public class Arm extends SubsystemBase {
 
   private final TalonFX armMotor;
-  private Double kF = Constants.ArmConstants.kFF;
-  private PositionVoltage pidControl = null;
+  private double targetPosition = SmartDashboard.getNumber("targetPosition", 0);
+  private double kP = SmartDashboard.getNumber("kP", Constants.ArmConstants.kP);
+  private double kI = SmartDashboard.getNumber("kI", Constants.ArmConstants.kI);
+  private double kD = SmartDashboard.getNumber("kD", Constants.ArmConstants.kD);
+  private double kFF = SmartDashboard.getNumber("kFF", Constants.ArmConstants.kFF);
 
   //   private final SysIdRoutine sysid;
 
@@ -30,12 +37,17 @@ public class Arm extends SubsystemBase {
   }
 
   private void configureArmMotor() {
-    Slot0Configs config = new Slot0Configs();
-    config.kP = Constants.ArmConstants.kP;
-    config.kI = Constants.ArmConstants.kI;
-    config.kD = Constants.ArmConstants.kD;
-    armMotor.getConfigurator().apply(config);
-    this.pidControl = new PositionVoltage(0).withSlot(0);
+    CurrentLimitsConfigs currentLimits = new CurrentLimitsConfigs();
+    MotorOutputConfigs motorOutput = new MotorOutputConfigs();
+    FeedbackConfigs feedback = new FeedbackConfigs();
+    feedback.SensorToMechanismRatio = Constants.ArmConstants.GEAR_RATIO;
+    motorOutput.NeutralMode = NeutralModeValue.Brake;
+    motorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    currentLimits.SupplyCurrentLimit = 60;
+    feedback.FeedbackRotorOffset = 0.619629;
+    armMotor.getConfigurator().apply(motorOutput);
+    armMotor.getConfigurator().apply(feedback);
+    armMotor.getConfigurator().apply(currentLimits);
   }
 
   @SuppressWarnings("unused")
@@ -87,47 +99,58 @@ public class Arm extends SubsystemBase {
         });
   }
 
-  public Command coralFF() {
-    return runOnce(
-        () -> {
-          this.kF = Constants.ArmConstants.kFFwithCoral;
-        });
-  }
+  // public Command coralFF() {
+  //   return runOnce(
+  //       () -> {
+  //         this.kF = Constants.ArmConstants.kFFwithCoral;
+  //       });
+  // }
 
-  public Command normalFF() {
-    return runOnce(
-        () -> {
-          this.kF = Constants.ArmConstants.kFF;
-        });
-  }
+  // public Command normalFF() {
+  //   return runOnce(
+  //       () -> {
+  //         this.kF = Constants.ArmConstants.kFF;
+  //       });
+  // }
 
   public Command setArmPosition(double position) {
-    return new Command() {
-      private double targetPosition;
+    return runOnce(
+        () -> {
+          targetPosition = position;
+        });
+  }
 
-      @Override
-      public void initialize() {
-        targetPosition = position;
-        armMotor.setControl(pidControl.withPosition(targetPosition).withFeedForward(kF));
-      }
+  private void armUpdate(double pos) {
+    // Current arm position
+    double currentPosition = armMotor.getPosition().getValueAsDouble();
 
-      @Override
-      public boolean isFinished() {
-        double currentPosition = armMotor.getPosition().getValueAsDouble();
-        return Math.abs(currentPosition - targetPosition) < 0.05;
-      }
+    // Calculate error
+    double error = pos - currentPosition;
 
-      @Override
-      public void end(boolean interrupted) {
-        if (interrupted) {
-          stop();
-        }
-      }
-    }.withName("SetArmPosition");
+    // PID terms
+    double proportional = kP * error;
+
+    // I term could track accumulated error if needed
+    // This is simplified; in practice you might want anti-windup protection
+    double integral = kI * error;
+
+    // D term - rate of change of error
+    // Using motor velocity directly instead of calculating derivative of error
+    double derivative = kD * -armMotor.getVelocity().getValueAsDouble();
+
+    // G term - gravity compensation based on sin of the position
+    // The sign and magnitude of this term depends on your arm's mechanics
+    double gravityCompensation = kFF * Math.sin(currentPosition);
+
+    // Calculate total output
+    double outputVoltage = proportional + integral + derivative + gravityCompensation;
+
+    // Apply voltage to the motor
+    armMotor.setVoltage(outputVoltage);
   }
 
   @Override
   public void periodic() {
-    // No continuous updates needed
+    armUpdate(targetPosition);
   }
 }
