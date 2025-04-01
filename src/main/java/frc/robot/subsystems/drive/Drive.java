@@ -56,11 +56,14 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.util.LocalADStarAK;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BooleanSupplier;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
   private final Field2d field;
+  public static final boolean USINGVISION = false;
   // TunerConstants doesn't include these constants, so they are declared locally
   static final double ODOMETRY_FREQUENCY =
       new CANBus(TunerConstants.DrivetrainConstants.CANBusName).isNetworkFD() ? 250.0 : 100.0;
@@ -202,9 +205,10 @@ public class Drive extends SubsystemBase {
         },
         this // Reference to this subsystem to set requirements
         );
-
-    this.seeTags3g().onTrue(this.reLocalize(Constants.LimeLights.aprilTagLimeLight));
-    this.seeTags3().onTrue(this.reLocalize(Constants.LimeLights.objectLimeLight));
+    if (USINGVISION){
+      this.seeTags3g().onTrue(this.reLocalize(Constants.LimeLights.aprilTagLimeLight));
+      this.seeTags3().onTrue(this.reLocalize(Constants.LimeLights.objectLimeLight));
+    } 
   }
 
   @Override
@@ -316,6 +320,14 @@ public class Drive extends SubsystemBase {
     }
     kinematics.resetHeadings(headings);
     stop();
+  }
+
+  public Command getAuto(String autoName) {
+    try {
+      return AutoBuilder.buildAuto(autoName);
+    } catch (Exception e) {
+      return null;
+    }
   }
 
   /** Returns a command to run a quasistatic test in the specified direction. */
@@ -489,5 +501,9 @@ public class Drive extends SubsystemBase {
 
   private Trigger seeTags3() {
     return new Trigger(this::see2TagsLimeLight3);
+  }
+  public Trigger usingVision(){
+    BooleanSupplier ret = () -> Drive.USINGVISION;
+    return new Trigger(ret);
   }
 }

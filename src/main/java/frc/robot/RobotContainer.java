@@ -15,6 +15,8 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -23,12 +25,17 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Arm;
 // import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.CANdleSystem;
+import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.ICEE;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -42,9 +49,9 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final CANdleSystem candle = new CANdleSystem();
-  // private final Elevator elevator = new Elevator();
-  // private final ICEE icee = new ICEE();
-  // private final Arm arm = new Arm();
+  private final Elevator elevator = new Elevator();
+  private final ICEE icee = new ICEE();
+  private final Arm arm = new Arm();
 
   private Field2d field;
 
@@ -63,16 +70,13 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   // private NDexter nDexter = new NDexter();
 
-  // private ICEE icee = new ICEE();
-
   public RobotContainer() {
 
     try {
       pathfind = new Pathfind();
     } catch (Exception e) {
       e.printStackTrace();
-    }
-
+    }    
     // Field
     m_field = new Field2d();
     drive = initializeDriveSubsystem();
@@ -212,7 +216,7 @@ public class RobotContainer {
     // icee.ICEELimit().debounce(.1).onFalse(nDexter.canSpin(true));
 
     controller
-        .a()
+        .a().and(drive.usingVision())
         .onTrue(
             Commands.runOnce(
                 () -> {
