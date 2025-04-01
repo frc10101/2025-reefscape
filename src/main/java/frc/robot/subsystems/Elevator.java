@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -14,16 +16,42 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.ElevatorConstants;
+import org.littletonrobotics.junction.Logger;
 
 public class Elevator extends SubsystemBase {
   private final SparkMax m_motorLeft;
   private final SparkMax m_motorRight;
+  private final SysIdRoutine sysIdRoutine;
 
   public Elevator() {
     m_motorLeft = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorLeft, false);
     m_motorRight = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorRight, true);
+
+    m_motorLeft.getEncoder().setPosition(0);
+    m_motorRight.getEncoder().setPosition(0);
+    sysIdRoutine =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) -> Logger.recordOutput("SysIdTestState", state.toString())),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> runVolts(voltage.in(Volts)),
+                null, // No log consumer, since data is recorded by URCL
+                this));
+
+    new Trigger(m_motorLeft.getForwardLimitSwitch()::isPressed)
+        .onTrue(
+            runOnce(
+                    () -> {
+                      m_motorLeft.getEncoder().setPosition(0);
+                      m_motorRight.getEncoder().setPosition(0);
+                    })
+                .ignoringDisable(true));
   }
 
   private SparkMax configureMotor(int canID, boolean isFollower) {
@@ -35,7 +63,9 @@ public class Elevator extends SubsystemBase {
 
     SparkMax motor = new SparkMax(canID, MotorType.kBrushless);
     if (isFollower) {
+      config.inverted(true);
       config.follow(m_motorLeft, true);
+    } else {
       config.limitSwitch.forwardLimitSwitchEnabled(true).forwardLimitSwitchType(Type.kNormallyOpen);
     }
     motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -62,18 +92,6 @@ public class Elevator extends SubsystemBase {
     return runEnd(() -> setElevatorSpeed(-0.5), () -> setElevatorSpeed(0));
   }
 
-  public Command stop() {
-    return runOnce(
-        () -> {
-          m_motorLeft.set(0);
-          m_motorRight.set(0);
-        });
-  }
-
-  public Trigger elevatorLimit() {
-    return new Trigger(m_motorRight.getForwardLimitSwitch()::isPressed);
-  }
-
   public Command L1() {
     return moveToPosition(Constants.ElevatorConstants.L1);
   }
@@ -94,8 +112,31 @@ public class Elevator extends SubsystemBase {
     return moveToPosition(Constants.ElevatorConstants.HumanPlayer);
   }
 
+  public Command sysIdQuasistaticForward() {
+    return sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward);
+  }
+
+  public Command sysIdQuasistaticReverse() {
+    return sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse);
+  }
+
+  public Command sysIdDynamicForward() {
+    return sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward);
+  }
+
+  public Command sysIdDynamicReverse() {
+    return sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse);
+  }
+
+  private void runVolts(double volts) {
+    m_motorLeft.setVoltage(volts);
+    m_motorRight.setVoltage(volts);
+  }
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    Logger.recordOutput("ElevatorPosition", m_motorLeft.getEncoder().getPosition());
+    Logger.recordOutput("Elevator Limit", m_motorLeft.getForwardLimitSwitch().isPressed());
   }
 }
