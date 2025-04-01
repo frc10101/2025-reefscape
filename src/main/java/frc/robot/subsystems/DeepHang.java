@@ -79,6 +79,19 @@ public class DeepHang extends SubsystemBase {
                 .setReference(pos, ControlType.kPosition, ClosedLoopSlot.kSlot0));
   }
 
+  public Command hangDown() {
+    return runOnce(
+        () ->
+            motor
+                .set(.5));
+  }
+  public Command hangUp() {
+    return runOnce(
+        () ->
+            motor
+                .set(-.5));
+  }
+
   @Override
   public void periodic() {
     Logger.recordOutput("Hang motor", motor.getEncoder().getPosition());

@@ -16,10 +16,10 @@ public class Arm extends SubsystemBase {
 
   private final TalonFX armMotor;
   private double targetPosition = SmartDashboard.getNumber("targetPosition", 0);
-  private double kP = SmartDashboard.getNumber("kP", Constants.ArmConstants.kP);
-  private double kI = SmartDashboard.getNumber("kI", Constants.ArmConstants.kI);
-  private double kD = SmartDashboard.getNumber("kD", Constants.ArmConstants.kD);
-  private double kFF = SmartDashboard.getNumber("kFF", Constants.ArmConstants.kFF);
+  // private double kP = SmartDashboard.getNumber("kP", Constants.ArmConstants.kP);
+  // private double kI = SmartDashboard.getNumber("kI", Constants.ArmConstants.kI);
+  // private double kD = SmartDashboard.getNumber("kD", Constants.ArmConstants.kD);
+  // private double kFF = SmartDashboard.getNumber("kFF", Constants.ArmConstants.kFF);
 
   //   private final SysIdRoutine sysid;
 
@@ -128,19 +128,19 @@ public class Arm extends SubsystemBase {
     double error = pos - currentPosition;
 
     // PID terms
-    double proportional = kP * error;
+    double proportional = Constants.ArmConstants.kP * error;
 
     // I term could track accumulated error if needed
     // This is simplified; in practice you might want anti-windup protection
-    double integral = kI * error;
+    double integral = Constants.ArmConstants.kI * error;
 
     // D term - rate of change of error
     // Using motor velocity directly instead of calculating derivative of error
-    double derivative = kD * -armMotor.getVelocity().getValueAsDouble();
+    double derivative = Constants.ArmConstants.kD * -armMotor.getVelocity().getValueAsDouble();
 
     // G term - gravity compensation based on sin of the position
     // The sign and magnitude of this term depends on your arm's mechanics
-    double gravityCompensation = kFF * Math.sin(currentPosition);
+    double gravityCompensation = Constants.ArmConstants.kFF * Math.sin(currentPosition);
 
     // Calculate total output
     double outputVoltage = proportional + integral + derivative + gravityCompensation;

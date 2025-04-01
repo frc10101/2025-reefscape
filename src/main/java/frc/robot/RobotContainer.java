@@ -31,6 +31,7 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.CANdleSystem;
+import frc.robot.subsystems.DeepHang;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.ICEE;
 import frc.robot.subsystems.drive.Drive;
@@ -48,6 +49,9 @@ public class RobotContainer {
   private final CANdleSystem candle = new CANdleSystem();
   private final Elevator elevator = new Elevator();
   private final ICEE icee = new ICEE();
+  private final DeepHang deepHang = new DeepHang();
+
+  @SuppressWarnings("unused")
   private final Arm arm = new Arm();
 
   private Command pather = null;
@@ -161,6 +165,8 @@ public class RobotContainer {
     Trigger button8 = new Trigger(controller2.button(8)); // elevator L4
     Trigger button9 = new Trigger(controller2.button(9)); // elevator L2
     Trigger button10 = new Trigger(controller2.button(10)); // elevator L1
+    Trigger button14 = new Trigger(controller2.button(14)); // hang down
+    Trigger button15 = new Trigger(controller2.button(15)); // hang up
 
     button2.whileTrue(icee.spitOut());
     button1.whileTrue(new ConditionalCommand(icee.stop(), icee.Intake(), icee.getLimitSwitch()));
@@ -170,6 +176,8 @@ public class RobotContainer {
     button8.onTrue(elevator.L4());
     button9.whileTrue(elevator.L2());
     button10.whileTrue(elevator.L1());
+    button14.whileTrue(deepHang.hangDown());
+    button15.whileTrue(deepHang.hangUp());
   }
 
   private void configureSwerveCommands() {
