@@ -213,7 +213,7 @@ public final class Constants {
   }
 
   public static final class DeepHangConstants {
-    
+
     public static final double GEAR_RATIO = 125;
     public static final double armIn = 0;
     public static final double armOut = Math.toRadians(90);

@@ -254,7 +254,7 @@ public class RobotContainer {
                   pather.cancel();
                 }));
 
-    controller.y().onTrue(drive.reLocalize());
+    // controller.y().onTrue(drive.reLocalize());
   }
 
   public void zeroGyro() {
