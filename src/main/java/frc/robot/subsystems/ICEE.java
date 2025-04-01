@@ -34,8 +34,8 @@ public class ICEE extends SubsystemBase {
     motorConfig.encoder.velocityConversionFactor(Constants.IceeConstants.ratio);
     motorConfig
         .limitSwitch
-        .forwardLimitSwitchEnabled(true)
-        .forwardLimitSwitchType(Type.kNormallyOpen);
+        .reverseLimitSwitchEnabled(true)
+        .reverseLimitSwitchType(Type.kNormallyOpen);
     motorConfig.smartCurrentLimit(50);
     motorConfig
         .closedLoop
@@ -49,7 +49,7 @@ public class ICEE extends SubsystemBase {
   }
 
   public Trigger ICEELimit() {
-    return new Trigger(motor.getForwardLimitSwitch()::isPressed);
+    return new Trigger(motor.getReverseLimitSwitch()::isPressed);
   }
 
   public BooleanSupplier getLimitSwitch() {
@@ -74,11 +74,11 @@ public class ICEE extends SubsystemBase {
   }
 
   public Command Intake() {
-    return runMotor(0.5);
+    return runMotor(-0.5);
   }
 
   public Command spitOut() {
-    return runMotor(-0.75);
+    return runMotor(0.75);
   }
 
   private Command runMotor(double speed) {
@@ -92,6 +92,6 @@ public class ICEE extends SubsystemBase {
   @Override
   public void periodic() {
     Logger.recordOutput("ICEE motor", motor.getEncoder().getVelocity());
-    Logger.recordOutput("ICEE Limit Switch", motor.getForwardLimitSwitch().isPressed());
+    Logger.recordOutput("ICEE Limit Switch", motor.getReverseLimitSwitch().isPressed());
   }
 }

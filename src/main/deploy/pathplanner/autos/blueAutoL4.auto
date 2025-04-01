@@ -7,7 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "leave"
+            "pathName": "blueAutoL4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L4"
           }
         }
       ]

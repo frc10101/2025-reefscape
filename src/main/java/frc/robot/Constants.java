@@ -13,6 +13,12 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
@@ -35,16 +41,19 @@ public final class Constants {
     REPLAY
   }
 
+  /** enables SYSID Tuning */
+  public static final boolean isSysID = false;
+
   public static final class CANids {
     public static final int CANdleID = 25;
   }
 
   public static final class ArmConstants {
     // tuning variables
-    public static final double kP = 3;
+    public static final double kP = 0;
     public static final double kI = 0.0;
 
-    public static final double kD = 1.2;
+    public static final double kD = 0;
     public static final double kFF = 0;
     public static final double kFFwithCoral = 0;
     public static final double kFFTop = 0;
@@ -55,7 +64,7 @@ public final class Constants {
     public static final double ARM_LENGTH_METERS = 0.3; // meters
     public static final double GRAVITY_M_PER_SEC = 9.81; // m/s^2
     public static final double CENTER_OF_MASS = ARM_LENGTH_METERS / 2; // Center of mass
-    public static final double GEAR_RATIO = 20.0; // Motor rotations per arm rotation
+    public static final double GEAR_RATIO = 9.0; // Motor rotations per arm rotation
     public static final double kTorqueToVoltage = 0.1; // Tune: Nm to volts
     public static final double POWER_LIMIT = 0.5;
 
@@ -94,6 +103,8 @@ public final class Constants {
 
     /** ICEE Can ID */
     public static final int IceeMotor = 12;
+
+    public static final int DeepHang = 19;
   }
 
   public static final class IntakeConstants {
@@ -118,17 +129,17 @@ public final class Constants {
     public static final double kP = 0.17;
     public static final double kI = 0.0;
     public static final double kD = 0;
-    public static final double kFF = 0.003;
+    public static final double kFF = 0.01;
     public static final double kMaxVelocity = 1.75;
     public static final double kMaxAcceleration = 0.75;
     public static final double ElevatorGearRatio = 20;
     public static final double NDexter = 0;
-    public static final double goOut = -16;
-    public static final double L1 = -1;
-    public static final double L2 = -2;
-    public static final double L3 = -9;
-    public static final double L4 = -4;
-    public static final double HumanPlayer = -5;
+    public static final double goOut = 16;
+    public static final double L1 = 0;
+    public static final double L2 = -5;
+    public static final double L3 = -15;
+    public static final double L4 = -28;
+    public static final double HumanPlayer = 5;
   }
 
   public static final class IceeConstants {
@@ -157,5 +168,61 @@ public final class Constants {
     public static final double leftKd = 0;
     public static final double leftGearRatio = 9;
     public static final double rightFF = 1.0 / 5767;
+  }
+
+  public static final class AprilTagIds {
+    public static final int redSideLeftCoralStation = 1;
+    public static final int redSideRightCoralStation = 2;
+    public static final int redSideProcessor = 3;
+    public static final int redSideBlueBarge = 4;
+    public static final int redSideRedBarge = 5;
+    public static final int redSideNearLeftReef = 6;
+    public static final int redSideNearCenterReef = 7;
+    public static final int redSideNearRightReef = 8;
+    public static final int redSideFarRightReef = 9;
+    public static final int redSideFarCenterReef = 10;
+    public static final int redSideFarLeftReef = 11;
+    public static final int blueSideRightProcessor = 12;
+    public static final int blueSideLeftProcessor = 13;
+    public static final int blueSideBlueBarge = 14;
+    public static final int blueSideRedBarge = 15;
+    public static final int blueSideProcessor = 16;
+    public static final int blueSideNearRightReef = 17;
+    public static final int blueSideNearCenterReef = 18;
+    public static final int blueSideNearLeftReef = 19;
+    public static final int blueSideFarLeftReef = 20;
+    public static final int blueSideFarCenterReef = 21;
+    public static final int blueSideFarRightReef = 22;
+  }
+
+  public static final class LimeLights {
+    public static final String aprilTagLimeLight = "limelight-johnny";
+    public static final String objectLimeLight = "limelight-may";
+    public static final Matrix<N3, N1> visionDev = VecBuilder.fill(0.7, 0.7, 9999999);
+  }
+
+  public static final class Poses {
+    public static final Pose2d ReefAPose = new Pose2d(1, 1, new Rotation2d(0));
+    public static final Pose2d ReefCPose = new Pose2d(1, 1, new Rotation2d(0));
+    public static final Pose2d ReefDPose = new Pose2d(1, 1, new Rotation2d(0));
+    public static final Pose2d ReefEPose = new Pose2d(1, 1, new Rotation2d(0));
+    public static final Pose2d ReefFPose = new Pose2d(1, 1, new Rotation2d(0));
+    public static final Pose2d ReefGPose = new Pose2d(1, 1, new Rotation2d(0));
+    public static final Pose2d ReefHPose = new Pose2d(1, 1, new Rotation2d(0));
+    public static final Pose2d ReefIPose = new Pose2d(1, 1, new Rotation2d(0));
+    public static final Pose2d ReefJPose = new Pose2d(1, 1, new Rotation2d(0));
+    public static final Pose2d ReefKPose = new Pose2d(1, 1, new Rotation2d(0));
+    public static final Pose2d ReefLPose = new Pose2d(1, 1, new Rotation2d(0));
+  }
+
+  public static final class DeepHangConstants {
+    public static final double GEAR_RATIO = 125;
+    public static final double armIn = 0;
+    public static final double armOut = Math.toRadians(90);
+    public static final double kP = 0;
+    public static final double kI = 0;
+    public static final double kD = 0;
+    public static final double kFUnloaded = 0;
+    public static final double kFLoaded = 0;
   }
 }
