@@ -36,9 +36,13 @@ import frc.robot.subsystems.ICEE;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
+import frc.robot.subsystems.drive.GyroIOSim;
 import frc.robot.subsystems.drive.ModuleIO;
-import frc.robot.subsystems.drive.ModuleIOSim;
-import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.drive.ModuleIOTalonFXReal;
+import frc.robot.subsystems.drive.ModuleIOTalonFXSim;
+import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -50,6 +54,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
+  private final SwerveDriveSimulation driveSimulation;
+
   private final CANdleSystem candle = new CANdleSystem();
   private final Elevator elevator = new Elevator();
   private final ICEE icee = new ICEE();
@@ -66,7 +72,48 @@ public class RobotContainer {
   private final Field2d m_field = new Field2d();
 
   public RobotContainer() {
-    drive = initializeDriveSubsystem();
+    switch (Constants.currentMode) {
+      case REAL:
+        drive =
+            new Drive(
+                new GyroIOPigeon2(),
+                new ModuleIOTalonFXReal(TunerConstants.FrontLeft),
+                new ModuleIOTalonFXReal(TunerConstants.FrontRight),
+                new ModuleIOTalonFXReal(TunerConstants.BackLeft),
+                new ModuleIOTalonFXReal(TunerConstants.BackRight),
+                m_field,
+                (pose) -> {});
+
+        driveSimulation = null;
+        break;
+      case SIM:
+        driveSimulation =
+            new SwerveDriveSimulation(Drive.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
+        SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
+
+        drive =
+            new Drive(
+                new GyroIOSim(driveSimulation.getGyroSimulation()),
+                new ModuleIOTalonFXSim(TunerConstants.FrontLeft, driveSimulation.getModules()[0]),
+                new ModuleIOTalonFXSim(TunerConstants.FrontRight, driveSimulation.getModules()[1]),
+                new ModuleIOTalonFXSim(TunerConstants.BackLeft, driveSimulation.getModules()[2]),
+                new ModuleIOTalonFXSim(TunerConstants.BackRight, driveSimulation.getModules()[3]),
+                m_field,
+                driveSimulation::setSimulationWorldPose);
+        break;
+      default:
+        drive =
+            new Drive(
+                new GyroIO() {},
+                new ModuleIO() {},
+                new ModuleIO() {},
+                new ModuleIO() {},
+                new ModuleIO() {},
+                m_field,
+                (pose) -> {});
+        driveSimulation = null;
+        break;
+    }
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -75,35 +122,6 @@ public class RobotContainer {
 
     // Configure button bindings
     configureButtonBindings();
-  }
-
-  private Drive initializeDriveSubsystem() {
-    switch (Constants.currentMode) {
-      case REAL:
-        return new Drive(
-            new GyroIOPigeon2(),
-            new ModuleIOTalonFX(TunerConstants.FrontLeft),
-            new ModuleIOTalonFX(TunerConstants.FrontRight),
-            new ModuleIOTalonFX(TunerConstants.BackLeft),
-            new ModuleIOTalonFX(TunerConstants.BackRight),
-            m_field);
-      case SIM:
-        return new Drive(
-            new GyroIO() {},
-            new ModuleIOSim(TunerConstants.FrontLeft),
-            new ModuleIOSim(TunerConstants.FrontRight),
-            new ModuleIOSim(TunerConstants.BackLeft),
-            new ModuleIOSim(TunerConstants.BackRight),
-            m_field);
-      default:
-        return new Drive(
-            new GyroIO() {},
-            new ModuleIO() {},
-            new ModuleIO() {},
-            new ModuleIO() {},
-            new ModuleIO() {},
-            m_field);
-    }
   }
 
   private void setupAutoOptions() {
@@ -173,26 +191,30 @@ public class RobotContainer {
     // Switch to X pattern when X button is pressed
     controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
+    final Runnable resetGyro =
+        Constants.currentMode == Constants.Mode.SIM
+            ? () -> drive.setPose(driveSimulation.getSimulatedDriveTrainPose())
+            : () ->
+                drive.setPose(
+                    new Pose2d(
+                        drive.getPose().getTranslation(),
+                        DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                            ? new Rotation2d(Math.PI)
+                            : new Rotation2d()));
+
     // Reset gyro to 0° when B button is pressed
-    controller
-        .b()
-        .onTrue(
-            Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            new Pose2d(
-                                drive.getPose().getTranslation(),
-                                DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-                                    ? new Rotation2d(Math.PI)
-                                    : new Rotation2d())),
-                    drive)
-                .ignoringDisable(true));
+    controller.b().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
     icee.ICEELimit().onTrue(arm.coralFF());
     icee.ICEELimit().onFalse(arm.normalFF());
   }
 
   public void zeroGyro() {
+    if (Constants.currentMode == Constants.Mode.SIM) {
+      drive.setPose(driveSimulation.getSimulatedDriveTrainPose());
+      return;
+    }
+
     drive.setPose(
         new Pose2d(
             drive.getPose().getTranslation(),
@@ -203,5 +225,24 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
     return autoChooser.get();
+  }
+
+  public void resetSimulationField() {
+    if (Constants.currentMode != Constants.Mode.SIM) return;
+
+    driveSimulation.setSimulationWorldPose(new Pose2d(3, 3, new Rotation2d()));
+    SimulatedArena.getInstance().resetFieldForAuto();
+  }
+
+  public void updateSimulation() {
+    if (Constants.currentMode != Constants.Mode.SIM) return;
+
+    SimulatedArena.getInstance().simulationPeriodic();
+    Logger.recordOutput(
+        "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
+    Logger.recordOutput(
+        "FieldSimulation/Coral", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
+    Logger.recordOutput(
+        "FieldSimulation/Algae", SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
   }
 }
