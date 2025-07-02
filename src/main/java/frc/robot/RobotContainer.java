@@ -22,17 +22,10 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.Arm;
-import frc.robot.subsystems.CANdleSystem;
-import frc.robot.subsystems.Elevator;
-import frc.robot.subsystems.ICEE;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -50,14 +43,9 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
-  private final CANdleSystem candle = new CANdleSystem();
-  private final Elevator elevator = new Elevator();
-  private final ICEE icee = new ICEE();
-  private final Arm arm = new Arm();
 
   // Controllers
   private final CommandXboxController controller = new CommandXboxController(0);
-  private final CommandJoystick controller2 = new CommandJoystick(1);
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -128,27 +116,8 @@ public class RobotContainer {
     configureSwerveCommands();
 
     // Controller 2 button bindings
-    bindController2Buttons();
 
     // ICEE and CANdle interactions
-    icee.ICEELimit().onTrue(candle.haveCoral());
-    icee.ICEELimit().onFalse(candle.noCoral());
-
-    elevator.elevatorLimit().whileTrue(elevator.stop());
-  }
-
-  private void bindController2Buttons() {
-    Trigger button1 = new Trigger(controller2.button(1)); // output Coral
-    Trigger button2 = new Trigger(controller2.button(2)); // intake Coral
-    Trigger button14 = new Trigger(controller2.button(14)); // L1
-    Trigger button15 = new Trigger(controller2.button(15)); // elevator HP
-    Trigger button16 = new Trigger(controller2.button(16)); // elevator L3
-
-    button1.whileTrue(icee.spitOut());
-    button2.whileTrue(new ConditionalCommand(icee.stop(), icee.Intake(), icee.getLimitSwitch()));
-    button14.whileTrue(elevator.L1());
-    button15.whileTrue(elevator.HumanPlayer());
-    button16.whileTrue(elevator.L3());
   }
 
   private void configureSwerveCommands() {
@@ -187,9 +156,6 @@ public class RobotContainer {
                                     : new Rotation2d())),
                     drive)
                 .ignoringDisable(true));
-
-    icee.ICEELimit().onTrue(arm.coralFF());
-    icee.ICEELimit().onFalse(arm.normalFF());
   }
 
   public void zeroGyro() {
