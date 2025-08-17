@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -11,6 +12,11 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.LimitSwitchConfig.Type;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -86,10 +92,6 @@ public class Elevator extends SubsystemBase {
     return moveToPosition(Constants.ElevatorConstants.L3);
   }
 
-  public Command L4() {
-    return moveToPosition(Constants.ElevatorConstants.L4);
-  }
-
   public Command HumanPlayer() {
     return moveToPosition(Constants.ElevatorConstants.HumanPlayer);
   }
@@ -97,5 +99,36 @@ public class Elevator extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+  }
+
+  // Simulation classes help us simulate what's going on, including gravity.
+  private final ElevatorSim m_elevatorSim =
+      new ElevatorSim(
+          DCMotor.getNEO(2),
+          Constants.ElevatorConstants.kElevatorGearing,
+          Constants.ElevatorConstants.kCarriageMass,
+          Constants.ElevatorConstants.kElevatorDrumRadius,
+          Constants.ElevatorConstants.kMinElevatorHeightMeters,
+          Constants.ElevatorConstants.kMaxElevatorHeightMeters,
+          true,
+          0,
+          0.01,
+          0.0);
+
+  public void simulationPeriodic() {
+    SparkMaxSim FakeBoi = new SparkMaxSim(m_motorLeft, DCMotor.getNEO(1));
+
+    // In this method, we update our simulation of what our elevator is doing
+    // First, we set our "inputs" (voltages)
+    m_elevatorSim.setInput(FakeBoi.getAppliedOutput() * RobotController.getBatteryVoltage());
+
+    // Next, we update it. The standard loop time is 20ms.
+    m_elevatorSim.update(0.020);
+
+    // Finally, we set our simulated encoder's readings and simulated battery voltage
+    FakeBoi.setPosition(m_elevatorSim.getPositionMeters());
+    // SimBattery estimates loaded battery voltages
+    RoboRioSim.setVInVoltage(
+        BatterySim.calculateDefaultBatteryLoadedVoltage(m_elevatorSim.getCurrentDrawAmps()));
   }
 }

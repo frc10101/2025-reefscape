@@ -13,6 +13,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
@@ -121,7 +122,7 @@ public final class Constants {
     public static final double kFF = 0.003;
     public static final double kMaxVelocity = 1.75;
     public static final double kMaxAcceleration = 0.75;
-    public static final double ElevatorGearRatio = 20;
+    public static final double ElevatorGearRatio = 25;
     public static final double NDexter = 0;
     public static final double goOut = -16;
     public static final double L1 = -1;
@@ -129,6 +130,13 @@ public final class Constants {
     public static final double L3 = -9;
     public static final double L4 = -4;
     public static final double HumanPlayer = -5;
+
+    // Sim Variables (currently inccorect and being yoinked for testing reasons)
+    public static final double kElevatorGearing = 25.0;
+    public static final double kCarriageMass = 4.0; // kg
+    public static final double kElevatorDrumRadius = Units.inchesToMeters(2.0);
+    public static final double kMinElevatorHeightMeters = 0.0;
+    public static final double kMaxElevatorHeightMeters = Units.feetToMeters(3.0);
   }
 
   public static final class IceeConstants {

@@ -134,7 +134,7 @@ public class Robot extends LoggedRobot {
       m_autonomousCommand.cancel();
     }
 
-    m_robotContainer.zeroGyro();
+    // m_robotContainer.zeroGyro();
   }
 
   @Override

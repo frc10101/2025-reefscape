@@ -14,14 +14,9 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -125,7 +120,7 @@ public class RobotContainer {
   }
 
   private void configureButtonBindings() {
-    configureSwerveCommands();
+    // configureSwerveCommands();
 
     // Controller 2 button bindings
     bindController2Buttons();
@@ -151,56 +146,56 @@ public class RobotContainer {
     button16.whileTrue(elevator.L3());
   }
 
-  private void configureSwerveCommands() {
-    // Default command, normal field-relative drive
-    drive.setDefaultCommand(
-        DriveCommands.joystickDrive(
-            drive,
-            () -> -controller.getLeftY(),
-            () -> -controller.getLeftX(),
-            () -> -controller.getRightX()));
+  /*private void configureSwerveCommands() {
+      // Default command, normal field-relative drive
+      drive.setDefaultCommand(
+          DriveCommands.joystickDrive(
+              drive,
+              () -> -controller.getLeftY(),
+              () -> -controller.getLeftX(),
+              () -> -controller.getRightX()));
 
-    // Lock to 0° when A button is held
-    controller
-        .a()
-        .whileTrue(
-            DriveCommands.joystickDriveAtAngle(
-                drive,
-                () -> controller.getLeftY(),
-                () -> controller.getLeftX(),
-                () -> new Rotation2d()));
+      // Lock to 0° when A button is held
+      controller
+          .a()
+          .whileTrue(
+              DriveCommands.joystickDriveAtAngle(
+                  drive,
+                  () -> controller.getLeftY(),
+                  () -> controller.getLeftX(),
+                  () -> new Rotation2d()));
 
-    // Switch to X pattern when X button is pressed
-    controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+      // Switch to X pattern when X button is pressed
+      controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
-    // Reset gyro to 0° when B button is pressed
-    controller
-        .b()
-        .onTrue(
-            Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            new Pose2d(
-                                drive.getPose().getTranslation(),
-                                DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-                                    ? new Rotation2d(Math.PI)
-                                    : new Rotation2d())),
-                    drive)
-                .ignoringDisable(true));
+      // Reset gyro to 0° when B button is pressed
+      controller
+          .b()
+          .onTrue(
+              Commands.runOnce(
+                      () ->
+                          drive.setPose(
+                              new Pose2d(
+                                  drive.getPose().getTranslation(),
+                                  DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                                      ? new Rotation2d(Math.PI)
+                                      : new Rotation2d())),
+                      drive)
+                  .ignoringDisable(true));
 
-    icee.ICEELimit().onTrue(arm.coralFF());
-    icee.ICEELimit().onFalse(arm.normalFF());
-  }
+      icee.ICEELimit().onTrue(arm.coralFF());
+      icee.ICEELimit().onFalse(arm.normalFF());
+    }
 
-  public void zeroGyro() {
-    drive.setPose(
-        new Pose2d(
-            drive.getPose().getTranslation(),
-            DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-                ? new Rotation2d(Math.PI)
-                : new Rotation2d()));
-  }
-
+    public void zeroGyro() {
+      drive.setPose(
+          new Pose2d(
+              drive.getPose().getTranslation(),
+              DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                  ? new Rotation2d(Math.PI)
+                  : new Rotation2d()));
+    }
+  */
   public Command getAutonomousCommand() {
     return autoChooser.get();
   }
