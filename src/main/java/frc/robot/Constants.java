@@ -133,10 +133,10 @@ public final class Constants {
 
     // Sim Variables (currently inccorect and being yoinked for testing reasons)
     public static final double kElevatorGearing = 25.0;
-    public static final double kCarriageMass = 4.0; // kg
-    public static final double kElevatorDrumRadius = Units.inchesToMeters(2.0);
+    public static final double kCarriageMass = 0.68; // kg
+    public static final double kElevatorDrumRadius = Units.inchesToMeters(1.88);
     public static final double kMinElevatorHeightMeters = 0.0;
-    public static final double kMaxElevatorHeightMeters = Units.feetToMeters(3.0);
+    public static final double kMaxElevatorHeightMeters = Units.feetToMeters(4.5);
   }
 
   public static final class IceeConstants {

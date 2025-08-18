@@ -14,9 +14,15 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -146,7 +152,7 @@ public class RobotContainer {
     button16.whileTrue(elevator.L3());
   }
 
-  /*private void configureSwerveCommands() {
+  private void configureSwerveCommands() {
       // Default command, normal field-relative drive
       drive.setDefaultCommand(
           DriveCommands.joystickDrive(
@@ -195,8 +201,9 @@ public class RobotContainer {
                   ? new Rotation2d(Math.PI)
                   : new Rotation2d()));
     }
-  */
+  
   public Command getAutonomousCommand() {
     return autoChooser.get();
   }
+  
 }

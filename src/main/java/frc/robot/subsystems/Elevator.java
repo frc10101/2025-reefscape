@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -26,6 +27,7 @@ import frc.robot.Constants.ElevatorConstants;
 public class Elevator extends SubsystemBase {
   private final SparkMax m_motorLeft;
   private final SparkMax m_motorRight;
+  
 
   public Elevator() {
     m_motorLeft = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorLeft, false);
@@ -112,12 +114,12 @@ public class Elevator extends SubsystemBase {
           Constants.ElevatorConstants.kMaxElevatorHeightMeters,
           true,
           0,
-          0.01,
+          0.0,
           0.0);
-
+  
+  
   public void simulationPeriodic() {
     SparkMaxSim FakeBoi = new SparkMaxSim(m_motorLeft, DCMotor.getNEO(1));
-
     // In this method, we update our simulation of what our elevator is doing
     // First, we set our "inputs" (voltages)
     m_elevatorSim.setInput(FakeBoi.getAppliedOutput() * RobotController.getBatteryVoltage());
@@ -127,6 +129,8 @@ public class Elevator extends SubsystemBase {
 
     // Finally, we set our simulated encoder's readings and simulated battery voltage
     FakeBoi.setPosition(m_elevatorSim.getPositionMeters());
+    SmartDashboard.putNumber("Elevator pos", FakeBoi.getPosition());
+
     // SimBattery estimates loaded battery voltages
     RoboRioSim.setVInVoltage(
         BatterySim.calculateDefaultBatteryLoadedVoltage(m_elevatorSim.getCurrentDrawAmps()));
