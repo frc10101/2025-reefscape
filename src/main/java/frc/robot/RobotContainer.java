@@ -77,7 +77,7 @@ public class RobotContainer {
     // Configure button bindings
     configureButtonBindings();
   }
-
+  
   private Drive initializeDriveSubsystem() {
     switch (Constants.currentMode) {
       case REAL:
@@ -142,8 +142,8 @@ public class RobotContainer {
     Trigger button1 = new Trigger(controller2.button(1)); // output Coral
     Trigger button2 = new Trigger(controller2.button(2)); // intake Coral
     Trigger button14 = new Trigger(controller2.button(14)); // L1
-    Trigger button15 = new Trigger(controller2.button(15)); // elevator HP
-    Trigger button16 = new Trigger(controller2.button(16)); // elevator L3
+    Trigger button15 = new Trigger(controller2.button(3)); // elevator HP
+    Trigger button16 = new Trigger(controller2.button(4)); // elevator L3
 
     button1.whileTrue(icee.spitOut());
     button2.whileTrue(new ConditionalCommand(icee.stop(), icee.Intake(), icee.getLimitSwitch()));

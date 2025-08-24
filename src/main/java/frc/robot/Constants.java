@@ -132,11 +132,12 @@ public final class Constants {
     public static final double HumanPlayer = -5;
 
     // Sim Variables (currently inccorect and being yoinked for testing reasons)
-    public static final double kElevatorGearing = 25.0;
-    public static final double kCarriageMass = 0.68; // kg
+    public static final double kElevatorGearing = 1.0 / 25.0;
+    public static final double kCarriageMass = (0.68+4.63); // kg
     public static final double kElevatorDrumRadius = Units.inchesToMeters(1.88);
     public static final double kMinElevatorHeightMeters = 0.0;
     public static final double kMaxElevatorHeightMeters = Units.feetToMeters(4.5);
+    public static final double kPixelsPerMeter = 20.0; // fake speed?
   }
 
   public static final class IceeConstants {
