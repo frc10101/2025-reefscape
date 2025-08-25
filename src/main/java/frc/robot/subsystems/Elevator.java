@@ -30,9 +30,10 @@ public class Elevator extends SubsystemBase {
   private final SparkMax m_motorLeft;
   private final SparkMax m_motorRight;
   private final SparkMaxSim FakeBoi;
+  private SparkLimitSwitchSim elevatorLimitSwitchSim;
   
   private final Mechanism2d m_mech2d = new Mechanism2d(50, 50);
-  private final MechanismRoot2d m_mech2dRoot = m_mech2d.getRoot("ElevatorArm Root", 25, 0);
+  private final MechanismRoot2d m_mech2dRoot = m_mech2d.getRoot("Elevator Root", 14, 0);
   private final MechanismLigament2d m_elevatorMech2d =
       m_mech2dRoot.append(
           new MechanismLigament2d(
@@ -45,6 +46,7 @@ public class Elevator extends SubsystemBase {
     m_motorLeft = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorLeft, false);
     m_motorRight = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorRight, true);
     FakeBoi = new SparkMaxSim(m_motorLeft, DCMotor.getNEO(1));
+    elevatorLimitSwitchSim = new SparkLimitSwitchSim(m_motorLeft, false);
   }
 
   private SparkMax configureMotor(int canID, boolean isFollower) {
@@ -65,7 +67,6 @@ public class Elevator extends SubsystemBase {
 
   private void goToGoal(double goal) {
     m_motorLeft.getClosedLoopController().setReference(goal, ControlType.kPosition);
-    m_elevatorSim.setState(goal,m_elevatorSim.getVelocityMetersPerSecond());
   }
 
   private void setElevatorSpeed(double speed) {
@@ -114,20 +115,19 @@ public class Elevator extends SubsystemBase {
 
   @Override
   public void periodic() {
+    moveToPosition(Constants.ElevatorConstants.L1);
     // This method will be called once per scheduler run
-    SmartDashboard.putNumber("Sim Elevator Position", m_elevatorSim.getPositionMeters());
-    SmartDashboard.putNumber("Sim Sparkmax Position", FakeBoi.getPosition());
-    SmartDashboard.putNumber("Applied output", FakeBoi.getAppliedOutput());
-    SmartDashboard.putNumber("Mech length", m_elevatorMech2d.getLength());
+    SmartDashboard.putNumber("Applied output", FakeBoi.getAppliedOutput());  // Shows applied output is changing when a button is pressed so we know atleast something is working
+    SmartDashboard.putNumber("Line Length", m_elevatorMech2d.getLength());  // The length of the line simulating our elevator moving in pixels (bottom to top is the distance travelled)
+    SmartDashboard.putNumber("Elevator Height", m_elevatorMech2d.getLength()/ Constants.ElevatorConstants.kPixelsPerMeter); // The height of the elevator in meters
 
     // Update mechanism2d
     m_elevatorMech2d.setLength(
         Constants.ElevatorConstants.kPixelsPerMeter * Constants.ElevatorConstants.kMinElevatorHeightMeters
             + Constants.ElevatorConstants.kPixelsPerMeter
-                * (m_motorLeft.getEncoder().getPosition() / Constants.ElevatorConstants.kElevatorGearing)
+                * (Math.abs(m_motorLeft.getEncoder().getPosition()) / Constants.ElevatorConstants.kElevatorGearing)
                 * (Constants.ElevatorConstants.kElevatorDrumRadius * 2.0 * Math.PI));
   }  
-  private SparkLimitSwitchSim elevatorLimitSwitchSim;
   // Fake elevator
   private final ElevatorSim m_elevatorSim =
       new ElevatorSim(
@@ -139,6 +139,7 @@ public class Elevator extends SubsystemBase {
           Constants.ElevatorConstants.kMaxElevatorHeightMeters,
           true,
           0);
+
 
   @Override
   public void simulationPeriodic() {
@@ -159,9 +160,7 @@ public class Elevator extends SubsystemBase {
           * 60.0,
           RobotController.getBatteryVoltage(),
       0.02);
-    // Finally, we set our simulated encoder's readings and simulated battery voltage
-    //m_elevatorSim.setState(1,FakeBoi.getAppliedOutput());
-    //FakeBoi.setPosition(m_elevatorSim.getPositionMeters());
-    //System.out.println(FakeBoi.getPosition());
+
+      //FakeBoi.setPosition(FakeBoi.getAppliedOutput()); - Made sure setPosition did what it was saying it was gonna
   }
 }

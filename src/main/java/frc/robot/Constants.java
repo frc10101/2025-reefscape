@@ -137,7 +137,7 @@ public final class Constants {
     public static final double kElevatorDrumRadius = Units.inchesToMeters(1.88);
     public static final double kMinElevatorHeightMeters = 0.0;
     public static final double kMaxElevatorHeightMeters = Units.feetToMeters(4.5);
-    public static final double kPixelsPerMeter = 20.0; // fake speed?
+    public static final double kPixelsPerMeter = 20.0; // pixels per meter conversion factor
   }
 
   public static final class IceeConstants {
