@@ -38,7 +38,8 @@ public final class Constants {
   public static final class CANids {
     public static final int CANdleID = 25;
   }
-  public static final class digitalIDs{
+
+  public static final class digitalIDs {
     public static final int daisyBeamBreak = 0;
   }
 
@@ -69,5 +70,4 @@ public final class Constants {
     public static final double L4 = -4;
     public static final double HumanPlayer = -5;
   }
-
 }

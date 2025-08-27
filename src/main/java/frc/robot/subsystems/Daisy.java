@@ -9,7 +9,6 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
-
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -19,6 +18,7 @@ import frc.robot.Constants.ElevatorConstants;
 public class Daisy extends SubsystemBase {
   private final SparkMax m_daisyMotor;
   private final DigitalInput m_daisyBeamBreak;
+
   /** Creates a new Daisy. */
   public Daisy() {
     m_daisyMotor = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorLeft);
@@ -39,7 +39,6 @@ public class Daisy extends SubsystemBase {
 
   public Command outputSpin(double outputSpeed) {
     return runOnce(() -> m_daisyMotor.set(outputSpeed));
-     
   }
 
   @Override
@@ -49,5 +48,4 @@ public class Daisy extends SubsystemBase {
       m_daisyMotor.set(0);
     }
   }
-
 }
