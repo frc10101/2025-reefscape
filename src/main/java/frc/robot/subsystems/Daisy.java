@@ -13,11 +13,11 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Constants.ElevatorConstants;
 
 public class Daisy extends SubsystemBase {
   private final SparkMax m_daisyMotor;
   private final DigitalInput m_daisyBeamBreak;
+  private double mMotorSpeed = 0.0;
 
   /** Creates a new Daisy. */
   public Daisy() {
@@ -27,10 +27,6 @@ public class Daisy extends SubsystemBase {
 
   private SparkMax configureMotor(int canID) {
     SparkMaxConfig config = new SparkMaxConfig();
-    config.encoder.positionConversionFactor(
-        2 * Math.PI / Constants.ElevatorConstants.ElevatorGearRatio);
-    config.closedLoop.pidf(
-        ElevatorConstants.kP, ElevatorConstants.kI, ElevatorConstants.kD, ElevatorConstants.kFF);
 
     SparkMax motor = new SparkMax(canID, MotorType.kBrushless);
     motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -44,8 +40,10 @@ public class Daisy extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    if (m_daisyBeamBreak.get()) {
-      m_daisyMotor.set(0);
+    if (m_daisyBeamBreak.get() && mMotorSpeed > 0) {
+      mMotorSpeed = 0.0;
     }
-  }
+
+    m_daisyMotor.set(mMotorSpeed);
+}
 }
