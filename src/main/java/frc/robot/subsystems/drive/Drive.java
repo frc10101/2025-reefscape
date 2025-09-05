@@ -52,6 +52,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.LimelightHelpers;
+import frc.robot.LimelightHelpers.LimelightResults;
 import frc.robot.generated.TunerConstants;
 import frc.robot.util.LocalADStarAK;
 import java.util.concurrent.locks.Lock;
@@ -208,13 +210,38 @@ public class Drive extends SubsystemBase {
   @Override
   public void periodic() {
     odometryLock.lock(); // Prevents odometry updates while reading data
-    field.setRobotPose(getPose());
-    gyroIO.updateInputs(gyroInputs);
-    Logger.processInputs("Drive/Gyro", gyroInputs);
-    for (var module : modules) {
-      module.periodic();
+    try {
+      field.setRobotPose(getPose());
+      gyroIO.updateInputs(gyroInputs);
+      Logger.processInputs("Drive/Gyro", gyroInputs);
+
+      // Get limelight data safely - fixed with proper null checks based on LimelightHelpers.java
+      // structure
+      try {
+        LimelightResults results =
+            LimelightHelpers.getLatestResults(Constants.LimelightConstants.limelightName);
+        if (results != null) {
+          // Make sure we have valid data and a valid pose
+          if (results.valid
+              && results.botpose_wpiblue != null
+              && results.botpose_wpiblue.length >= 6) {
+            double visionTimestampSeconds = results.timestamp_LIMELIGHT_publish / 1000.0;
+            Pose2d botPose = results.getBotPose2d_wpiBlue();
+            if (botPose != null) {
+              addVisionMeasurement(botPose, visionTimestampSeconds, null);
+            }
+          }
+        }
+      } catch (Exception e) {
+        System.err.println("Error processing limelight data: " + e.getMessage());
+      }
+
+      for (var module : modules) {
+        module.periodic();
+      }
+    } finally {
+      odometryLock.unlock();
     }
-    odometryLock.unlock();
 
     // Stop moving when disabled
     if (DriverStation.isDisabled()) {
@@ -287,6 +314,85 @@ public class Drive extends SubsystemBase {
 
     // Log optimized setpoints (runSetpoint mutates each state)
     Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
+  }
+
+  /** Runs the drive at the desired velocity. */
+  public void drive(ChassisSpeeds speeds) {
+    runVelocity(speeds);
+  }
+
+  /**
+   * Predicts the robot's position after a specified time.
+   *
+   * @param seconds Time to predict forward in seconds
+   * @return Predicted pose
+   */
+  public Pose2d predict(double seconds) {
+    ChassisSpeeds speeds = getChassisSpeeds();
+    Twist2d twist =
+        new Twist2d(
+            speeds.vxMetersPerSecond * seconds,
+            speeds.vyMetersPerSecond * seconds,
+            speeds.omegaRadiansPerSecond * seconds);
+    return getPose().exp(twist);
+  }
+
+  /**
+   * Returns the robot's heading in relation to the field.
+   *
+   * @return Field-relative heading as a Rotation2d
+   */
+  public Rotation2d getHeading() {
+    return getRotation();
+  }
+
+  /**
+   * Returns the robot's field-relative velocity.
+   *
+   * @return Field-relative chassis speeds
+   */
+  public ChassisSpeeds getFieldVelocity() {
+    ChassisSpeeds robotVelocity = getChassisSpeeds();
+    return ChassisSpeeds.fromFieldRelativeSpeeds(
+        robotVelocity.vxMetersPerSecond,
+        robotVelocity.vyMetersPerSecond,
+        robotVelocity.omegaRadiansPerSecond,
+        getRotation());
+  }
+
+  /**
+   * Creates a command to re-localize the robot based on vision or other sensors.
+   *
+   * @return Command that performs re-localization
+   */
+  public Command reLocalize() {
+    // Fixed line 366: Added proper import for Commands
+    return edu.wpi.first.wpilibj2.command.Commands.runOnce(
+        () -> {
+          try {
+            // Get the latest limelight data
+            LimelightResults results =
+                LimelightHelpers.getLatestResults(Constants.LimelightConstants.limelightName);
+
+            // The valid flag is used and botpose_wpiblue array should have at least 6 elements
+            if (results != null
+                && results.valid
+                && results.botpose_wpiblue != null
+                && results.botpose_wpiblue.length >= 6) {
+              Pose2d botPose = results.getBotPose2d_wpiBlue();
+              if (botPose != null) {
+                // Use immediate vision pose reset with higher confidence for re-localization
+                System.out.println("Re-localizing robot to " + botPose);
+                setPose(botPose);
+                return;
+              }
+            }
+
+            System.out.println("Re-localization failed - no valid vision data");
+          } catch (Exception e) {
+            System.err.println("Error during re-localization: " + e.getMessage());
+          }
+        });
   }
 
   /** Runs the drive in a straight line with the specified drive output. */
@@ -390,8 +496,26 @@ public class Drive extends SubsystemBase {
       Pose2d visionRobotPoseMeters,
       double timestampSeconds,
       Matrix<N3, N1> visionMeasurementStdDevs) {
-    poseEstimator.addVisionMeasurement(
-        visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
+    // Add null check for vision measurements
+    if (visionRobotPoseMeters == null || Double.isNaN(timestampSeconds)) {
+      return;
+    }
+
+    // Check if timestamp is too old (more than 1 second)
+    // Use Timer.getFPGATimestamp() instead of DriverStation.getMatchTime()
+    // as getMatchTime() only works during matches and can return negative values
+    double currentTime = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
+    if (Math.abs(currentTime - timestampSeconds) > 1.0) {
+      return;
+    }
+
+    try {
+      poseEstimator.addVisionMeasurement(
+          visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
+    } catch (Exception e) {
+      // Log error but don't crash
+      System.err.println("Error adding vision measurement: " + e.getMessage());
+    }
   }
 
   /** Returns the maximum linear speed in meters per sec. */

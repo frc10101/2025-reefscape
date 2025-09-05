@@ -70,4 +70,8 @@ public final class Constants {
     public static final double L4 = -4;
     public static final double HumanPlayer = -5;
   }
+
+  public static final class LimelightConstants {
+    public static final String limelightName = "Johnny";
+  }
 }
