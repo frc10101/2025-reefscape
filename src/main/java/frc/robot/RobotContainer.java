@@ -27,9 +27,9 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.CANdleSystem;
 import frc.robot.subsystems.Daisy;
+import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -131,18 +131,17 @@ public class RobotContainer {
     Trigger button2 = new Trigger(controller2.button(2)); // Hold for Intake
     Trigger button3 = new Trigger(controller2.button(3)); // Elevator Up
     Trigger button4 = new Trigger(controller2.button(4)); // Elevator Down
-    //Trigger button5 = new Trigger(controller2.button(5));
+    // Trigger button5 = new Trigger(controller2.button(5));
     Trigger button6 = new Trigger(controller2.button(6)); // L3
     Trigger button7 = new Trigger(controller2.button(7)); // Human Player
     Trigger button8 = new Trigger(controller2.button(8)); // L4
     Trigger button9 = new Trigger(controller2.button(9)); // L2
     Trigger button10 = new Trigger(controller2.button(10)); // L1
-    //Trigger button11 = new Trigger(controller2.button(11));
-    //Trigger button12 = new Trigger(controller2.button(12));
-    //Trigger button13 = new Trigger(controller2.button(13));
-    //Trigger button14 = new Trigger(controller2.button(14)); // Release
-    //Trigger button15 = new Trigger(controller2.button(15)); // Hang
-
+    // Trigger button11 = new Trigger(controller2.button(11));
+    // Trigger button12 = new Trigger(controller2.button(12));
+    // Trigger button13 = new Trigger(controller2.button(13));
+    // Trigger button14 = new Trigger(controller2.button(14)); // Release
+    // Trigger button15 = new Trigger(controller2.button(15)); // Hang
 
     button1.whileTrue(daisy.outputSpin(1)); // arbitrary number
     button2.whileTrue(daisy.outputSpin(-1)); // also an arbitrary number

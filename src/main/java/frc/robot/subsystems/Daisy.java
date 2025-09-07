@@ -21,7 +21,7 @@ public class Daisy extends SubsystemBase {
 
   /** Creates a new Daisy. */
   public Daisy() {
-    m_daisyMotor = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorLeft);
+    m_daisyMotor = configureMotor(Constants.SparkMaxCanIDs.DaisyMotor);
     m_daisyBeamBreak = new DigitalInput(Constants.digitalIDs.daisyBeamBreak);
   }
 
