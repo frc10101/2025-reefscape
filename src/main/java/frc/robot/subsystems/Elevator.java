@@ -20,6 +20,7 @@ import frc.robot.Constants.ElevatorConstants;
 public class Elevator extends SubsystemBase {
   private final SparkMax m_motorLeft;
   private final SparkMax m_motorRight;
+  private double position;
 
   public Elevator() {
     m_motorLeft = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorLeft, false);
@@ -43,7 +44,7 @@ public class Elevator extends SubsystemBase {
   }
 
   private void goToGoal(double goal) {
-    m_motorLeft.getClosedLoopController().setReference(goal, ControlType.kPosition);
+    position = goal;
   }
 
   private void setElevatorSpeed(double speed) {
@@ -97,5 +98,7 @@ public class Elevator extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    m_motorLeft.getClosedLoopController().setReference(position, ControlType.kPosition);
+    
   }
 }
