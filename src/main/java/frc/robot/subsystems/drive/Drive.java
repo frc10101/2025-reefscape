@@ -199,6 +199,45 @@ public class Drive extends SubsystemBase {
         });
   }
 
+  /**
+   * Processes Limelight data and applies vision measurement if valid data is available.
+   *
+   * @param applyPoseReset If true, directly sets the pose instead of using addVisionMeasurement
+   * @return The validated bot pose if available, null if not valid
+   */
+  private Pose2d processLimelightData(boolean applyPoseReset) {
+    try {
+      LimelightResults results =
+          LimelightHelpers.getLatestResults(Constants.LimelightConstants.limelightName);
+
+      // Validate all necessary data is present and valid
+      if (results != null
+          && results.valid
+          && results.botpose_wpiblue != null
+          && results.botpose_wpiblue.length >= 6) {
+
+        Pose2d botPose = results.getBotPose2d_wpiBlue();
+        if (botPose != null) {
+          if (applyPoseReset) {
+            // Direct pose reset for re-localization
+            System.out.println("Re-localizing robot to " + botPose);
+            setPose(botPose);
+          } else {
+            // Regular vision measurement for pose estimation
+            double visionTimestampSeconds = results.timestamp_LIMELIGHT_publish / 1000.0;
+            addVisionMeasurement(botPose, visionTimestampSeconds, null);
+          }
+          return botPose;
+        }
+      }
+    } catch (Exception e) {
+      System.err.println("Error processing limelight data: " + e.getMessage());
+    }
+
+    // No valid pose was found
+    return null;
+  }
+
   public Command getAuto(String autoName) {
     try {
       return AutoBuilder.buildAuto(autoName);
@@ -215,26 +254,8 @@ public class Drive extends SubsystemBase {
       gyroIO.updateInputs(gyroInputs);
       Logger.processInputs("Drive/Gyro", gyroInputs);
 
-      // Get limelight data safely - fixed with proper null checks based on LimelightHelpers.java
-      // structure
-      try {
-        LimelightResults results =
-            LimelightHelpers.getLatestResults(Constants.LimelightConstants.limelightName);
-        if (results != null) {
-          // Make sure we have valid data and a valid pose
-          if (results.valid
-              && results.botpose_wpiblue != null
-              && results.botpose_wpiblue.length >= 6) {
-            double visionTimestampSeconds = results.timestamp_LIMELIGHT_publish / 1000.0;
-            Pose2d botPose = results.getBotPose2d_wpiBlue();
-            if (botPose != null) {
-              addVisionMeasurement(botPose, visionTimestampSeconds, null);
-            }
-          }
-        }
-      } catch (Exception e) {
-        System.err.println("Error processing limelight data: " + e.getMessage());
-      }
+      // Process limelight data for continuous pose estimation (not direct reset)
+      processLimelightData(false);
 
       for (var module : modules) {
         module.periodic();
@@ -290,6 +311,21 @@ public class Drive extends SubsystemBase {
 
     // Update gyro alert
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
+  }
+
+  /**
+   * Creates a command to re-localize the robot based on vision or other sensors.
+   *
+   * @return Command that performs re-localization
+   */
+  public Command reLocalize() {
+    return edu.wpi.first.wpilibj2.command.Commands.runOnce(
+        () -> {
+          Pose2d pose = processLimelightData(true);
+          if (pose == null) {
+            System.out.println("Re-localization failed - no valid vision data");
+          }
+        });
   }
 
   /**
@@ -358,41 +394,6 @@ public class Drive extends SubsystemBase {
         robotVelocity.vyMetersPerSecond,
         robotVelocity.omegaRadiansPerSecond,
         getRotation());
-  }
-
-  /**
-   * Creates a command to re-localize the robot based on vision or other sensors.
-   *
-   * @return Command that performs re-localization
-   */
-  public Command reLocalize() {
-    // Fixed line 366: Added proper import for Commands
-    return edu.wpi.first.wpilibj2.command.Commands.runOnce(
-        () -> {
-          try {
-            // Get the latest limelight data
-            LimelightResults results =
-                LimelightHelpers.getLatestResults(Constants.LimelightConstants.limelightName);
-
-            // The valid flag is used and botpose_wpiblue array should have at least 6 elements
-            if (results != null
-                && results.valid
-                && results.botpose_wpiblue != null
-                && results.botpose_wpiblue.length >= 6) {
-              Pose2d botPose = results.getBotPose2d_wpiBlue();
-              if (botPose != null) {
-                // Use immediate vision pose reset with higher confidence for re-localization
-                System.out.println("Re-localizing robot to " + botPose);
-                setPose(botPose);
-                return;
-              }
-            }
-
-            System.out.println("Re-localization failed - no valid vision data");
-          } catch (Exception e) {
-            System.err.println("Error during re-localization: " + e.getMessage());
-          }
-        });
   }
 
   /** Runs the drive in a straight line with the specified drive output. */

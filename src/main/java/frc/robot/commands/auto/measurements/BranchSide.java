@@ -1,4 +1,4 @@
-package frc.robot.commands.auto.measurments;
+package frc.robot.commands.auto.measurements;
 
 import edu.wpi.first.math.geometry.Translation2d;
 
