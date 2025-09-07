@@ -16,11 +16,13 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.Constants.ElevatorConstants;
+import org.littletonrobotics.junction.Logger;
 
 public class Elevator extends SubsystemBase {
   private final SparkMax m_motorLeft;
   private final SparkMax m_motorRight;
   private double position;
+  private double velocity;
 
   public Elevator() {
     m_motorLeft = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorLeft, false);
@@ -48,7 +50,7 @@ public class Elevator extends SubsystemBase {
   }
 
   private void setElevatorSpeed(double speed) {
-    m_motorLeft.set(speed);
+    velocity = speed;
   }
 
   public Command moveToPosition(double position) {
@@ -99,6 +101,15 @@ public class Elevator extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     m_motorLeft.getClosedLoopController().setReference(position, ControlType.kPosition);
-    
+    m_motorLeft.set(velocity);
+
+    // Log motor applied output (what percent it’s actually doing)
+    Logger.recordOutput("Elevator/MotorOutput", m_motorLeft.getAppliedOutput());
+    // Log encoder position
+    Logger.recordOutput("Elevator/Position", position);
+    // Log encoder velocity
+    Logger.recordOutput("Elevator/Velocity", m_motorLeft.getAbsoluteEncoder().getVelocity());
+    // Log encoder speed
+    Logger.recordOutput("Elevator/Speed", velocity);
   }
 }
