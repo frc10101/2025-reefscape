@@ -113,21 +113,29 @@ public class RobotContainer {
   }
 
   private void setupAutoOptions() {
-    autoChooser.addOption(
-        "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
-    autoChooser.addOption(
-        "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Forward)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Reverse)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption("Leave Auto", drive.getAuto("leave"));
+    // autoChooser.addOption(
+    //     "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
+    // autoChooser.addOption(
+    //     "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
+    // autoChooser.addOption(
+    //     "Drive SysId (Quasistatic Forward)",
+    //     drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Drive SysId (Quasistatic Reverse)",
+    //     drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
+      autoChooser.addOption("Leave 1", drive.getAuto("Blue_leave 1"));
+      autoChooser.addOption("Leave 2", drive.getAuto("Blue_leave 2"));
+      autoChooser.addOption("Leave 3", drive.getAuto("Blue_leave 3"));
+    } else {
+      autoChooser.addOption("Leave 1", drive.getAuto("Red_leave 1"));
+      autoChooser.addOption("Leave 2", drive.getAuto("Red_leave 2"));
+      autoChooser.addOption("Leave 3", drive.getAuto("Red_leave 3"));
+    }
   }
 
   private void configureButtonBindings() {
