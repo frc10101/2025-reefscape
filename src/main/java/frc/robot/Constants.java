@@ -71,6 +71,11 @@ public final class Constants {
     public static final double HumanPlayer = -5;
   }
 
+  public static final class DaisyConstants {
+    public static final double DaisyIn = 1; //arbitrary number
+    public static final double DaisyOut = -1; //also and arbitrary number
+  }
+
   public static final class LimelightConstants {
     public static final String limelightName = "Johnny";
   }

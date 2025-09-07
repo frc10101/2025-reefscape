@@ -144,8 +144,8 @@ public class RobotContainer {
     //Trigger button15 = new Trigger(controller2.button(15)); // Hang
 
 
-    button1.whileTrue(daisy.outputSpin(1)); // arbitrary number
-    button2.whileTrue(daisy.outputSpin(-1)); // also an arbitrary number
+    button1.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyIn));
+    button2.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
     button3.whileTrue(elevator.raise());
     button4.whileTrue(elevator.lower());
     button6.whileTrue(elevator.L3());
