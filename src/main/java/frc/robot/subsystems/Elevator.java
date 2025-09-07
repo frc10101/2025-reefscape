@@ -89,10 +89,6 @@ public class Elevator extends SubsystemBase {
     return moveToPosition(Constants.ElevatorConstants.L3);
   }
 
-  public Command L4() {
-    return moveToPosition(Constants.ElevatorConstants.L4);
-  }
-
   public Command HumanPlayer() {
     return moveToPosition(Constants.ElevatorConstants.HumanPlayer);
   }
