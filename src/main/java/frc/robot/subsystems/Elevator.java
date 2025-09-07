@@ -27,6 +27,8 @@ public class Elevator extends SubsystemBase {
   public Elevator() {
     m_motorLeft = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorLeft, false);
     m_motorRight = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorRight, true);
+    position = 0;
+    velocity = 0;
   }
 
   private SparkMax configureMotor(int canID, boolean isFollower) {

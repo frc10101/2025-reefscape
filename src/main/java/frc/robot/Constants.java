@@ -67,7 +67,7 @@ public final class Constants {
     public static final double L1 = -1;
     public static final double L2 = -2;
     public static final double L3 = -9;
-    public static final double HumanPlayer = -5;
+    public static final double HumanPlayer = 0;
   }
 
   public static final class DaisyConstants {
