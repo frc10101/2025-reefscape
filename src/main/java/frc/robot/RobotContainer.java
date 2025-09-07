@@ -14,6 +14,9 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -26,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.auto.AlignToReef;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CANdleSystem;
 import frc.robot.subsystems.Daisy;
@@ -64,6 +68,8 @@ public class RobotContainer {
 
   private final Daisy daisy = new Daisy();
 
+  private final AlignToReef alignToReef;
+
   public RobotContainer() {
     drive = initializeDriveSubsystem();
 
@@ -71,6 +77,7 @@ public class RobotContainer {
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     setupAutoOptions();
     SmartDashboard.putData("Field", m_field);
+    alignToReef = new AlignToReef(drive, AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded));
 
     // Configure button bindings
     configureButtonBindings();
@@ -125,38 +132,41 @@ public class RobotContainer {
 
   private void configureButtonBindings() {
     configureSwerveCommands();
+    configureDriver2Commands();
+  }
 
-    // Controller 2 button bindings
-    Trigger button1 = new Trigger(controller2.button(1)); // Output Coral
-    Trigger button2 = new Trigger(controller2.button(2)); // Hold for Intake
-    Trigger button3 = new Trigger(controller2.button(3)); // Elevator Up
-    Trigger button4 = new Trigger(controller2.button(4)); // Elevator Down
-    // Trigger button5 = new Trigger(controller2.button(5));
-    Trigger button6 = new Trigger(controller2.button(6)); // L3
-    Trigger button7 = new Trigger(controller2.button(7)); // Human Player
-    Trigger button8 = new Trigger(controller2.button(8)); // L4
-    Trigger button9 = new Trigger(controller2.button(9)); // L2
-    Trigger button10 = new Trigger(controller2.button(10)); // L1
-    // Trigger button11 = new Trigger(controller2.button(11));
-    // Trigger button12 = new Trigger(controller2.button(12));
-    // Trigger button13 = new Trigger(controller2.button(13));
-    // Trigger button14 = new Trigger(controller2.button(14)); // Release
-    // Trigger button15 = new Trigger(controller2.button(15)); // Hang
-
-    button1.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyIn));
-    button2.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
-    button3.whileTrue(elevator.raise());
-    button4.whileTrue(elevator.lower());
-    button6.whileTrue(elevator.L3());
-    button7.whileTrue(elevator.HumanPlayer());
-    button8.whileTrue(elevator.L4());
-    button9.whileTrue(elevator.L2());
-    button10.whileTrue(elevator.L1());
-
-    // ICEE and CANdle interactions
+  private void configureDriver2Commands() {
+     // Controller 2 button bindings
+     Trigger button1 = new Trigger(controller2.button(1)); // Output Coral
+     Trigger button2 = new Trigger(controller2.button(2)); // Hold for Intake
+     Trigger button3 = new Trigger(controller2.button(3)); // Elevator Up
+     Trigger button4 = new Trigger(controller2.button(4)); // Elevator Down
+     // Trigger button5 = new Trigger(controller2.button(5));
+     Trigger button6 = new Trigger(controller2.button(6)); // L3
+     Trigger button7 = new Trigger(controller2.button(7)); // Human Player
+     Trigger button8 = new Trigger(controller2.button(8)); // L4
+     Trigger button9 = new Trigger(controller2.button(9)); // L2
+     Trigger button10 = new Trigger(controller2.button(10)); // L1
+     // Trigger button11 = new Trigger(controller2.button(11));
+     // Trigger button12 = new Trigger(controller2.button(12));
+     // Trigger button13 = new Trigger(controller2.button(13));
+     // Trigger button14 = new Trigger(controller2.button(14)); // Release
+     // Trigger button15 = new Trigger(controller2.button(15)); // Hang
+ 
+     button1.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyIn));
+     button2.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
+     button3.whileTrue(elevator.raise());
+     button4.whileTrue(elevator.lower());
+     button6.whileTrue(elevator.L3());
+     button7.whileTrue(elevator.HumanPlayer());
+     button8.whileTrue(elevator.L4());
+     button9.whileTrue(elevator.L2());
+     button10.whileTrue(elevator.L1());
   }
 
   private void configureSwerveCommands() {
+    Trigger leftReefButton = new Trigger(controller.leftBumper());
+    Trigger rightReefButton = new Trigger(controller.rightBumper());
     // Default command, normal field-relative drive
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
@@ -192,6 +202,8 @@ public class RobotContainer {
                                     : new Rotation2d())),
                     drive)
                 .ignoringDisable(true));
+      leftReefButton.onTrue(alignToReef.generateCommand(AlignToReef.FieldBranchSide.LEFT));
+      rightReefButton.onTrue(alignToReef.generateCommand(AlignToReef.FieldBranchSide.RIGHT));
   }
 
   public void zeroGyro() {
