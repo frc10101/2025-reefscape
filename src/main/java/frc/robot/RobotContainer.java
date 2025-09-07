@@ -144,7 +144,7 @@ public class RobotContainer {
      // Trigger button5 = new Trigger(controller2.button(5));
      Trigger button6 = new Trigger(controller2.button(6)); // L3
      Trigger button7 = new Trigger(controller2.button(7)); // Human Player
-     Trigger button8 = new Trigger(controller2.button(8)); // L4
+     //Trigger button8 = new Trigger(controller2.button(8)); // L4
      Trigger button9 = new Trigger(controller2.button(9)); // L2
      Trigger button10 = new Trigger(controller2.button(10)); // L1
      // Trigger button11 = new Trigger(controller2.button(11));
@@ -159,7 +159,7 @@ public class RobotContainer {
      button4.whileTrue(elevator.lower());
      button6.whileTrue(elevator.L3());
      button7.whileTrue(elevator.HumanPlayer());
-     button8.whileTrue(elevator.L4());
+     //button8.whileTrue(elevator.L4());
      button9.whileTrue(elevator.L2());
      button10.whileTrue(elevator.L1());
   }
