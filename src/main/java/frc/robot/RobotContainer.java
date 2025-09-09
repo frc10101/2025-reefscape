@@ -14,6 +14,8 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -68,7 +70,12 @@ public class RobotContainer {
 
   public RobotContainer() {
     drive = initializeDriveSubsystem();
-
+  
+    // PathPlanner Commands
+    NamedCommands.registerCommand("L3",elevator.L3());
+    // NamedCommands.registerCommand("outputSpin",daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
+    NamedCommands.registerCommand("HumanPlayer", elevator.HumanPlayer());
+    
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     setupAutoOptions();
@@ -77,7 +84,7 @@ public class RobotContainer {
     // Configure button bindings
     configureButtonBindings();
   }
-  
+
   private Drive initializeDriveSubsystem() {
     switch (Constants.currentMode) {
       case REAL:
@@ -123,6 +130,7 @@ public class RobotContainer {
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     autoChooser.addOption("Leave Auto", drive.getAuto("leave"));
+    autoChooser.addOption("RedLeft", drive.getAuto("RedLeftL3"));
   }
 
   private void configureButtonBindings() {
@@ -153,57 +161,56 @@ public class RobotContainer {
   }
 
   private void configureSwerveCommands() {
-      // Default command, normal field-relative drive
-      drive.setDefaultCommand(
-          DriveCommands.joystickDrive(
-              drive,
-              () -> -controller.getLeftY(),
-              () -> -controller.getLeftX(),
-              () -> -controller.getRightX()));
+    // Default command, normal field-relative drive
+    drive.setDefaultCommand(
+        DriveCommands.joystickDrive(
+            drive,
+            () -> -controller.getLeftY(),
+            () -> -controller.getLeftX(),
+            () -> -controller.getRightX()));
 
-      // Lock to 0° when A button is held
-      controller
-          .a()
-          .whileTrue(
-              DriveCommands.joystickDriveAtAngle(
-                  drive,
-                  () -> controller.getLeftY(),
-                  () -> controller.getLeftX(),
-                  () -> new Rotation2d()));
+    // Lock to 0° when A button is held
+    controller
+        .a()
+        .whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                drive,
+                () -> controller.getLeftY(),
+                () -> controller.getLeftX(),
+                () -> new Rotation2d()));
 
-      // Switch to X pattern when X button is pressed
-      controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+    // Switch to X pattern when X button is pressed
+    controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
-      // Reset gyro to 0° when B button is pressed
-      controller
-          .b()
-          .onTrue(
-              Commands.runOnce(
-                      () ->
-                          drive.setPose(
-                              new Pose2d(
-                                  drive.getPose().getTranslation(),
-                                  DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-                                      ? new Rotation2d(Math.PI)
-                                      : new Rotation2d())),
-                      drive)
-                  .ignoringDisable(true));
+    // Reset gyro to 0° when B button is pressed
+    controller
+        .b()
+        .onTrue(
+            Commands.runOnce(
+                    () ->
+                        drive.setPose(
+                            new Pose2d(
+                                drive.getPose().getTranslation(),
+                                DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                                    ? new Rotation2d(Math.PI)
+                                    : new Rotation2d())),
+                    drive)
+                .ignoringDisable(true));
 
-      icee.ICEELimit().onTrue(arm.coralFF());
-      icee.ICEELimit().onFalse(arm.normalFF());
-    }
+    icee.ICEELimit().onTrue(arm.coralFF());
+    icee.ICEELimit().onFalse(arm.normalFF());
+  }
 
-    public void zeroGyro() {
-      drive.setPose(
-          new Pose2d(
-              drive.getPose().getTranslation(),
-              DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-                  ? new Rotation2d(Math.PI)
-                  : new Rotation2d()));
-    }
-  
+  public void zeroGyro() {
+    drive.setPose(
+        new Pose2d(
+            drive.getPose().getTranslation(),
+            DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                ? new Rotation2d(Math.PI)
+                : new Rotation2d()));
+  }
+
   public Command getAutonomousCommand() {
     return autoChooser.get();
   }
-  
 }

@@ -125,16 +125,16 @@ public final class Constants {
     public static final double ElevatorGearRatio = 25;
     public static final double NDexter = 0;
     public static final double goOut = -16;
-    public static final double L1 = -1;
+    public static final double L1 = -1; // inches
     public static final double L2 = -2;
     public static final double L3 = -9;
     public static final double L4 = -4;
     public static final double HumanPlayer = -5;
 
     // Sim Variables (currently inccorect and being yoinked for testing reasons)
-    public static final double kElevatorGearing = 1.0 / 25.0;
-    public static final double kCarriageMass = (0.68+4.63); // kg
-    public static final double kElevatorDrumRadius = Units.inchesToMeters(1.88);
+    public static final double kElevatorGearing = 25.0;
+    public static final double kCarriageMass = (0.68 + 4.63); // kg
+    public static final double kElevatorDrumRadius = Units.inchesToMeters(0.25);
     public static final double kMinElevatorHeightMeters = 0.0;
     public static final double kMaxElevatorHeightMeters = Units.feetToMeters(4.5);
     public static final double kPixelsPerMeter = 20.0; // pixels per meter conversion factor
