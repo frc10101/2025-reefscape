@@ -1,0 +1,49 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
+package frc.robot.subsystems;
+
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+
+public class Daisy extends SubsystemBase {
+  private final SparkMax m_daisyMotor;
+  private final DigitalInput m_daisyBeamBreak;
+  private double mMotorSpeed = 0.0;
+
+  /** Creates a new Daisy. */
+  public Daisy() {
+    m_daisyMotor = configureMotor(Constants.SparkMaxCanIDs.DaisyMotor);
+    m_daisyBeamBreak = new DigitalInput(Constants.digitalIDs.daisyBeamBreak);
+  }
+
+  private SparkMax configureMotor(int canID) {
+    SparkMaxConfig config = new SparkMaxConfig();
+
+    SparkMax motor = new SparkMax(canID, MotorType.kBrushless);
+    motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    return motor;
+  }
+
+  public Command outputSpin(double outputSpeed) {
+    return runOnce(() -> m_daisyMotor.set(outputSpeed));
+  }
+
+  @Override
+  public void periodic() {
+    // This method will be called once per scheduler run
+    if (m_daisyBeamBreak.get() && mMotorSpeed > 0) {
+      mMotorSpeed = 0.0;
+    }
+
+    m_daisyMotor.set(mMotorSpeed);
+  }
+}

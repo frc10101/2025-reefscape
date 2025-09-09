@@ -16,15 +16,19 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.Constants.ElevatorConstants;
+import org.littletonrobotics.junction.Logger;
 
 public class Elevator extends SubsystemBase {
   private final SparkMax m_motorLeft;
   private final SparkMax m_motorRight;
-
+  private double position;
+  private double velocity;
 
   public Elevator() {
     m_motorLeft = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorLeft, false);
     m_motorRight = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorRight, true);
+    position = 0;
+    velocity = 0;
   }
 
   private SparkMax configureMotor(int canID, boolean isFollower) {
@@ -44,47 +48,47 @@ public class Elevator extends SubsystemBase {
   }
 
   private void goToGoal(double goal) {
-    m_motorLeft.getClosedLoopController().setReference(goal, ControlType.kPosition);
+    position = goal;
   }
 
   private void setElevatorSpeed(double speed) {
-    m_motorLeft.set(speed);
+    velocity = speed;
   }
 
   public Command moveToPosition(double position) {
-      return runOnce(() -> goToGoal(position));
-    }
-  
-    public Command raise() {
-      return runEnd(() -> setElevatorSpeed(0.5), () -> setElevatorSpeed(0));
-    }
-  
-    public Command lower() {
-      return runEnd(() -> setElevatorSpeed(-0.5), () -> setElevatorSpeed(0));
-    }
-  
-    public Command stop() {
-      return runOnce(
-          () -> {
-            m_motorLeft.set(0);
-            m_motorRight.set(0);
-          });
-    }
-  
-    public Trigger elevatorLimit() {
-      return new Trigger(m_motorRight.getForwardLimitSwitch()::isPressed);
-    }
-  
-    public Command L1() {
-      return moveToPosition(Constants.ElevatorConstants.L1);
-    }
-  
-    public Command L2() {
-      return moveToPosition(Constants.ElevatorConstants.L2);
-    }
-  
-    public Command L3() {
-      return moveToPosition(Constants.ElevatorConstants.L3);
+    return runOnce(() -> goToGoal(position));
+  }
+
+  public Command raise() {
+    return runEnd(() -> setElevatorSpeed(0.5), () -> setElevatorSpeed(0));
+  }
+
+  public Command lower() {
+    return runEnd(() -> setElevatorSpeed(-0.5), () -> setElevatorSpeed(0));
+  }
+
+  public Command stop() {
+    return runOnce(
+        () -> {
+          m_motorLeft.set(0);
+          m_motorRight.set(0);
+        });
+  }
+
+  public Trigger elevatorLimit() {
+    return new Trigger(m_motorRight.getForwardLimitSwitch()::isPressed);
+  }
+
+  public Command L1() {
+    return moveToPosition(Constants.ElevatorConstants.L1);
+  }
+
+  public Command L2() {
+    return moveToPosition(Constants.ElevatorConstants.L2);
+  }
+
+  public Command L3() {
+    return moveToPosition(Constants.ElevatorConstants.L3);
   }
 
   public Command HumanPlayer() {
@@ -93,7 +97,17 @@ public class Elevator extends SubsystemBase {
 
   @Override
   public void periodic() {
-  
-  }
+    // This method will be called once per scheduler run
+    m_motorLeft.getClosedLoopController().setReference(position, ControlType.kPosition);
+    m_motorLeft.set(velocity);
 
+    // Log motor applied output (what percent it’s actually doing)
+    Logger.recordOutput("Elevator/MotorOutput", m_motorLeft.getAppliedOutput());
+    // Log encoder position
+    Logger.recordOutput("Elevator/Position", position);
+    // Log encoder velocity
+    Logger.recordOutput("Elevator/Velocity", m_motorLeft.getAbsoluteEncoder().getVelocity());
+    // Log encoder speed
+    Logger.recordOutput("Elevator/Speed", velocity);
+  }
 }

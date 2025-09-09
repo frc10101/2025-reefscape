@@ -7,13 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "leave"
+            "pathName": "Red Leave 2"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "Red",
   "choreoAuto": false
 }
