@@ -4,8 +4,6 @@
 
 package frc.robot.subsystems;
 
-import com.revrobotics.sim.SparkLimitSwitchSim;
-import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -13,13 +11,6 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.LimitSwitchConfig.Type;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.simulation.ElevatorSim;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -29,22 +20,11 @@ import frc.robot.Constants.ElevatorConstants;
 public class Elevator extends SubsystemBase {
   private final SparkMax m_motorLeft;
   private final SparkMax m_motorRight;
-  private final SparkMaxSim FakeBoi;
-  
-  private final Mechanism2d m_mech2d = new Mechanism2d(50, 50);
-  private final MechanismRoot2d m_mech2dRoot = m_mech2d.getRoot("ElevatorArm Root", 25, 0);
-  private final MechanismLigament2d m_elevatorMech2d =
-      m_mech2dRoot.append(
-          new MechanismLigament2d(
-              "Elevator",
-              Constants.ElevatorConstants.kMinElevatorHeightMeters
-                  * Constants.ElevatorConstants.kPixelsPerMeter,
-              90));
+
 
   public Elevator() {
     m_motorLeft = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorLeft, false);
     m_motorRight = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorRight, true);
-    FakeBoi = new SparkMaxSim(m_motorLeft, DCMotor.getNEO(1));
   }
 
   private SparkMax configureMotor(int canID, boolean isFollower) {
@@ -65,7 +45,6 @@ public class Elevator extends SubsystemBase {
 
   private void goToGoal(double goal) {
     m_motorLeft.getClosedLoopController().setReference(goal, ControlType.kPosition);
-    m_elevatorSim.setState(goal,m_elevatorSim.getVelocityMetersPerSecond());
   }
 
   private void setElevatorSpeed(double speed) {
@@ -73,39 +52,39 @@ public class Elevator extends SubsystemBase {
   }
 
   public Command moveToPosition(double position) {
-    return runOnce(() -> goToGoal(position));
-  }
-
-  public Command raise() {
-    return runEnd(() -> setElevatorSpeed(0.5), () -> setElevatorSpeed(0));
-  }
-
-  public Command lower() {
-    return runEnd(() -> setElevatorSpeed(-0.5), () -> setElevatorSpeed(0));
-  }
-
-  public Command stop() {
-    return runOnce(
-        () -> {
-          m_motorLeft.set(0);
-          m_motorRight.set(0);
-        });
-  }
-
-  public Trigger elevatorLimit() {
-    return new Trigger(m_motorRight.getForwardLimitSwitch()::isPressed);
-  }
-
-  public Command L1() {
-    return moveToPosition(Constants.ElevatorConstants.L1);
-  }
-
-  public Command L2() {
-    return moveToPosition(Constants.ElevatorConstants.L2);
-  }
-
-  public Command L3() {
-    return moveToPosition(Constants.ElevatorConstants.L3);
+      return runOnce(() -> goToGoal(position));
+    }
+  
+    public Command raise() {
+      return runEnd(() -> setElevatorSpeed(0.5), () -> setElevatorSpeed(0));
+    }
+  
+    public Command lower() {
+      return runEnd(() -> setElevatorSpeed(-0.5), () -> setElevatorSpeed(0));
+    }
+  
+    public Command stop() {
+      return runOnce(
+          () -> {
+            m_motorLeft.set(0);
+            m_motorRight.set(0);
+          });
+    }
+  
+    public Trigger elevatorLimit() {
+      return new Trigger(m_motorRight.getForwardLimitSwitch()::isPressed);
+    }
+  
+    public Command L1() {
+      return moveToPosition(Constants.ElevatorConstants.L1);
+    }
+  
+    public Command L2() {
+      return moveToPosition(Constants.ElevatorConstants.L2);
+    }
+  
+    public Command L3() {
+      return moveToPosition(Constants.ElevatorConstants.L3);
   }
 
   public Command HumanPlayer() {
@@ -114,54 +93,7 @@ public class Elevator extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
-    SmartDashboard.putNumber("Sim Elevator Position", m_elevatorSim.getPositionMeters());
-    SmartDashboard.putNumber("Sim Sparkmax Position", FakeBoi.getPosition());
-    SmartDashboard.putNumber("Applied output", FakeBoi.getAppliedOutput());
-    SmartDashboard.putNumber("Mech length", m_elevatorMech2d.getLength());
-
-    // Update mechanism2d
-    m_elevatorMech2d.setLength(
-        Constants.ElevatorConstants.kPixelsPerMeter * Constants.ElevatorConstants.kMinElevatorHeightMeters
-            + Constants.ElevatorConstants.kPixelsPerMeter
-                * (m_motorLeft.getEncoder().getPosition() / Constants.ElevatorConstants.kElevatorGearing)
-                * (Constants.ElevatorConstants.kElevatorDrumRadius * 2.0 * Math.PI));
-  }  
-  private SparkLimitSwitchSim elevatorLimitSwitchSim;
-  // Fake elevator
-  private final ElevatorSim m_elevatorSim =
-      new ElevatorSim(
-          DCMotor.getNEO(1),
-          Constants.ElevatorConstants.kElevatorGearing,
-          Constants.ElevatorConstants.kCarriageMass,
-          Constants.ElevatorConstants.kElevatorDrumRadius,
-          Constants.ElevatorConstants.kMinElevatorHeightMeters,
-          Constants.ElevatorConstants.kMaxElevatorHeightMeters,
-          true,
-          0);
-
-  @Override
-  public void simulationPeriodic() {
-    // In this method, we update our simulation of what our elevator is doing
-    // First, we set our "inputs" (voltages)
-    //FakeBoi.iterate(1000, 12, 0.020);
-    m_elevatorSim.setInput(FakeBoi.getAppliedOutput() * RobotController.getBatteryVoltage());
-
-    elevatorLimitSwitchSim.setPressed(m_elevatorSim.getPositionMeters() == 0);
-
-    // Next, we update it. The standard loop time is 20ms.
-    m_elevatorSim.update(0.020);
-
-    FakeBoi.iterate(
-      ((m_elevatorSim.getVelocityMetersPerSecond()
-                  / (Constants.ElevatorConstants.kElevatorDrumRadius * 2.0 * Math.PI))
-              * Constants.ElevatorConstants.kElevatorGearing)
-          * 60.0,
-          RobotController.getBatteryVoltage(),
-      0.02);
-    // Finally, we set our simulated encoder's readings and simulated battery voltage
-    //m_elevatorSim.setState(1,FakeBoi.getAppliedOutput());
-    //FakeBoi.setPosition(m_elevatorSim.getPositionMeters());
-    //System.out.println(FakeBoi.getPosition());
+  
   }
+
 }

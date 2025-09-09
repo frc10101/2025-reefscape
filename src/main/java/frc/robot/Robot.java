@@ -134,12 +134,12 @@ public class Robot extends LoggedRobot {
       m_autonomousCommand.cancel();
     }
 
-     m_robotContainer.zeroGyro();
+    m_robotContainer.zeroGyro();
   }
 
   @Override
   public void teleopPeriodic() {}
-  
+
   @Override
   public void teleopExit() {}
 
@@ -153,4 +153,5 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void testExit() {}
+
 }
