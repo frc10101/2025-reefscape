@@ -25,6 +25,12 @@
         {
           "type": "named",
           "data": {
+            "name": "outputSpin"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "HumanPlayer"
           }
         }

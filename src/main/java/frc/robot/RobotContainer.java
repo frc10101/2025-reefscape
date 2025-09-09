@@ -17,6 +17,8 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -25,17 +27,14 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.Arm;
-import frc.robot.subsystems.CANdleSystem;
+import frc.robot.subsystems.Daisy;
 import frc.robot.subsystems.Elevator;
-import frc.robot.subsystems.ICEE;
+import frc.robot.commands.auto.AlignToReef;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -53,10 +52,9 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
-  private final CANdleSystem candle = new CANdleSystem();
   private final Elevator elevator = new Elevator();
-  private final ICEE icee = new ICEE();
-  private final Arm arm = new Arm();
+  private final Daisy daisy = new Daisy();
+  private final AlignToReef alignToReef;
 
   // Controllers
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -73,13 +71,15 @@ public class RobotContainer {
   
     // PathPlanner Commands
     NamedCommands.registerCommand("L3",elevator.L3());
-    // NamedCommands.registerCommand("outputSpin",daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
+    NamedCommands.registerCommand("outputSpin",daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
+    NamedCommands.registerCommand("stopSpin",daisy.outputSpin(0));
     NamedCommands.registerCommand("HumanPlayer", elevator.HumanPlayer());
     
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     setupAutoOptions();
     SmartDashboard.putData("Field", m_field);
+    alignToReef = new AlignToReef(drive, AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded));
 
     // Configure button bindings
     configureButtonBindings();
@@ -115,7 +115,7 @@ public class RobotContainer {
   }
 
   private void setupAutoOptions() {
-    autoChooser.addOption(
+    /*autoChooser.addOption(
         "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
     autoChooser.addOption(
         "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
@@ -131,6 +131,16 @@ public class RobotContainer {
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     autoChooser.addOption("Leave Auto", drive.getAuto("leave"));
     autoChooser.addOption("RedLeft", drive.getAuto("RedLeftL3"));
+    */
+    if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
+      autoChooser.addOption("Leave 1", drive.getAuto("Blue_leave 1"));
+      autoChooser.addOption("Leave 2", drive.getAuto("Blue_leave 2"));
+      autoChooser.addOption("Leave 3", drive.getAuto("Blue_leave 3"));
+    } else {
+      autoChooser.addOption("Leave 1", drive.getAuto("Red_leave 1"));
+      autoChooser.addOption("Leave 2", drive.getAuto("Red_leave 2"));
+      autoChooser.addOption("Leave 3", drive.getAuto("Red_leave 3"));
+    }
   }
 
   private void configureButtonBindings() {
@@ -139,25 +149,28 @@ public class RobotContainer {
     // Controller 2 button bindings
     bindController2Buttons();
 
-    // ICEE and CANdle interactions
-    icee.ICEELimit().onTrue(candle.haveCoral());
-    icee.ICEELimit().onFalse(candle.noCoral());
-
     elevator.elevatorLimit().whileTrue(elevator.stop());
   }
 
   private void bindController2Buttons() {
-    Trigger button1 = new Trigger(controller2.button(1)); // output Coral
-    Trigger button2 = new Trigger(controller2.button(2)); // intake Coral
-    Trigger button14 = new Trigger(controller2.button(14)); // L1
-    Trigger button15 = new Trigger(controller2.button(3)); // elevator HP
-    Trigger button16 = new Trigger(controller2.button(4)); // elevator L3
+    Trigger button1 = new Trigger(controller2.button(1)); // Output Coral
+    Trigger button2 = new Trigger(controller2.button(2)); // Hold for Intake
+    Trigger button3 = new Trigger(controller2.button(3)); // Elevator Up
+    Trigger button4 = new Trigger(controller2.button(4)); // Elevator Down
+    // Trigger button5 = new Trigger(controller2.button(5));
+    Trigger button6 = new Trigger(controller2.button(6)); // L3
+    Trigger button7 = new Trigger(controller2.button(7)); // Human Player
+    Trigger button9 = new Trigger(controller2.button(9)); // L2
+    Trigger button10 = new Trigger(controller2.button(10)); // L1
 
-    button1.whileTrue(icee.spitOut());
-    button2.whileTrue(new ConditionalCommand(icee.stop(), icee.Intake(), icee.getLimitSwitch()));
-    button14.whileTrue(elevator.L1());
-    button15.whileTrue(elevator.HumanPlayer());
-    button16.whileTrue(elevator.L3());
+    button1.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyIn));
+    button2.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
+    button3.whileTrue(elevator.raise());
+    button4.whileTrue(elevator.lower());
+    button6.whileTrue(elevator.L3());
+    button7.whileTrue(elevator.HumanPlayer());
+    button9.whileTrue(elevator.L2());
+    button10.whileTrue(elevator.L1());
   }
 
   private void configureSwerveCommands() {
@@ -196,9 +209,6 @@ public class RobotContainer {
                                     : new Rotation2d())),
                     drive)
                 .ignoringDisable(true));
-
-    icee.ICEELimit().onTrue(arm.coralFF());
-    icee.ICEELimit().onFalse(arm.normalFF());
   }
 
   public void zeroGyro() {
