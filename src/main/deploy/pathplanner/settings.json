@@ -4,11 +4,15 @@
   "holonomicMode": true,
   "pathFolders": [
     "Blue",
-    "Red"
+    "Blue L3",
+    "Red",
+    "Red L3"
   ],
   "autoFolders": [
     "Blue",
-    "Red"
+    "Blue L3",
+    "Red",
+    "Red L3"
   ],
   "defaultMaxVel": 3.0,
   "defaultMaxAccel": 3.0,

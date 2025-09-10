@@ -136,10 +136,16 @@ public class RobotContainer {
       autoChooser.addOption("Leave 1", drive.getAuto("Blue_leave 1"));
       autoChooser.addOption("Leave 2", drive.getAuto("Blue_leave 2"));
       autoChooser.addOption("Leave 3", drive.getAuto("Blue_leave 3"));
+      autoChooser.addOption("Blue Left", drive.getAuto("Blue_Left_L3"));
+      autoChooser.addOption("Blue Middle", drive.getAuto("Blue_Middle_L3"));
+      autoChooser.addOption("Blue Right", drive.getAuto("Blue_Right_L3"));
     } else {
       autoChooser.addOption("Leave 1", drive.getAuto("Red_leave 1"));
       autoChooser.addOption("Leave 2", drive.getAuto("Red_leave 2"));
       autoChooser.addOption("Leave 3", drive.getAuto("Red_leave 3"));
+      autoChooser.addOption("Red Left", drive.getAuto("Red_Left_L3"));
+      autoChooser.addOption("Red Middle", drive.getAuto("Red_Middle_L3"));
+      autoChooser.addOption("Red Right", drive.getAuto("Red_Right_L3"));
     }
   }
 
