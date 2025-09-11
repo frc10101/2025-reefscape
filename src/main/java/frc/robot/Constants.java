@@ -64,9 +64,9 @@ public final class Constants {
     public static final double ElevatorGearRatio = 25;
     public static final double NDexter = 0;
     public static final double goOut = -16;
-    public static final double L1 = -1;
-    public static final double L2 = -2;
-    public static final double L3 = -9;
+    public static final double L1 = -4;
+    public static final double L2 = -11.25;
+    public static final double L3 = -20.25;
     public static final double HumanPlayer = 0;
   }
 

@@ -108,13 +108,13 @@ public class Elevator extends SubsystemBase {
     // This method will be called once per scheduler run
     m_motorRight.getClosedLoopController().setReference(position, ControlType.kPosition);
     //m_motorRight.set(velocity);
-
     // Log motor applied output (what percent it’s actually doing)
-    Logger.recordOutput("Elevator/MotorOutput", m_motorLeft.getAppliedOutput());
+    Logger.recordOutput("Elevator/MotorOutput", m_motorRight.getAppliedOutput());
     // Log encoder position
     Logger.recordOutput("Elevator/Position", position);
     // Log encoder velocity
-    Logger.recordOutput("Elevator/Velocity", m_motorLeft.getAbsoluteEncoder().getVelocity());
+    Logger.recordOutput("Elevator/EncPosition", m_motorRight.getAbsoluteEncoder().getPosition());
+    System.out.println(m_motorRight.getEncoder().getPosition());
     // Log encoder speed
     Logger.recordOutput("Elevator/Speed", velocity);
   }
