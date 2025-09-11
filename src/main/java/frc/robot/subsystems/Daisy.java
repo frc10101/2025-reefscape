@@ -7,6 +7,9 @@ package frc.robot.subsystems;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+
+import java.util.concurrent.TransferQueue;
+
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -18,6 +21,7 @@ public class Daisy extends SubsystemBase {
   private final SparkMax m_daisyMotor;
   private final DigitalInput m_daisyBeamBreak;
   private double mMotorSpeed = 0.0;
+  private boolean BeamActive = true;
 
   /** Creates a new Daisy. */
   public Daisy() {
@@ -34,16 +38,29 @@ public class Daisy extends SubsystemBase {
   }
 
   public Command outputSpin(double outputSpeed) {
-    return runOnce(() -> m_daisyMotor.set(outputSpeed));
+    return runOnce(() -> mMotorSpeed = outputSpeed);
+  }
+  private void DeactivateBeam(){
+    BeamActive = false;
+  }
+  private void ActivateBeam(){
+    BeamActive = true;
+  }
+  public Command DeactivateBeamBreak(){
+    return runOnce(()-> DeactivateBeam());
+  }
+  public Command ActivateBeamBreak(){
+    return runOnce(()-> ActivateBeam());
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    if (m_daisyBeamBreak.get() && mMotorSpeed > 0) {
-      mMotorSpeed = 0.0;
+    if (!m_daisyBeamBreak.get() && mMotorSpeed > 0 && BeamActive) {
+      m_daisyMotor.set(0);
     }
-
-    m_daisyMotor.set(mMotorSpeed);
+    else{
+      m_daisyMotor.set(mMotorSpeed);
+    }
   }
 }

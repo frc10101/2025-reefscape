@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.DriveCommands;
@@ -51,7 +52,7 @@ public class RobotContainer {
 
   // Controllers
   private final CommandXboxController controller = new CommandXboxController(0);
-  private final CommandXboxController controller2 = new CommandXboxController(1);
+  private final CommandJoystick controller2 = new CommandJoystick(1);
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -158,12 +159,17 @@ public class RobotContainer {
 
     button1.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyIn));
     button2.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
-    button3.whileTrue(elevator.raise());
-    button4.whileTrue(elevator.lower());
-    button6.whileTrue(elevator.L3());
-    button7.whileTrue(elevator.HumanPlayer());
-    button9.whileTrue(elevator.L2());
-    button10.whileTrue(elevator.L1());
+    button1.or(button2).onFalse(daisy.outputSpin(0));
+
+    button1.whileFalse(daisy.outputSpin(0));
+    elevator.isHP.onTrue(daisy.ActivateBeamBreak());
+    elevator.isHP.onFalse(daisy.DeactivateBeamBreak());
+    // button3.whileTrue(elevator.raise());
+    // button4.whileTrue(elevator.lower());
+    button6.onTrue(elevator.L3());
+    button7.onTrue(elevator.HumanPlayer());
+    button9.onTrue(elevator.L2());
+    button10.onTrue(elevator.L1());
   }
 
   private void configureSwerveCommands() {

@@ -40,18 +40,18 @@ public final class Constants {
   }
 
   public static final class digitalIDs {
-    public static final int daisyBeamBreak = 0;
+    public static final int daisyBeamBreak = 9;
   }
 
   /** ALL SPARK MAX CAN ID'S = PDH PORT PLUS ONE */
   public static final class SparkMaxCanIDs {
     /** Daisy Can ID's */
-    public static final int DaisyMotor = 16;
+    public static final int DaisyMotor = 17;
 
     /** Elevator Can ID's */
     public static final int ElevatorMotorLeft = 8;
 
-    public static final int ElevatorMotorRight = 18;
+    public static final int ElevatorMotorRight = 2;
   }
 
   public static final class ElevatorConstants {
@@ -61,7 +61,7 @@ public final class Constants {
     public static final double kFF = 0.003;
     public static final double kMaxVelocity = 1.75;
     public static final double kMaxAcceleration = 0.75;
-    public static final double ElevatorGearRatio = 20;
+    public static final double ElevatorGearRatio = 25;
     public static final double NDexter = 0;
     public static final double goOut = -16;
     public static final double L1 = -1;
@@ -72,7 +72,7 @@ public final class Constants {
 
   public static final class DaisyConstants {
     public static final double DaisyIn = 1; // arbitrary number
-    public static final double DaisyOut = -1; // also and arbitrary number
+    public static final double DaisyOut = -.5; // also and arbitrary number
   }
 
   public static final class LimelightConstants {

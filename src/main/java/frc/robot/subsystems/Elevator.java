@@ -16,6 +16,9 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.Constants.ElevatorConstants;
+
+import java.util.function.BooleanSupplier;
+
 import org.littletonrobotics.junction.Logger;
 
 public class Elevator extends SubsystemBase {
@@ -23,12 +26,15 @@ public class Elevator extends SubsystemBase {
   private final SparkMax m_motorRight;
   private double position;
   private double velocity;
+  public Trigger isHP;
 
   public Elevator() {
-    m_motorLeft = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorLeft, false);
-    m_motorRight = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorRight, true);
+
+    m_motorRight = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorRight, false);
+    m_motorLeft = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorLeft, true);
     position = 0;
     velocity = 0;
+    isHP = new Trigger(() -> position == Constants.ElevatorConstants.HumanPlayer);
   }
 
   private SparkMax configureMotor(int canID, boolean isFollower) {
@@ -37,10 +43,12 @@ public class Elevator extends SubsystemBase {
         2 * Math.PI / Constants.ElevatorConstants.ElevatorGearRatio);
     config.closedLoop.pidf(
         ElevatorConstants.kP, ElevatorConstants.kI, ElevatorConstants.kD, ElevatorConstants.kFF);
+    config.inverted(!isFollower);
 
     SparkMax motor = new SparkMax(canID, MotorType.kBrushless);
     if (isFollower) {
-      config.follow(m_motorLeft, true);
+      config.follow(m_motorRight, true);
+    } else {
       config.limitSwitch.forwardLimitSwitchEnabled(true).forwardLimitSwitchType(Type.kNormallyOpen);
     }
     motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -98,8 +106,8 @@ public class Elevator extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    m_motorLeft.getClosedLoopController().setReference(position, ControlType.kPosition);
-    m_motorLeft.set(velocity);
+    m_motorRight.getClosedLoopController().setReference(position, ControlType.kPosition);
+    //m_motorRight.set(velocity);
 
     // Log motor applied output (what percent it’s actually doing)
     Logger.recordOutput("Elevator/MotorOutput", m_motorLeft.getAppliedOutput());
