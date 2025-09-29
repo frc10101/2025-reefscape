@@ -13,6 +13,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
@@ -61,13 +62,18 @@ public final class Constants {
     public static final double kFF = 0.003;
     public static final double kMaxVelocity = 1.75;
     public static final double kMaxAcceleration = 0.75;
-    public static final double ElevatorGearRatio = 20;
+    public static final double ElevatorGearRatio = 25;
     public static final double NDexter = 0;
     public static final double goOut = -16;
-    public static final double L1 = -1;
-    public static final double L2 = -2;
-    public static final double L3 = -9;
+    public static final double L1 = -4;
+    public static final double L2 = -11.25;
+    public static final double L3 = -20.25;
     public static final double HumanPlayer = 0;
+    public static final double kCarriageMass = 5.31; //kg
+    public static final double kElevatorDrumRadius = Units.inchesToMeters(1.88);
+    public static final double kMinElevatorHeightMeters = 0.0;
+    public static final double kMaxElevatorHeightMeters = Units.feetToMeters(4.5);
+    public static final double kPixelsPerMeter = 20.0; // pixels per meter conversion factor
   }
 
   public static final class DaisyConstants {

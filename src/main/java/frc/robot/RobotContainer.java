@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
+import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.DriveCommands;
@@ -58,7 +59,7 @@ public class RobotContainer {
 
   // Controllers
   private final CommandXboxController controller = new CommandXboxController(0);
-  private final CommandJoystick controller2 = new CommandJoystick(1);
+  private final CommandPS4Controller controller2 = new CommandPS4Controller(1);
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -70,7 +71,7 @@ public class RobotContainer {
     drive = initializeDriveSubsystem();
   
     // PathPlanner Commands
-    NamedCommands.registerCommand("L3",elevator.L3());
+    NamedCommands.registerCommand("L2",elevator.L2());
     NamedCommands.registerCommand("outputSpin",daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
     NamedCommands.registerCommand("stopSpin",daisy.outputSpin(0));
     NamedCommands.registerCommand("HumanPlayer", elevator.HumanPlayer());
@@ -136,16 +137,10 @@ public class RobotContainer {
       autoChooser.addOption("Leave 1", drive.getAuto("Blue_leave 1"));
       autoChooser.addOption("Leave 2", drive.getAuto("Blue_leave 2"));
       autoChooser.addOption("Leave 3", drive.getAuto("Blue_leave 3"));
-      autoChooser.addOption("Blue Left", drive.getAuto("Blue_Left_L3"));
-      autoChooser.addOption("Blue Middle", drive.getAuto("Blue_Middle_L3"));
-      autoChooser.addOption("Blue Right", drive.getAuto("Blue_Right_L3"));
     } else {
       autoChooser.addOption("Leave 1", drive.getAuto("Red_leave 1"));
       autoChooser.addOption("Leave 2", drive.getAuto("Red_leave 2"));
       autoChooser.addOption("Leave 3", drive.getAuto("Red_leave 3"));
-      autoChooser.addOption("Red Left", drive.getAuto("Red_Left_L3"));
-      autoChooser.addOption("Red Middle", drive.getAuto("Red_Middle_L3"));
-      autoChooser.addOption("Red Right", drive.getAuto("Red_Right_L3"));
     }
   }
 
@@ -159,24 +154,24 @@ public class RobotContainer {
   }
 
   private void bindController2Buttons() {
-    Trigger button1 = new Trigger(controller2.button(1)); // Output Coral
-    Trigger button2 = new Trigger(controller2.button(2)); // Hold for Intake
-    Trigger button3 = new Trigger(controller2.button(3)); // Elevator Up
+    //Trigger button1 = new Trigger(controller2.button(1)); // Output Coral
+    //Trigger button2 = new Trigger(controller2.button(2)); // Hold for Intake
+    //Trigger button3 = new Trigger(controller2.button(3)); // Elevator Up
     Trigger button4 = new Trigger(controller2.button(4)); // Elevator Down
     // Trigger button5 = new Trigger(controller2.button(5));
-    Trigger button6 = new Trigger(controller2.button(6)); // L3
-    Trigger button7 = new Trigger(controller2.button(7)); // Human Player
-    Trigger button9 = new Trigger(controller2.button(9)); // L2
-    Trigger button10 = new Trigger(controller2.button(10)); // L1
+    Trigger button6 = new Trigger(controller2.button(1)); // L3
+    Trigger button7 = new Trigger(controller2.button(2)); // Human Player
+    Trigger button9 = new Trigger(controller2.button(3)); // L2
+    //Trigger button10 = new Trigger(controller2.button(10)); // L1
 
-    button1.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyIn));
-    button2.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
-    button3.whileTrue(elevator.raise());
+    //button1.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyIn));
+    //button2.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
+    //button3.whileTrue(elevator.raise());
     button4.whileTrue(elevator.lower());
     button6.whileTrue(elevator.L3());
     button7.whileTrue(elevator.HumanPlayer());
     button9.whileTrue(elevator.L2());
-    button10.whileTrue(elevator.L1());
+    //button10.whileTrue(elevator.L1());
   }
 
   private void configureSwerveCommands() {

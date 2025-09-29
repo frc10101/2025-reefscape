@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import com.revrobotics.sim.SparkLimitSwitchSim;
+import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -11,6 +13,17 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.LimitSwitchConfig.Type;
 import com.revrobotics.spark.config.SparkMaxConfig;
+
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -24,11 +37,43 @@ public class Elevator extends SubsystemBase {
   private double position;
   private double velocity;
 
+  // Simulation setup and variables
+  private DCMotor elevatorMotorModel = DCMotor.getNEO(1);
+  private SparkMaxSim elevatorMotorSim;
+  private SparkLimitSwitchSim elevatorLimitSwitchSim;
+  private final ElevatorSim m_elevatorSim = new ElevatorSim(
+      elevatorMotorModel,
+      Constants.ElevatorConstants.ElevatorGearRatio,
+      Constants.ElevatorConstants.kCarriageMass,
+      Constants.ElevatorConstants.kElevatorDrumRadius,
+      Constants.ElevatorConstants.kMinElevatorHeightMeters,
+      Constants.ElevatorConstants.kMaxElevatorHeightMeters,
+      true,
+      Constants.ElevatorConstants.kMinElevatorHeightMeters,
+      0.0,
+      0.0);
+
+      // Mechanism2d setup for subsystem
+  private final Mechanism2d m_mech2d = new Mechanism2d(50, 50);
+  private final MechanismRoot2d m_mech2dRoot = m_mech2d.getRoot("ElevatorArm Root", 25, 0);
+  private final MechanismLigament2d m_elevatorMech2d = m_mech2dRoot.append(
+      new MechanismLigament2d(
+          "Elevator",
+          Constants.ElevatorConstants.kMinElevatorHeightMeters
+              * Constants.ElevatorConstants.kPixelsPerMeter,
+          90));
+
   public Elevator() {
     m_motorLeft = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorLeft, false);
     m_motorRight = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorRight, true);
     position = 0;
     velocity = 0;
+
+     SmartDashboard.putData("Elevator Sim", m_mech2d);
+
+    // Initialize simulation values
+    elevatorMotorSim = new SparkMaxSim(m_motorLeft, elevatorMotorModel);
+    elevatorLimitSwitchSim = new SparkLimitSwitchSim(m_motorLeft, false);
   }
 
   private SparkMax configureMotor(int canID, boolean isFollower) {
@@ -109,5 +154,46 @@ public class Elevator extends SubsystemBase {
     Logger.recordOutput("Elevator/Velocity", m_motorLeft.getAbsoluteEncoder().getVelocity());
     // Log encoder speed
     Logger.recordOutput("Elevator/Speed", velocity);
-  }
+
+    SmartDashboard.putNumber("Elevator Position", position);
+    SmartDashboard.putNumber("Elevator Sim Position", m_elevatorSim.getPositionMeters());
+    //SmartDashboard.putNumber("Mech2d Pixels", m_elevatorMech2d.getLength());
+    SmartDashboard.putNumber("Mech2d Inches", Units.metersToInches(Math.abs(m_elevatorMech2d.getLength())/Constants.ElevatorConstants.kPixelsPerMeter));
+    SmartDashboard.putNumber("Carriage Height", (Units.metersToInches(Math.abs(m_elevatorMech2d.getLength())/Constants.ElevatorConstants.kPixelsPerMeter) + 20.5));
+    SmartDashboard.putNumber("Daisy Height", (Units.metersToInches(Math.abs(m_elevatorMech2d.getLength())/Constants.ElevatorConstants.kPixelsPerMeter) + 29));
+    
+    // Update mechanism2d
+     m_elevatorMech2d.setLength(
+      Constants.ElevatorConstants.kPixelsPerMeter * Constants.ElevatorConstants.kMinElevatorHeightMeters
+          + Constants.ElevatorConstants.kPixelsPerMeter
+              * (position / Constants.ElevatorConstants.ElevatorGearRatio)
+              * (Constants.ElevatorConstants.kElevatorDrumRadius * 2.0 * Math.PI));
 }
+/** Get the current drawn by each simulation physics model */
+public double getSimulationCurrentDraw() {
+  return m_elevatorSim.getCurrentDrawAmps();
+}
+@Override
+public void simulationPeriodic() {
+  // In this method, we update our simulation of what our elevator is doing
+  // First, we set our "inputs" (voltages)
+  m_elevatorSim.setInput(elevatorMotorSim.getAppliedOutput() * RobotController.getBatteryVoltage());
+
+  // Update sim limit switch
+  elevatorLimitSwitchSim.setPressed(m_elevatorSim.getPositionMeters() == 0);
+
+  // Next, we update it. The standard loop time is 20ms.
+  m_elevatorSim.update(0.020);
+
+  // Iterate the elevator and arm SPARK simulations
+  elevatorMotorSim.iterate(
+      ((m_elevatorSim.getVelocityMetersPerSecond()
+          / (Constants.ElevatorConstants.kElevatorDrumRadius * 2.0 * Math.PI))
+          * Constants.ElevatorConstants.ElevatorGearRatio)
+          * 60.0,
+      RobotController.getBatteryVoltage(),
+      0.02);
+
+  // SimBattery is updated in Robot.java
+}
+  }
