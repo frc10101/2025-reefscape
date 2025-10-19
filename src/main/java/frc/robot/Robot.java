@@ -106,8 +106,9 @@ public class Robot extends LoggedRobot {
     Threads.setCurrentThreadPriority(false, 10);
   }
 
-  @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    m_robotContainer.resetSimulationField();
+  }
 
   @Override
   public void disabledPeriodic() {}
@@ -157,4 +158,8 @@ public class Robot extends LoggedRobot {
   @Override
   public void testExit() {}
 
+  @Override
+  public void simulationPeriodic() {
+    m_robotContainer.updateSimulation();
+  }
 }
