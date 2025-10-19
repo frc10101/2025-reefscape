@@ -191,6 +191,18 @@ public class RobotContainer {
     button7.whileTrue(elevator.HumanPlayer());
     button9.whileTrue(elevator.L2());
     // button10.whileTrue(elevator.L1());
+
+    final Runnable resetGyro =
+    Constants.currentMode == Constants.Mode.SIM
+        ? () -> drive.setPose(driveSimulation.getSimulatedDriveTrainPose())
+        : () ->
+            drive.setPose(
+                new Pose2d(
+                    drive.getPose().getTranslation(),
+                    DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                        ? new Rotation2d(Math.PI)
+                        : new Rotation2d()));
+
   }
 
   private void configureSwerveCommands() {
@@ -245,17 +257,6 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     return autoChooser.get();
   }
-
-  final Runnable resetGyro =
-        Constants.currentMode == Constants.Mode.SIM
-            ? () -> drive.setPose(driveSimulation.getSimulatedDriveTrainPose())
-            : () ->
-                drive.setPose(
-                    new Pose2d(
-                        drive.getPose().getTranslation(),
-                        DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-                            ? new Rotation2d(Math.PI)
-                            : new Rotation2d()));
 
   public void resetSimulationField() {
     if (Constants.currentMode != Constants.Mode.SIM) return;

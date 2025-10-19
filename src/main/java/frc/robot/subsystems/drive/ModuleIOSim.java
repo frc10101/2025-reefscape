@@ -35,7 +35,7 @@ public class ModuleIOSim implements ModuleIO {
   private static final double DRIVE_KD = 0.075;
   private static final double DRIVE_KS = 3.41851;
   private static final double DRIVE_KV_ROT =
-      0.91035; // Same units as TunerConstants: (volt * secs) / rotation
+      3.1; // Same units as TunerConstants: (volt * secs) / rotation
   private static final double DRIVE_KV = 1.44468 / Units.rotationsToRadians(1.0 / DRIVE_KV_ROT);
   private static final double TURN_KP = 100.0;
   private static final double TURN_KD = 0.5;
