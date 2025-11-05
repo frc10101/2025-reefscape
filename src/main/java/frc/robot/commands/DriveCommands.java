@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.drive.Drive;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -67,7 +68,7 @@ public class DriveCommands {
    * Field relative drive command using two joysticks (controlling linear and angular velocities).
    */
   public static Command joystickDrive(
-      Drive drive,
+      SwerveDrive drive,
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
       DoubleSupplier omegaSupplier) {
@@ -108,7 +109,7 @@ public class DriveCommands {
    * absolute rotation with a joystick.
    */
   public static Command joystickDriveAtAngle(
-      Drive drive,
+      SwerveDrive drive,
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
       Supplier<Rotation2d> rotationSupplier) {

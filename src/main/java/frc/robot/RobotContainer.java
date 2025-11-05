@@ -15,8 +15,6 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -29,21 +27,17 @@ import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.auto.AlignToReef;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Daisy;
 import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.MapleSimSwerve;
+import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
-import frc.robot.subsystems.drive.GyroIOSim;
-import frc.robot.subsystems.drive.ModuleIO;
-import frc.robot.subsystems.drive.ModuleIOSim;
-import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.subsystems.drive.ModuleIOTalonFXReal;
 import frc.robot.subsystems.drive.ModuleIOTalonFXSim;
+
 import org.ironmaple.simulation.SimulatedArena;
-import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -55,11 +49,12 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  */
 public class RobotContainer {
   // Subsystems
-  private final Drive drive;
-  private final SwerveDriveSimulation driveSimulation;
+  //private final Drive drive;
+  private final SwerveDrive drive2;
+  //private final SwerveDriveSimulation driveSimulation;
   private final Elevator elevator = new Elevator();
   private final Daisy daisy = new Daisy();
-  private final AlignToReef alignToReef;
+  //private final AlignToReef alignToReef;
 
   // Controllers
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -73,7 +68,28 @@ public class RobotContainer {
 
   public RobotContainer() {
 
-    switch (Constants.currentMode) {
+    if (Robot.isReal()) {
+      this.drive2 = new Drive(
+        new GyroIOPigeon2(),
+        new ModuleIOTalonFXReal(TunerConstants.FrontLeft),
+        new ModuleIOTalonFXReal(TunerConstants.FrontRight),
+        new ModuleIOTalonFXReal(TunerConstants.BackLeft),
+        new ModuleIOTalonFXReal(TunerConstants.BackRight),
+        m_field,
+        (pose) -> {}); // Real implementation
+  }
+  else {
+      this.drive2 = new MapleSimSwerve(new GyroIOPigeon2(),
+      new ModuleIOTalonFXReal(TunerConstants.FrontLeft),
+      new ModuleIOTalonFXReal(TunerConstants.FrontRight),
+      new ModuleIOTalonFXReal(TunerConstants.BackLeft),
+      new ModuleIOTalonFXReal(TunerConstants.BackRight),
+      m_field,
+      (pose) -> {}
+      ); // Simulation implementation
+  }
+  
+    /*switch (Constants.currentMode) {
       case REAL:
         drive =
             new Drive(
@@ -115,6 +131,7 @@ public class RobotContainer {
         driveSimulation = null;
         break;
     }
+    */
 
     // PathPlanner Commands
     NamedCommands.registerCommand("L2", elevator.L2());
@@ -127,9 +144,9 @@ public class RobotContainer {
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     setupAutoOptions();
     SmartDashboard.putData("Field", m_field);
-    alignToReef =
-        new AlignToReef(drive, AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded));
-
+    /*alignToReef =
+        new AlignToReef(drive2, AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded));
+*/
     // Configure button bindings
     configureButtonBindings();
   }
@@ -153,13 +170,13 @@ public class RobotContainer {
     autoChooser.addOption("RedLeft", drive.getAuto("RedLeftL3"));
     */
     if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
-      autoChooser.addOption("Leave 1", drive.getAuto("Blue_leave 1"));
-      autoChooser.addOption("Leave 2", drive.getAuto("Blue_leave 2"));
-      autoChooser.addOption("Leave 3", drive.getAuto("Blue_leave 3"));
+      autoChooser.addOption("Leave 1", drive2.getAuto("Blue_leave 1"));
+      autoChooser.addOption("Leave 2", drive2.getAuto("Blue_leave 2"));
+      autoChooser.addOption("Leave 3", drive2.getAuto("Blue_leave 3"));
     } else {
-      autoChooser.addOption("Leave 1", drive.getAuto("Red_leave 1"));
-      autoChooser.addOption("Leave 2", drive.getAuto("Red_leave 2"));
-      autoChooser.addOption("Leave 3", drive.getAuto("Red_leave 3"));
+      autoChooser.addOption("Leave 1", drive2.getAuto("Red_leave 1"));
+      autoChooser.addOption("Leave 2", drive2.getAuto("Red_leave 2"));
+      autoChooser.addOption("Leave 3", drive2.getAuto("Red_leave 3"));
     }
   }
 
@@ -181,8 +198,7 @@ public class RobotContainer {
     Trigger button6 = new Trigger(controller2.button(1)); // L3
     Trigger button7 = new Trigger(controller2.button(2)); // Human Player
     Trigger button9 = new Trigger(controller2.button(3)); // L2
-    // Trigger button10 = new Trigger(controller2.button(10)); // L1
-
+    Trigger button10 = new Trigger(controller.button(10)); //ResetGyro
     // button1.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyIn));
     // button2.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
     // button3.whileTrue(elevator.raise());
@@ -190,26 +206,26 @@ public class RobotContainer {
     button6.whileTrue(elevator.L3());
     button7.whileTrue(elevator.HumanPlayer());
     button9.whileTrue(elevator.L2());
-    // button10.whileTrue(elevator.L1());
+   // button10.whileTrue(elevator.L1());
 
     final Runnable resetGyro =
     Constants.currentMode == Constants.Mode.SIM
-        ? () -> drive.setPose(driveSimulation.getSimulatedDriveTrainPose())
+        ? () -> drive2.setPose(drive2.getSimulatedDriveTrainPose())
         : () ->
-            drive.setPose(
+            drive2.setPose(
                 new Pose2d(
-                    drive.getPose().getTranslation(),
+                    drive2.getPose().getTranslation(),
                     DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
                         ? new Rotation2d(Math.PI)
                         : new Rotation2d()));
-
+    button10.onTrue(Commands.runOnce(resetGyro, drive2));
   }
 
   private void configureSwerveCommands() {
     // Default command, normal field-relative drive
-    drive.setDefaultCommand(
+    drive2.setDefaultCommand(
         DriveCommands.joystickDrive(
-            drive,
+            drive2,
             () -> -controller.getLeftY(),
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
@@ -219,37 +235,37 @@ public class RobotContainer {
         .a()
         .whileTrue(
             DriveCommands.joystickDriveAtAngle(
-                drive,
+                drive2,
                 () -> controller.getLeftY(),
                 () -> controller.getLeftX(),
                 () -> new Rotation2d()));
 
     // Switch to X pattern when X button is pressed
-    controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+    controller.x().onTrue(Commands.runOnce(drive2::stopWithX, drive2));
     
     final Runnable resetGyro =
     Constants.currentMode == Constants.Mode.SIM
-        ? () -> drive.setPose(driveSimulation.getSimulatedDriveTrainPose())
+        ? () -> drive2.setPose(drive2.getSimulatedDriveTrainPose())
         : () ->
-            drive.setPose(
+            drive2.setPose(
                 new Pose2d(
-                    drive.getPose().getTranslation(),
+                    drive2.getPose().getTranslation(),
                     DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
                         ? new Rotation2d(Math.PI)
                         : new Rotation2d()));
 
-    controller.b().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
+    controller.b().onTrue(Commands.runOnce(resetGyro, drive2).ignoringDisable(true));
   }
 
   public void zeroGyro() {
-    drive.setPose(
+    drive2.setPose(
         new Pose2d(
-            drive.getPose().getTranslation(),
+            drive2.getPose().getTranslation(),
             DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
                 ? new Rotation2d(Math.PI)
                 : new Rotation2d()));
      if (Constants.currentMode == Constants.Mode.SIM) {
-      drive.setPose(driveSimulation.getSimulatedDriveTrainPose());
+      drive2.setPose(drive2.getSimulatedDriveTrainPose());
       return;
     }
   }
@@ -261,7 +277,7 @@ public class RobotContainer {
   public void resetSimulationField() {
     if (Constants.currentMode != Constants.Mode.SIM) return;
 
-    driveSimulation.setSimulationWorldPose(new Pose2d(3, 3, new Rotation2d()));
+    drive2.setSimulationWorldPose(new Pose2d(6, 6, new Rotation2d()));
     SimulatedArena.getInstance().resetFieldForAuto();
   }
 
@@ -270,7 +286,7 @@ public void updateSimulation() {
 
   SimulatedArena.getInstance().simulationPeriodic();
   Logger.recordOutput(
-      "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
+      "FieldSimulation/RobotPosition", drive2.getSimulatedDriveTrainPose());
   Logger.recordOutput(
       "FieldSimulation/Coral", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
   Logger.recordOutput(

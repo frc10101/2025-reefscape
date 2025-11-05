@@ -55,6 +55,7 @@ import frc.robot.Constants.Mode;
 import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.LimelightResults;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.SwerveDrive;
 import frc.robot.util.LocalADStarAK;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -65,7 +66,7 @@ import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class Drive extends SubsystemBase {
+public class Drive extends SubsystemBase implements SwerveDrive {
   private final Field2d field;
   // TunerConstants doesn't include these constants, so they are declared locally
   static final double ODOMETRY_FREQUENCY =
@@ -563,5 +564,47 @@ private final Consumer<Pose2d> resetSimulationPose;
       new Translation2d(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
       new Translation2d(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)
     };
+  }
+
+  @Override
+  public void drive(ChassisSpeeds speeds, boolean fieldRelative, boolean isOpenLoop) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'drive'");
+  }
+
+  @Override
+  public void setModuleStates(SwerveModuleState[] desiredStates) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'setModuleStates'");
+  }
+
+  @Override
+  public ChassisSpeeds getMeasuredSpeeds() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getMeasuredSpeeds'");
+  }
+
+  @Override
+  public Rotation2d getGyroYaw() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getGyroYaw'");
+  }
+
+  @Override
+  public void addVisionMeasurement(Pose2d visionRobotPose, double timeStampSeconds) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'addVisionMeasurement'");
+  }
+
+  @Override
+  public Pose2d getSimulatedDriveTrainPose() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getSimulatedDriveTrainPose'");
+  }
+
+  @Override
+  public void setSimulationWorldPose(Pose2d pose2d) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'setSimulationWorldPose'");
   }
 }
