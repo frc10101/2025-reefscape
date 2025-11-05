@@ -39,13 +39,14 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.ModuleIO;
+import frc.robot.subsystems.drive.Module;
 import frc.robot.subsystems.drive.ModuleIOInputsAutoLogged;
 
 public class MapleSimSwerve implements SwerveDrive{
 
     private final Field2d field;
     private final GyroIO gyroIO;
-    private final Consumer<Pose2d> resetSimulationPose;
+    //private final Consumer<Pose2d> resetSimulationPose;
 
     private final SelfControlledSwerveDriveSimulation simulatedDrive;
     private final Field2d field2d;
@@ -57,36 +58,36 @@ public class MapleSimSwerve implements SwerveDrive{
     
 
     private final ModuleIOInputsAutoLogged inputs = new ModuleIOInputsAutoLogged();
-    
-      private static final double ROBOT_MASS_KG = 51.7;
-      private static final double ROBOT_MOI = 6.883;
-      private static final double WHEEL_COF = 1.2;
-      private static final RobotConfig PP_CONFIG =
-          new RobotConfig(
-              ROBOT_MASS_KG,
-              ROBOT_MOI,
-              new ModuleConfig(
-                  TunerConstants.FrontLeft.WheelRadius,
-                  TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
-                  WHEEL_COF,
-                  DCMotor.getKrakenX60Foc(1)
-                      .withReduction(TunerConstants.FrontLeft.DriveMotorGearRatio),
-                  TunerConstants.FrontLeft.SlipCurrent,
-                  1),
-              getModuleTranslations());
-    
-        public MapleSimSwerve(
-            GyroIO gyroIO,
-        ModuleIO flModuleIO,
-        ModuleIO frModuleIO,
-        ModuleIO blModuleIO,
-        ModuleIO brModuleIO,
-        Field2d field,
-        Consumer<Pose2d> resetSimulationPoseCallBack
-        ) {
-        this.field = field;
-        this.gyroIO = gyroIO;
-        this.resetSimulationPose = resetSimulationPoseCallBack;
+                
+              private static final double ROBOT_MASS_KG = 51.7;
+              private static final double ROBOT_MOI = 6.883;
+              private static final double WHEEL_COF = 1.2;
+              private static final RobotConfig PP_CONFIG =
+                  new RobotConfig(
+                      ROBOT_MASS_KG,
+                      ROBOT_MOI,
+                      new ModuleConfig(
+                          TunerConstants.FrontLeft.WheelRadius,
+                          TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
+                          WHEEL_COF,
+                          DCMotor.getKrakenX60Foc(1)
+                              .withReduction(TunerConstants.FrontLeft.DriveMotorGearRatio),
+                          TunerConstants.FrontLeft.SlipCurrent,
+                          1),
+                      getModuleTranslations());
+            
+                public MapleSimSwerve(
+                    GyroIO gyroIO,
+                ModuleIO flModuleIO,
+                ModuleIO frModuleIO,
+                ModuleIO blModuleIO,
+                ModuleIO brModuleIO,
+                Field2d field,
+                Consumer<Pose2d> resetSimulationPoseCallBack
+                ) {
+                this.field = field;
+            this.gyroIO = gyroIO;
+            this.resetSimulationPose = resetSimulationPoseCallBack;
         modules[0] = new Module(flModuleIO, 0, TunerConstants.FrontLeft);
         modules[1] = new Module(frModuleIO, 1, TunerConstants.FrontRight);
         modules[2] = new Module(blModuleIO, 2, TunerConstants.BackLeft);
@@ -146,12 +147,6 @@ public class MapleSimSwerve implements SwerveDrive{
 public Rotation2d getAngle() {
     return inputs.turnPosition;
   }
-
-/** Returns the module state (turn angle and drive velocity). */
-public SwerveModuleState 
-getState() {
-  return new SwerveModuleState(getVelocityMetersPerSec(), getAngle());
-}
 
 /** Returns the module states (turn angles and drive velocities) for all of the modules. */
 @AutoLogOutput(key = "SwerveStates/Measured")
