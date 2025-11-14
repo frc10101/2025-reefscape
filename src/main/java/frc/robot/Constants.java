@@ -76,6 +76,6 @@ public final class Constants {
   }
 
   public static final class LimelightConstants {
-    public static final String limelightName = "Johnny";
+    public static final String limelightName = "johnny";
   }
 }

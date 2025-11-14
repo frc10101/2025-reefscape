@@ -29,7 +29,6 @@ import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
@@ -250,10 +249,17 @@ public class Drive extends SubsystemBase {
 
   @Override
   public void periodic() {
+    LimelightHelpers.SetRobotOrientation(
+        "johnny",
+        gyroIO.getYaw().getDegrees(),
+        0,
+        gyroIO.getPitch().getDegrees(),
+        0,
+        gyroIO.getRoll().getDegrees(),
+        0);
     PoseEstimate botPoseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("johnny");
-    System.out.println(botPoseEstimate==null);
-    if (botPoseEstimate != null)
-    {
+    System.out.println(botPoseEstimate == null);
+    if (botPoseEstimate != null) {
       Logger.recordOutput("LimelightPose", botPoseEstimate.pose);
     }
     odometryLock.lock(); // Prevents odometry updates while reading data
@@ -330,8 +336,9 @@ public class Drive extends SubsystemBase {
     return edu.wpi.first.wpilibj2.command.Commands.runOnce(
         () -> {
           LimelightResults results =
-            LimelightHelpers.getLatestResults(Constants.LimelightConstants.limelightName);
-          this.poseEstimator.addVisionMeasurement(results.getBotPose2d_wpiBlue(), results.timestamp_LIMELIGHT_publish); 
+              LimelightHelpers.getLatestResults(Constants.LimelightConstants.limelightName);
+          this.poseEstimator.addVisionMeasurement(
+              results.getBotPose2d_wpiBlue(), results.timestamp_LIMELIGHT_publish);
           if (results == null) {
             System.out.println("Re-localization failed - no valid vision data");
           }

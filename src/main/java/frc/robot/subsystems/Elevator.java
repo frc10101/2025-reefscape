@@ -16,9 +16,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.Constants.ElevatorConstants;
-
-import java.util.function.BooleanSupplier;
-
 import org.littletonrobotics.junction.Logger;
 
 public class Elevator extends SubsystemBase {
@@ -107,7 +104,7 @@ public class Elevator extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     m_motorRight.getClosedLoopController().setReference(position, ControlType.kPosition);
-    //m_motorRight.set(velocity);
+    // m_motorRight.set(velocity);
     // Log motor applied output (what percent it’s actually doing)
     Logger.recordOutput("Elevator/MotorOutput", m_motorRight.getAppliedOutput());
     // Log encoder position
