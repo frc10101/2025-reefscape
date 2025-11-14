@@ -6,7 +6,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 
-//NOT OUR CODE; THINGS NEED TO BE CHANGED
+// NOT OUR CODE; THINGS NEED TO BE CHANGED
 
 public final class DriveConstants {
 
