@@ -50,7 +50,7 @@ public class AlignToPose extends Command {
     yPidController = new PIDController(yP, yI, yD);
     thetaPidController = new PIDController(thetaP, thetaI, thetaD);
 
-    thetaPidController.enableContinuousInput(0, 2 * Constants.PI);
+    thetaPidController.enableContinuousInput(0, 2 * Math.PI);
   }
 
   @Override
