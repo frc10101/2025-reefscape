@@ -250,14 +250,15 @@ public class Drive extends SubsystemBase {
   @Override
   public void periodic() {
     LimelightHelpers.SetRobotOrientation(
-        "johnny",
+        "limelight-johnny",
         gyroIO.getYaw().getDegrees(),
         0,
         gyroIO.getPitch().getDegrees(),
         0,
         gyroIO.getRoll().getDegrees(),
         0);
-    PoseEstimate botPoseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("johnny");
+    PoseEstimate botPoseEstimate =
+        LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-johnny");
     System.out.println(botPoseEstimate == null);
     if (botPoseEstimate != null) {
       Logger.recordOutput("LimelightPose", botPoseEstimate.pose);
