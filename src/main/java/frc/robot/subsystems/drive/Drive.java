@@ -257,8 +257,7 @@ public class Drive extends SubsystemBase {
         0,
         gyroIO.getRoll().getDegrees(),
         0);
-    PoseEstimate botPoseEstimate =
-        LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-johnny");
+    PoseEstimate botPoseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-johnny");
     System.out.println(botPoseEstimate == null);
     if (botPoseEstimate != null) {
       Logger.recordOutput("LimelightPose", botPoseEstimate.pose);
