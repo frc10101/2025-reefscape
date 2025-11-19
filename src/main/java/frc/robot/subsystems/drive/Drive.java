@@ -338,16 +338,11 @@ public class Drive extends SubsystemBase {
         () -> {
           LimelightResults results =
               LimelightHelpers.getLatestResults(Constants.LimelightConstants.limelightName);
+          this.poseEstimator.addVisionMeasurement(
+              results.getBotPose2d_wpiBlue(), results.timestamp_LIMELIGHT_publish);
           if (results == null) {
             System.out.println("Re-localization failed - no valid vision data");
-            return;
           }
-          Pose2d pose = results.getBotPose2d_wpiBlue();
-          if (pose == null) {
-            System.out.println("Re-localization failed - no Pose");
-            return;
-          }
-          this.poseEstimator.addVisionMeasurement(pose, results.timestamp_LIMELIGHT_publish);
         });
   }
 
@@ -377,6 +372,23 @@ public class Drive extends SubsystemBase {
 
   /** Runs the drive at the desired velocity. */
   public void drive(ChassisSpeeds speeds) {
+    runVelocity(speeds);
+  }
+
+  /**
+   * Drives the robot using translation and rotation inputs.
+   *
+   * @param translation The desired field-relative translation (x and y speeds in meters/sec).
+   * @param rotation The desired rotation speed in radians/sec.
+   * @param fieldRelative Whether the translation is field-relative.
+   */
+  public void drivePlease(Translation2d translation, double rotation, boolean fieldRelative) {
+    ChassisSpeeds speeds =
+        fieldRelative
+            ? ChassisSpeeds.fromFieldRelativeSpeeds(
+                translation.getX(), translation.getY(), rotation, getRotation())
+            : new ChassisSpeeds(translation.getX(), translation.getY(), rotation);
+
     runVelocity(speeds);
   }
 
