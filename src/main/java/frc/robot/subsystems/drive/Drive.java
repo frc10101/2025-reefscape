@@ -358,6 +358,22 @@ public class Drive extends SubsystemBase {
   }
 
   /**
+   * Drives the robot using translation and rotation inputs.
+   *
+   * @param translation The desired field-relative translation (x and y speeds in meters/sec).
+   * @param rotation The desired rotation speed in radians/sec.
+   * @param fieldRelative Whether the translation is field-relative.
+   */
+  public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
+    ChassisSpeeds speeds = fieldRelative
+        ? ChassisSpeeds.fromFieldRelativeSpeeds(
+            translation.getX(), translation.getY(), rotation, getRotation())
+        : new ChassisSpeeds(translation.getX(), translation.getY(), rotation);
+
+    runVelocity(speeds);
+  }
+
+  /**
    * Predicts the robot's position after a specified time.
    *
    * @param seconds Time to predict forward in seconds
