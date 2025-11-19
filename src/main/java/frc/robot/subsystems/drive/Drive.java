@@ -383,10 +383,11 @@ public class Drive extends SubsystemBase {
    * @param fieldRelative Whether the translation is field-relative.
    */
   public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
-    ChassisSpeeds speeds = fieldRelative
-        ? ChassisSpeeds.fromFieldRelativeSpeeds(
-            translation.getX(), translation.getY(), rotation, getRotation())
-        : new ChassisSpeeds(translation.getX(), translation.getY(), rotation);
+    ChassisSpeeds speeds =
+        fieldRelative
+            ? ChassisSpeeds.fromFieldRelativeSpeeds(
+                translation.getX(), translation.getY(), rotation, getRotation())
+            : new ChassisSpeeds(translation.getX(), translation.getY(), rotation);
 
     runVelocity(speeds);
   }
