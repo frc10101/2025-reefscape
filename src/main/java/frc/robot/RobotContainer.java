@@ -171,12 +171,10 @@ public class RobotContainer {
     button7.onTrue(elevator.HumanPlayer());
     button9.onTrue(elevator.L2());
     button10.onTrue(elevator.L1());
-<<<<<<< HEAD
+
     button3.onTrue(drive.reLocalize());
-=======
     button11.onTrue(
         Commands.runOnce(() -> new AlignToReefTagRelative(true, drive).schedule(), drive));
->>>>>>> 1d960cdd220bac206ed40e652d2b2970c7270f79
   }
 
   private void configureSwerveCommands() {
