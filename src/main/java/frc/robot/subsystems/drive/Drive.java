@@ -382,7 +382,7 @@ public class Drive extends SubsystemBase {
    * @param rotation The desired rotation speed in radians/sec.
    * @param fieldRelative Whether the translation is field-relative.
    */
-  public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
+  public void drivePlease(Translation2d translation, double rotation, boolean fieldRelative) {
     ChassisSpeeds speeds =
         fieldRelative
             ? ChassisSpeeds.fromFieldRelativeSpeeds(

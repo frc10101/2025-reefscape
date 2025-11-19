@@ -18,7 +18,6 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -173,8 +172,7 @@ public class RobotContainer {
     button9.onTrue(elevator.L2());
     button10.onTrue(elevator.L1());
     button11.onTrue(
-      Commands.runOnce(
-          () -> new AlignToReefTagRelative(true, drive).schedule(), drive));
+        Commands.runOnce(() -> new AlignToReefTagRelative(true, drive).schedule(), drive));
   }
 
   private void configureSwerveCommands() {
