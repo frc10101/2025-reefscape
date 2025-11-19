@@ -18,6 +18,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -29,6 +30,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.auto.AlignToReef;
+import frc.robot.commands.auto.AlignToReefTagRelative;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Daisy;
 import frc.robot.subsystems.Elevator;
@@ -151,7 +153,7 @@ public class RobotContainer {
     Trigger button7 = new Trigger(controller2.button(7)); // Human Player
     Trigger button9 = new Trigger(controller2.button(9)); // L2
     Trigger button10 = new Trigger(controller2.button(10)); // L1
-    // Trigger button11 = new Trigger(controller2.button(11));
+    Trigger button11 = new Trigger(controller2.button(11));
     // Trigger button12 = new Trigger(controller2.button(12));
     // Trigger button13 = new Trigger(controller2.button(13));
     // Trigger button14 = new Trigger(controller2.button(14)); // Release
@@ -170,6 +172,9 @@ public class RobotContainer {
     button7.onTrue(elevator.HumanPlayer());
     button9.onTrue(elevator.L2());
     button10.onTrue(elevator.L1());
+    button11.onTrue(
+      Commands.runOnce(
+          () -> new AlignToReefTagRelative(true, drive).schedule(), drive));
   }
 
   private void configureSwerveCommands() {
@@ -212,6 +217,8 @@ public class RobotContainer {
                 .ignoringDisable(true));
     leftReefButton.onTrue(alignToReef.generateCommand(AlignToReef.FieldBranchSide.LEFT));
     rightReefButton.onTrue(alignToReef.generateCommand(AlignToReef.FieldBranchSide.RIGHT));
+
+    // Example: Bind the Y button to drive the robot with specific translation and rotation
   }
 
   public void zeroGyro() {
