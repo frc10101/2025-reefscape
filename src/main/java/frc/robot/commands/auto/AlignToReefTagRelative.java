@@ -9,7 +9,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.AlignToReefTagRelative_Constants;;
+import frc.robot.Constants.AlignToReefTagRelative_Constants;
 import frc.robot.LimelightHelpers;
 import frc.robot.subsystems.drive.Drive;
 
@@ -21,9 +21,14 @@ public class AlignToReefTagRelative extends Command {
   private double tagID = -1;
 
   public AlignToReefTagRelative(boolean isRightScore, Drive drivebase) {
-    xController = new PIDController(AlignToReefTagRelative_Constants.X_REEF_ALIGNMENT_P, 0.0, 0);  // Vertical movement
-    yController = new PIDController(AlignToReefTagRelative_Constants.Y_REEF_ALIGNMENT_P, 0.0, 0);  // Horitontal movement
-    rotController = new PIDController(AlignToReefTagRelative_Constants.ROT_REEF_ALIGNMENT_P, 0, 0);  // Rotation
+    xController =
+        new PIDController(
+            AlignToReefTagRelative_Constants.X_REEF_ALIGNMENT_P, 0.0, 0); // Vertical movement
+    yController =
+        new PIDController(
+            AlignToReefTagRelative_Constants.Y_REEF_ALIGNMENT_P, 0.0, 0); // Horitontal movement
+    rotController =
+        new PIDController(AlignToReefTagRelative_Constants.ROT_REEF_ALIGNMENT_P, 0, 0); // Rotation
     this.isRightScore = isRightScore;
     this.drivebase = drivebase;
     addRequirements(drivebase);
@@ -42,7 +47,10 @@ public class AlignToReefTagRelative extends Command {
     xController.setSetpoint(AlignToReefTagRelative_Constants.X_SETPOINT_REEF_ALIGNMENT);
     xController.setTolerance(AlignToReefTagRelative_Constants.X_TOLERANCE_REEF_ALIGNMENT);
 
-    yController.setSetpoint(isRightScore ? AlignToReefTagRelative_Constants.Y_SETPOINT_REEF_ALIGNMENT : -AlignToReefTagRelative_Constants.Y_SETPOINT_REEF_ALIGNMENT);
+    yController.setSetpoint(
+        isRightScore
+            ? AlignToReefTagRelative_Constants.Y_SETPOINT_REEF_ALIGNMENT
+            : -AlignToReefTagRelative_Constants.Y_SETPOINT_REEF_ALIGNMENT);
     yController.setTolerance(AlignToReefTagRelative_Constants.Y_TOLERANCE_REEF_ALIGNMENT);
 
     tagID = LimelightHelpers.getFiducialID("");
@@ -63,9 +71,7 @@ public class AlignToReefTagRelative extends Command {
 
       drivebase.drive(new Translation2d(xSpeed, ySpeed), rotValue, false);
 
-      if (!rotController.atSetpoint() ||
-          !yController.atSetpoint() ||
-          !xController.atSetpoint()) {
+      if (!rotController.atSetpoint() || !yController.atSetpoint() || !xController.atSetpoint()) {
         stopTimer.reset();
       }
     } else {
@@ -82,8 +88,9 @@ public class AlignToReefTagRelative extends Command {
 
   @Override
   public boolean isFinished() {
-    // Requires the robot to stay in the correct position for 0.3 seconds, as long as it gets a tag in the camera
-    return this.dontSeeTagTimer.hasElapsed(AlignToReefTagRelative_Constants.DONT_SEE_TAG_WAIT_TIME) ||
-        stopTimer.hasElapsed(AlignToReefTagRelative_Constants.POSE_VALIDATION_TIME);
+    // Requires the robot to stay in the correct position for 0.3 seconds, as long as it gets a tag
+    // in the camera
+    return this.dontSeeTagTimer.hasElapsed(AlignToReefTagRelative_Constants.DONT_SEE_TAG_WAIT_TIME)
+        || stopTimer.hasElapsed(AlignToReefTagRelative_Constants.POSE_VALIDATION_TIME);
   }
 }
