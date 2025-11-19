@@ -54,6 +54,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.LimelightResults;
+import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.generated.TunerConstants;
 import frc.robot.util.LocalADStarAK;
 import java.util.concurrent.locks.Lock;
@@ -248,6 +249,20 @@ public class Drive extends SubsystemBase {
 
   @Override
   public void periodic() {
+    LimelightHelpers.SetRobotOrientation(
+        "limelight-johnny",
+        gyroIO.getYaw().getDegrees(),
+        0,
+        gyroIO.getPitch().getDegrees(),
+        0,
+        gyroIO.getRoll().getDegrees(),
+        0);
+    PoseEstimate botPoseEstimate =
+        LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-johnny");
+    System.out.println(botPoseEstimate == null);
+    if (botPoseEstimate != null) {
+      Logger.recordOutput("LimelightPose", botPoseEstimate.pose);
+    }
     odometryLock.lock(); // Prevents odometry updates while reading data
     try {
       field.setRobotPose(getPose());
@@ -321,8 +336,11 @@ public class Drive extends SubsystemBase {
   public Command reLocalize() {
     return edu.wpi.first.wpilibj2.command.Commands.runOnce(
         () -> {
-          Pose2d pose = processLimelightData(true);
-          if (pose == null) {
+          LimelightResults results =
+              LimelightHelpers.getLatestResults(Constants.LimelightConstants.limelightName);
+          this.poseEstimator.addVisionMeasurement(
+              results.getBotPose2d_wpiBlue(), results.timestamp_LIMELIGHT_publish);
+          if (results == null) {
             System.out.println("Re-localization failed - no valid vision data");
           }
         });

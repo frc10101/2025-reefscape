@@ -27,4 +27,16 @@ public interface GyroIO {
   }
 
   public default void updateInputs(GyroIOInputs inputs) {}
+
+  public default Rotation2d getYaw() {
+    return null;
+  }
+
+  public default Rotation2d getPitch() {
+    return null;
+  }
+
+  public default Rotation2d getRoll() {
+    return null;
+  }
 }
