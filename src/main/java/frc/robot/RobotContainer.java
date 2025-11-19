@@ -170,6 +170,7 @@ public class RobotContainer {
     button7.onTrue(elevator.HumanPlayer());
     button9.onTrue(elevator.L2());
     button10.onTrue(elevator.L1());
+    button3.onTrue(drive.reLocalize());
   }
 
   private void configureSwerveCommands() {
