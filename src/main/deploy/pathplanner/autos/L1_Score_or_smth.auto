@@ -7,13 +7,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Red Leave 1"
+            "pathName": "reef"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": null
+            "name": "Align"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Output"
           }
         }
       ]

@@ -13,7 +13,10 @@
 
 package frc.robot;
 
+import com.fasterxml.jackson.databind.util.Named;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -27,6 +30,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.LimelightHelpers.PoseEstimate;
+import frc.robot.LimelightHelpers;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.auto.AlignToReef;
 import frc.robot.generated.TunerConstants;
@@ -38,7 +43,11 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+
+import java.util.function.Supplier;
+
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import frc.robot.commands.auto.AlignToPose;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -68,6 +77,10 @@ public class RobotContainer {
 
   public RobotContainer() {
     drive = initializeDriveSubsystem();
+
+    NamedCommands.registerCommand("L2", elevator.L2());
+    NamedCommands.registerCommand("Output", daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
+    NamedCommands.registerCommand("Align", new AlignToPose(drive, () -> LimelightHelpers.getBotPose2d_wpiRed(Constants.LimelightConstants.limelightName), true));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
