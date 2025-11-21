@@ -187,7 +187,7 @@ public class RobotContainer {
 
     button3.onTrue(drive.reLocalize());
     button11.onTrue(
-        Commands.runOnce(() -> new AlignToReefTagRelative(true, drive).schedule(), drive));
+        Commands.runOnce(() -> new AlignToPose(drive, () -> LimelightHelpers.getBotPose2d_wpiRed(Constants.LimelightConstants.limelightName), true));
   }
 
   private void configureSwerveCommands() {
