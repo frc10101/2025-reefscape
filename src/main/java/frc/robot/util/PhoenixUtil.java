@@ -13,6 +13,8 @@
 
 package frc.robot.util;
 
+import static edu.wpi.first.units.Units.*;
+
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -23,17 +25,12 @@ import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import com.ctre.phoenix6.sim.CANcoderSimState;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
-
-import static edu.wpi.first.units.Units.*;
-
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
-
 import java.util.function.Supplier;
-
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.motorsims.SimulatedBattery;
 import org.ironmaple.simulation.motorsims.SimulatedMotorController;
@@ -46,7 +43,8 @@ public class PhoenixUtil {
       if (error.isOK()) break;
     }
   }
-    public static class TalonFXMotorControllerSim implements SimulatedMotorController {
+
+  public static class TalonFXMotorControllerSim implements SimulatedMotorController {
     private static int instances = 0;
     public final int id;
 

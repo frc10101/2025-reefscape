@@ -13,33 +13,22 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.*;
+
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Daisy;
 import frc.robot.subsystems.Elevator;
-import frc.robot.subsystems.MapleSimSwerve;
-import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.drive.GyroIOPigeon2;
-import frc.robot.subsystems.drive.ModuleIOTalonFXReal;
-import frc.robot.subsystems.drive.ModuleIOTalonFXSim;
-
-import org.ironmaple.simulation.SimulatedArena;
-import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -49,247 +38,180 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  */
 public class RobotContainer {
   // Subsystems
-  //private final Drive drive;
-  private final SwerveDrive drive2;
-  //private final SwerveDriveSimulation driveSimulation;
+  public final Drive drive = TunerConstants.createDrivetrain();
   private final Elevator elevator = new Elevator();
   private final Daisy daisy = new Daisy();
-  //private final AlignToReef alignToReef;
+  // private final AlignToReef alignToReef;
 
   // Controllers
-  private final CommandXboxController controller = new CommandXboxController(0);
+  private final CommandPS4Controller controller = new CommandPS4Controller(0);
   private final CommandPS4Controller controller2 = new CommandPS4Controller(1);
 
-  // Dashboard inputs
-  private final LoggedDashboardChooser<Command> autoChooser;
+  // Crit Hit way
+  // private final LoggedDashboardChooser<Command> autoChooser;
+
+  // Maplesim way
+  private final SendableChooser<Command> autoChooser;
 
   // Field
   private final Field2d m_field = new Field2d();
 
+  // MapleSim testing
+  private double MaxSpeed =
+      TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+  private double MaxAngularRate =
+      RotationsPerSecond.of(0.75)
+          .in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+
+  /* Setting up bindings for necessary control of the swerve drive platform */
+  private final SwerveRequest.FieldCentric drive2 =
+      new SwerveRequest.FieldCentric()
+          .withDeadband(MaxSpeed * 0.1)
+          .withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+          .withDriveRequestType(
+              DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+  private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
+  private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
+  private final SwerveRequest.RobotCentric forwardStraight =
+      new SwerveRequest.RobotCentric().withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
+  private final Telemetry logger = new Telemetry(MaxSpeed);
+
   public RobotContainer() {
-
-    if (Robot.isReal()) {
-      this.drive2 = new Drive(
-        new GyroIOPigeon2(),
-        new ModuleIOTalonFXReal(TunerConstants.FrontLeft),
-        new ModuleIOTalonFXReal(TunerConstants.FrontRight),
-        new ModuleIOTalonFXReal(TunerConstants.BackLeft),
-        new ModuleIOTalonFXReal(TunerConstants.BackRight),
-        m_field,
-        (pose) -> {}); // Real implementation
-  }
-  else {
-      this.drive2 = new MapleSimSwerve(new GyroIOPigeon2(),
-      new ModuleIOTalonFXReal(TunerConstants.FrontLeft),
-      new ModuleIOTalonFXReal(TunerConstants.FrontRight),
-      new ModuleIOTalonFXReal(TunerConstants.BackLeft),
-      new ModuleIOTalonFXReal(TunerConstants.BackRight),
-      m_field,
-      (pose) -> {}
-      ); // Simulation implementation
-  }
-  
-    /*switch (Constants.currentMode) {
-      case REAL:
-        drive =
-            new Drive(
-                new GyroIOPigeon2(),
-                new ModuleIOTalonFXReal(TunerConstants.FrontLeft),
-                new ModuleIOTalonFXReal(TunerConstants.FrontRight),
-                new ModuleIOTalonFXReal(TunerConstants.BackLeft),
-                new ModuleIOTalonFXReal(TunerConstants.BackRight),
-                m_field,
-                (pose) -> {});
-
-        driveSimulation = null;
-        break;
-      case SIM:
-        driveSimulation =
-            new SwerveDriveSimulation(Drive.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
-        SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
-
-        drive =
-            new Drive(
-                new GyroIOSim(driveSimulation.getGyroSimulation()),
-                new ModuleIOTalonFXSim(TunerConstants.FrontLeft, driveSimulation.getModules()[0]),
-                new ModuleIOTalonFXSim(TunerConstants.FrontRight, driveSimulation.getModules()[1]),
-                new ModuleIOTalonFXSim(TunerConstants.BackLeft, driveSimulation.getModules()[2]),
-                new ModuleIOTalonFXSim(TunerConstants.BackRight, driveSimulation.getModules()[3]),
-                m_field,
-                driveSimulation::setSimulationWorldPose);
-        break;
-      default:
-        drive =
-            new Drive(
-                new GyroIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {},
-                m_field,
-                (pose) -> {});
-        driveSimulation = null;
-        break;
-    }
-    */
-
-    // PathPlanner Commands
-    NamedCommands.registerCommand("L2", elevator.L2());
-    NamedCommands.registerCommand(
-        "outputSpin", daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
-    NamedCommands.registerCommand("stopSpin", daisy.outputSpin(0));
-    NamedCommands.registerCommand("HumanPlayer", elevator.HumanPlayer());
-
-    // Set up auto routines
-    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-    setupAutoOptions();
     SmartDashboard.putData("Field", m_field);
-    /*alignToReef =
-        new AlignToReef(drive2, AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded));
-*/
-    // Configure button bindings
-    configureButtonBindings();
-  }
-  
-  private void setupAutoOptions() {
-    /*autoChooser.addOption(
-        "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
-    autoChooser.addOption(
-        "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Forward)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Reverse)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption("Leave Auto", drive.getAuto("leave"));
-    autoChooser.addOption("RedLeft", drive.getAuto("RedLeftL3"));
+
+    autoChooser = AutoBuilder.buildAutoChooser();
+    SmartDashboard.putData("Auto Mode", autoChooser);
+
+    // SmartDashboard.putData("Field", m_field);
+
+    configureBindings();
+
+    drive.resetPose(new Pose2d(7.16, 5, new Rotation2d(Math.PI)));
+
+    /*
+        drive.resetPose(new Pose2d(7.16, 5, new Rotation2d(Math.PI)));
+
+        // adds all autos (ALL OF THEM)
+        autoChooser = AutoBuilder.buildAutoChooser();
+        SmartDashboard.putData("Auto Mode", autoChooser);
+
+        SmartDashboard.putData("Field", m_field);
+
+        // PathPlanner Commands
+        NamedCommands.registerCommand("L2", elevator.L2());
+        NamedCommands.registerCommand("L3", elevator.L3());
+        NamedCommands.registerCommand("HumanPlayer", elevator.HumanPlayer());
+
+        NamedCommands.registerCommand(
+            "outputSpin", daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
+        NamedCommands.registerCommand("stopSpin", daisy.outputSpin(0));
+
+        // Configure button bindings
+        configureButtonBindings();
     */
-    if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
-      autoChooser.addOption("Leave 1", drive2.getAuto("Blue_leave 1"));
-      autoChooser.addOption("Leave 2", drive2.getAuto("Blue_leave 2"));
-      autoChooser.addOption("Leave 3", drive2.getAuto("Blue_leave 3"));
-    } else {
-      autoChooser.addOption("Leave 1", drive2.getAuto("Red_leave 1"));
-      autoChooser.addOption("Leave 2", drive2.getAuto("Red_leave 2"));
-      autoChooser.addOption("Leave 3", drive2.getAuto("Red_leave 3"));
+  }
+
+  /*private void configureButtonBindings() {
+      // configureSwerveCommands();
+
+      // Controller 2 button bindings
+      bindController2Buttons();
+
+      elevator.elevatorLimit().whileTrue(elevator.stop());
     }
-  }
 
-  private void configureButtonBindings() {
-    // configureSwerveCommands();
+    private void bindController2Buttons() {
+      // Trigger button1 = new Trigger(controller2.button(1)); // Output Coral
+      // Trigger button2 = new Trigger(controller2.button(2)); // Hold for Intake
+      // Trigger button3 = new Trigger(controller2.button(3)); // Elevator Up
+      Trigger button4 = new Trigger(controller2.button(4)); // Elevator Down
+      // Trigger button5 = new Trigger(controller2.button(5));
+      Trigger button6 = new Trigger(controller2.button(1)); // L3
+      Trigger button7 = new Trigger(controller2.button(2)); // Human Player
+      Trigger button9 = new Trigger(controller2.button(3)); // L2
+      // Trigger button10 = new Trigger(controller.button(10)); //ResetGyro
+      // button1.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyIn));
+      // button2.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
+      // button3.whileTrue(elevator.raise());
+      button4.whileTrue(elevator.lower());
+      button6.whileTrue(elevator.L3());
+      button7.whileTrue(elevator.HumanPlayer());
+      button9.whileTrue(elevator.L2());
+      // button10.whileTrue(elevator.L1());
+    }
 
-    // Controller 2 button bindings
-    bindController2Buttons();
+    private void configureSwerveCommands() {
+      // Default command, normal field-relative drive
+      drive.setDefaultCommand(
+          DriveCommands.joystickDrive(
+              drive,
+              () -> -controller.getLeftY(),
+              () -> -controller.getLeftX(),
+              () -> -controller.getRightX()));
+      // Lock to 0° when A button is held
+      controller
+          .button(1) // should be a
+          .whileTrue(
+              DriveCommands.joystickDriveAtAngle(
+                  drive,
+                  () -> controller.getLeftY(),
+                  () -> controller.getLeftX(),
+                  () -> new Rotation2d()));
 
-    elevator.elevatorLimit().whileTrue(elevator.stop());
-  }
+      // Switch to X pattern when X button is pressed
+      controller.button(4).onTrue(Commands.runOnce(drive::stopWithX, drive));
 
-  private void bindController2Buttons() {
-    // Trigger button1 = new Trigger(controller2.button(1)); // Output Coral
-    // Trigger button2 = new Trigger(controller2.button(2)); // Hold for Intake
-    // Trigger button3 = new Trigger(controller2.button(3)); // Elevator Up
-    Trigger button4 = new Trigger(controller2.button(4)); // Elevator Down
-    // Trigger button5 = new Trigger(controller2.button(5));
-    Trigger button6 = new Trigger(controller2.button(1)); // L3
-    Trigger button7 = new Trigger(controller2.button(2)); // Human Player
-    Trigger button9 = new Trigger(controller2.button(3)); // L2
-    Trigger button10 = new Trigger(controller.button(10)); //ResetGyro
-    // button1.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyIn));
-    // button2.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
-    // button3.whileTrue(elevator.raise());
-    button4.whileTrue(elevator.lower());
-    button6.whileTrue(elevator.L3());
-    button7.whileTrue(elevator.HumanPlayer());
-    button9.whileTrue(elevator.L2());
-   // button10.whileTrue(elevator.L1());
+      // should be b
+      controller.button(5).onTrue(drive.runOnce(() -> drive.seedFieldCentric()));
+    }
+  */
 
-    final Runnable resetGyro =
-    Constants.currentMode == Constants.Mode.SIM
-        ? () -> drive2.setPose(drive2.getSimulatedDriveTrainPose())
-        : () ->
-            drive2.setPose(
-                new Pose2d(
-                    drive2.getPose().getTranslation(),
-                    DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-                        ? new Rotation2d(Math.PI)
-                        : new Rotation2d()));
-    button10.onTrue(Commands.runOnce(resetGyro, drive2));
-  }
+  private void configureBindings() {
+    // Note that X is defined as forward according to WPILib convention,
+    // and Y is defined as to the left according to WPILib convention.
+    drive.setDefaultCommand(
+        // Drivetrain will execute this command periodically
+        drive.applyRequest(
+            () ->
+                drive2
+                    .withVelocityX(
+                        -controller.getLeftY()
+                            * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(
+                        -controller.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(
+                        -controller.getRightX()
+                            * MaxAngularRate) // Drive counterclockwise with negative X (left)
+            ));
 
-  private void configureSwerveCommands() {
-    // Default command, normal field-relative drive
-    drive2.setDefaultCommand(
-        DriveCommands.joystickDrive(
-            drive2,
-            () -> -controller.getLeftY(),
-            () -> -controller.getLeftX(),
-            () -> -controller.getRightX()));
-
-    // Lock to 0° when A button is held
+    controller.button(2).whileTrue(drive.applyRequest(() -> brake));
     controller
-        .a()
+        .button(3)
         .whileTrue(
-            DriveCommands.joystickDriveAtAngle(
-                drive2,
-                () -> controller.getLeftY(),
-                () -> controller.getLeftX(),
-                () -> new Rotation2d()));
+            drive.applyRequest(
+                () ->
+                    point.withModuleDirection(
+                        new Rotation2d(-controller.getLeftY(), -controller.getLeftX()))));
 
-    // Switch to X pattern when X button is pressed
-    controller.x().onTrue(Commands.runOnce(drive2::stopWithX, drive2));
-    
-    final Runnable resetGyro =
-    Constants.currentMode == Constants.Mode.SIM
-        ? () -> drive2.setPose(drive2.getSimulatedDriveTrainPose())
-        : () ->
-            drive2.setPose(
-                new Pose2d(
-                    drive2.getPose().getTranslation(),
-                    DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-                        ? new Rotation2d(Math.PI)
-                        : new Rotation2d()));
+    controller
+        .pov(0)
+        .whileTrue(drive.applyRequest(() -> forwardStraight.withVelocityX(0.5).withVelocityY(0)));
+    controller
+        .pov(180)
+        .whileTrue(drive.applyRequest(() -> forwardStraight.withVelocityX(-0.5).withVelocityY(0)));
 
-    controller.b().onTrue(Commands.runOnce(resetGyro, drive2).ignoringDisable(true));
+    // reset the field-centric heading on left bumper press
+    controller.button(5).onTrue(drive.runOnce(() -> drive.seedFieldCentric()));
+
+    drive.registerTelemetry(logger::telemeterize);
   }
 
-  public void zeroGyro() {
-    drive2.setPose(
-        new Pose2d(
-            drive2.getPose().getTranslation(),
-            DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-                ? new Rotation2d(Math.PI)
-                : new Rotation2d()));
-     if (Constants.currentMode == Constants.Mode.SIM) {
-      drive2.setPose(drive2.getSimulatedDriveTrainPose());
-      return;
-    }
-  }
+  // public void zeroGyro() {
+  //  drive.runOnce(() -> drive.seedFieldCentric());
+  // }
 
   public Command getAutonomousCommand() {
-    return autoChooser.get();
+    return autoChooser.getSelected();
   }
-
-  public void resetSimulationField() {
-    if (Constants.currentMode != Constants.Mode.SIM) return;
-
-    drive2.setSimulationWorldPose(new Pose2d(6, 6, new Rotation2d()));
-    SimulatedArena.getInstance().resetFieldForAuto();
-  }
-
-public void updateSimulation() {
-  if (Constants.currentMode != Constants.Mode.SIM) return;
-
-  SimulatedArena.getInstance().simulationPeriodic();
-  Logger.recordOutput(
-      "FieldSimulation/RobotPosition", drive2.getSimulatedDriveTrainPose());
-  Logger.recordOutput(
-      "FieldSimulation/Coral", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
-  Logger.recordOutput(
-      "FieldSimulation/Algae", SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
-}
 }

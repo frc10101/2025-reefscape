@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Red Middle L3"
+            "pathName": "Red Middle L2"
           }
         },
         {
@@ -44,6 +44,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Red L3",
+  "folder": "Red L2",
   "choreoAuto": false
 }
