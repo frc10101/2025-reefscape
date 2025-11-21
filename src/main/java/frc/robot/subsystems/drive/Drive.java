@@ -338,11 +338,16 @@ public class Drive extends SubsystemBase {
         () -> {
           LimelightResults results =
               LimelightHelpers.getLatestResults(Constants.LimelightConstants.limelightName);
-          this.poseEstimator.addVisionMeasurement(
-              results.getBotPose2d_wpiBlue(), results.timestamp_LIMELIGHT_publish);
           if (results == null) {
             System.out.println("Re-localization failed - no valid vision data");
+            return;
           }
+          Pose2d pose = results.getBotPose2d_wpiBlue();
+          if (pose == null) {
+            System.out.println("Re-localization failed - no Pose");
+            return;
+          }
+          this.poseEstimator.addVisionMeasurement(pose, results.timestamp_LIMELIGHT_publish);
         });
   }
 
