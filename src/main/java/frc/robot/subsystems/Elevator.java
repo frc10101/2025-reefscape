@@ -111,7 +111,7 @@ public class Elevator extends SubsystemBase {
     Logger.recordOutput("Elevator/Position", position);
     // Log encoder velocity
     Logger.recordOutput("Elevator/EncPosition", m_motorRight.getAbsoluteEncoder().getPosition());
-    System.out.println(m_motorRight.getEncoder().getPosition());
+    //System.out.println(m_motorRight.getEncoder().getPosition());
     // Log encoder speed
     Logger.recordOutput("Elevator/Speed", velocity);
   }

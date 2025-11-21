@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -81,7 +82,7 @@ public class RobotContainer {
 
     NamedCommands.registerCommand("L2", elevator.L2());
     NamedCommands.registerCommand("Output", daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
-    NamedCommands.registerCommand("Align", new AlignToPose(drive, () -> LimelightHelpers.getBotPose2d_wpiRed(Constants.LimelightConstants.limelightName), true));
+    NamedCommands.registerCommand("Align", new AlignToPose(drive, () -> LimelightHelpers.getBotPose2d_wpiBlue(Constants.LimelightConstants.limelightName), true));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -187,7 +188,7 @@ public class RobotContainer {
 
     button3.onTrue(drive.reLocalize());
     button11.onTrue(
-        Commands.runOnce(() -> new AlignToPose(drive, () -> LimelightHelpers.getBotPose2d_wpiRed(Constants.LimelightConstants.limelightName), true)));
+        Commands.runOnce(() -> new AlignToPose(drive, () -> LimelightHelpers.getBotPose2d_wpiBlue(Constants.LimelightConstants.limelightName), true)));
   }
 
   private void configureSwerveCommands() {

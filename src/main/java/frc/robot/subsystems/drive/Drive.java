@@ -198,6 +198,9 @@ public class Drive extends SubsystemBase {
             builder.addDoubleProperty("Robot Angle", () -> getRotation().getRadians(), null);
           }
         });
+
+        // TODO: handle ortientation
+        LimelightHelpers.SetRobotOrientation(Constants.LimelightConstants.limelightName, 0, 0, 0, 0, 0, 0);
   }
 
   /**
@@ -259,10 +262,12 @@ public class Drive extends SubsystemBase {
         0);
     PoseEstimate botPoseEstimate =
         LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-johnny");
-    System.out.println(botPoseEstimate == null);
-    if (botPoseEstimate != null) {
+  
+    if (botPoseEstimate != null && botPoseEstimate.tagCount > 0)
+     {
       Logger.recordOutput("LimelightPose", botPoseEstimate.pose);
     }
+
     odometryLock.lock(); // Prevents odometry updates while reading data
     try {
       field.setRobotPose(getPose());
@@ -334,21 +339,29 @@ public class Drive extends SubsystemBase {
    * @return Command that performs re-localization
    */
   public Command reLocalize() {
-    return edu.wpi.first.wpilibj2.command.Commands.runOnce(
+    return runOnce(
         () -> {
-          LimelightResults results =
-              LimelightHelpers.getLatestResults(Constants.LimelightConstants.limelightName);
-          if (results == null) {
-            System.out.println("Re-localization failed - no valid vision data");
+
+          PoseEstimate botPoseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-johnny");
+          if (botPoseEstimate == null) {
+            System.out.println("The estimate do be null :(");
             return;
           }
-          Pose2d pose = results.getBotPose2d_wpiBlue();
-          if (pose == null) {
-            System.out.println("Re-localization failed - no Pose");
+
+          if (botPoseEstimate.tagCount < 1) return;
+
+          Pose2d pose = botPoseEstimate.pose;
+          if(pose == null){
+            System.out.println("pose is null");
             return;
           }
-          this.poseEstimator.addVisionMeasurement(pose, results.timestamp_LIMELIGHT_publish);
-        });
+         
+
+         
+
+          System.out.println(pose.getX() + ", " + pose.getY());
+          this.poseEstimator.addVisionMeasurement(pose, botPoseEstimate.timestampSeconds);
+        }).ignoringDisable(true);
   }
 
   /**
