@@ -16,6 +16,7 @@ package frc.robot;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.util.PathPlannerLogging;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -82,6 +83,24 @@ public class RobotContainer {
     SmartDashboard.putData("Field", m_field);
     alignToReef = new AlignToReef(drive, AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded));
 
+  // Logging callback for current robot pose
+        PathPlannerLogging.setLogCurrentPoseCallback((pose) -> {
+            // Do whatever you want with the pose here
+            m_field.setRobotPose(pose);
+        });
+
+        // Logging callback for target robot pose
+        PathPlannerLogging.setLogTargetPoseCallback((pose) -> {
+            // Do whatever you want with the pose here
+            m_field.getObject("target pose").setPose(pose);
+        });
+
+        // Logging callback for the active path, this is sent as a list of poses
+        PathPlannerLogging.setLogActivePathCallback((poses) -> {
+            // Do whatever you want with the poses here
+            m_field.getObject("path").setPoses(poses);
+        });
+
     // Configure button bindings
     configureButtonBindings();
   }
@@ -116,31 +135,14 @@ public class RobotContainer {
   }
 
   private void setupAutoOptions() {
-    /*autoChooser.addOption(
-        "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
-    autoChooser.addOption(
-        "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Forward)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Reverse)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption("Leave Auto", drive.getAuto("leave"));
-    autoChooser.addOption("RedLeft", drive.getAuto("RedLeftL3"));
-    */
     if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
-      autoChooser.addOption("Leave 1", drive.getAuto("Blue_leave 1"));
-      autoChooser.addOption("Leave 2", drive.getAuto("Blue_leave 2"));
-      autoChooser.addOption("Leave 3", drive.getAuto("Blue_leave 3"));
+      autoChooser.addOption("Blue Left", drive.getAuto("Blue Left L3"));
+      autoChooser.addOption("Blue Middle", drive.getAuto("Blue Middle L3"));
+      autoChooser.addOption("Blue Right", drive.getAuto("Blue Right L3"));
     } else {
-      autoChooser.addOption("Leave 1", drive.getAuto("Red_leave 1"));
-      autoChooser.addOption("Leave 2", drive.getAuto("Red_leave 2"));
-      autoChooser.addOption("Leave 3", drive.getAuto("Red_leave 3"));
+      autoChooser.addOption("Red Left", drive.getAuto("Red Left L3"));
+      autoChooser.addOption("Red Middle", drive.getAuto("Red Middle L3"));
+      autoChooser.addOption("Red Right", drive.getAuto("Red Right L3"));
     }
   }
 
@@ -220,7 +222,6 @@ public class RobotContainer {
                 ? new Rotation2d(Math.PI)
                 : new Rotation2d()));
   }
-
   public Command getAutonomousCommand() {
     return autoChooser.get();
   }
