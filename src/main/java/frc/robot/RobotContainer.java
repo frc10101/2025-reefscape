@@ -29,6 +29,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Daisy;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.DriveSim;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -37,15 +38,35 @@ import frc.robot.subsystems.drive.Drive;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+    // MapleSim testing
+  private double MaxSpeed =
+  TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+private double MaxAngularRate =
+  RotationsPerSecond.of(0.75)
+      .in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+
+/* Setting up bindings for necessary control of the swerve drive platform */
+private final SwerveRequest.FieldCentric drive2 = new SwerveRequest.FieldCentric()
+      .withDeadband(MaxSpeed * 0.1)
+      .withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+      .withDriveRequestType(
+          DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
+private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
+private final SwerveRequest.RobotCentric forwardStraight =
+  new SwerveRequest.RobotCentric().withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
+private final Telemetry logger = new Telemetry(MaxSpeed);
+
   // Subsystems
-  public final Drive drive = TunerConstants.createDrivetrain();
-  private final Elevator elevator = new Elevator();
-  private final Daisy daisy = new Daisy();
-  // private final AlignToReef alignToReef;
+  //public final Drive drive = TunerConstants.createDrivetrain();
+  public final DriveSim drive = TunerConstants.createDrivetrain();
+  //private final Elevator elevator = new Elevator();
+  //private final Daisy daisy = new Daisy();
 
   // Controllers
   private final CommandPS4Controller controller = new CommandPS4Controller(0);
-  private final CommandPS4Controller controller2 = new CommandPS4Controller(1);
+  //private final CommandPS4Controller controller2 = new CommandPS4Controller(1);
 
   // Crit Hit way
   // private final LoggedDashboardChooser<Command> autoChooser;
@@ -55,27 +76,6 @@ public class RobotContainer {
 
   // Field
   private final Field2d m_field = new Field2d();
-
-  // MapleSim testing
-  private double MaxSpeed =
-      TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-  private double MaxAngularRate =
-      RotationsPerSecond.of(0.75)
-          .in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
-
-  /* Setting up bindings for necessary control of the swerve drive platform */
-  private final SwerveRequest.FieldCentric drive2 =
-      new SwerveRequest.FieldCentric()
-          .withDeadband(MaxSpeed * 0.1)
-          .withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
-          .withDriveRequestType(
-              DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-  private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
-  private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
-  private final SwerveRequest.RobotCentric forwardStraight =
-      new SwerveRequest.RobotCentric().withDriveRequestType(DriveRequestType.OpenLoopVoltage);
-
-  private final Telemetry logger = new Telemetry(MaxSpeed);
 
   public RobotContainer() {
     SmartDashboard.putData("Field", m_field);

@@ -52,10 +52,11 @@ public class Robot extends LoggedRobot {
         Logger.addDataReceiver(new NT4Publisher());
         break;
 
-      case SIM:
+      /*case SIM:
         // Running a physics simulator, log to NT
         Logger.addDataReceiver(new NT4Publisher());
         break;
+        */
 
       case REPLAY:
         // Replaying a log, set up replay source
