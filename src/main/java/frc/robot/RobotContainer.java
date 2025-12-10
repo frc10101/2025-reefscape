@@ -13,10 +13,8 @@
 
 package frc.robot;
 
-import com.fasterxml.jackson.databind.util.Named;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -27,15 +25,13 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.LimelightHelpers.PoseEstimate;
-import frc.robot.LimelightHelpers;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.auto.AlignToPose;
 import frc.robot.commands.auto.AlignToReef;
-import frc.robot.commands.auto.AlignToReefTagRelative;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Daisy;
 import frc.robot.subsystems.Elevator;
@@ -45,11 +41,7 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
-
-import java.util.function.Supplier;
-
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-import frc.robot.commands.auto.AlignToPose;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -82,7 +74,8 @@ public class RobotContainer {
 
     NamedCommands.registerCommand("L2", elevator.L2());
     NamedCommands.registerCommand("Output", daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
-    NamedCommands.registerCommand("Align", new AlignToPose(drive, () -> LimelightHelpers.getBotPose2d_wpiBlue(Constants.LimelightConstants.limelightName), true));
+    NamedCommands.registerCommand(
+        "Align", new AlignToPose(drive, () -> getCurrentPoseFromLimeLight(), true));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -159,14 +152,14 @@ public class RobotContainer {
     // Controller 2 button bindings
     Trigger button1 = new Trigger(controller2.button(1)); // Output Coral
     Trigger button2 = new Trigger(controller2.button(2)); // Hold for Intake
-    Trigger button3 = new Trigger(controller2.button(3)); // Elevator Up
+    Trigger button3 = new Trigger(controller2.button(3)); // Limelight Data
     Trigger button4 = new Trigger(controller2.button(4)); // Elevator Down
     // Trigger button5 = new Trigger(controller2.button(5));
     Trigger button6 = new Trigger(controller2.button(6)); // L3
     Trigger button7 = new Trigger(controller2.button(7)); // Human Player
     Trigger button9 = new Trigger(controller2.button(9)); // L2
     Trigger button10 = new Trigger(controller2.button(10)); // L1
-    Trigger button11 = new Trigger(controller2.button(11));
+    Trigger button11 = new Trigger(controller2.button(11)); // Align to Pose
     // Trigger button12 = new Trigger(controller2.button(12));
     // Trigger button13 = new Trigger(controller2.button(13));
     // Trigger button14 = new Trigger(controller2.button(14)); // Release
@@ -188,7 +181,7 @@ public class RobotContainer {
 
     button3.onTrue(drive.reLocalize());
     button11.onTrue(
-        Commands.runOnce(() -> new AlignToPose(drive, () -> LimelightHelpers.getBotPose2d_wpiBlue(Constants.LimelightConstants.limelightName), true)));
+        Commands.runOnce(() -> new AlignToPose(drive, () -> getCurrentPoseFromLimeLight(), true)));
   }
 
   private void configureSwerveCommands() {
@@ -246,5 +239,19 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
     return autoChooser.get();
+  }
+
+  public Pose2d getCurrentPoseFromLimeLight() {
+    PoseEstimate botPoseEstimate =
+        LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(
+            Constants.LimelightConstants.limelightName);
+    if (botPoseEstimate == null) {
+      return null;
+    }
+    Pose2d pose = botPoseEstimate.pose;
+    if (pose == null) {
+      return null;
+    }
+    return pose;
   }
 }

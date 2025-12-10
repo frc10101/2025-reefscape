@@ -199,8 +199,9 @@ public class Drive extends SubsystemBase {
           }
         });
 
-        // TODO: handle ortientation
-        LimelightHelpers.SetRobotOrientation(Constants.LimelightConstants.limelightName, 0, 0, 0, 0, 0, 0);
+    // TODO: handle ortientation
+    LimelightHelpers.SetRobotOrientation(
+        Constants.LimelightConstants.limelightName, 0, 0, 0, 0, 0, 0);
   }
 
   /**
@@ -262,9 +263,8 @@ public class Drive extends SubsystemBase {
         0);
     PoseEstimate botPoseEstimate =
         LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-johnny");
-  
-    if (botPoseEstimate != null && botPoseEstimate.tagCount > 0)
-     {
+
+    if (botPoseEstimate != null && botPoseEstimate.tagCount > 0) {
       Logger.recordOutput("LimelightPose", botPoseEstimate.pose);
     }
 
@@ -340,28 +340,26 @@ public class Drive extends SubsystemBase {
    */
   public Command reLocalize() {
     return runOnce(
-        () -> {
+            () -> {
+              PoseEstimate botPoseEstimate =
+                  LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-johnny");
+              if (botPoseEstimate == null) {
+                System.out.println("The estimate do be null :(");
+                return;
+              }
 
-          PoseEstimate botPoseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-johnny");
-          if (botPoseEstimate == null) {
-            System.out.println("The estimate do be null :(");
-            return;
-          }
+              if (botPoseEstimate.tagCount < 1) return;
 
-          if (botPoseEstimate.tagCount < 1) return;
+              Pose2d pose = botPoseEstimate.pose;
+              if (pose == null) {
+                System.out.println("pose is null");
+                return;
+              }
 
-          Pose2d pose = botPoseEstimate.pose;
-          if(pose == null){
-            System.out.println("pose is null");
-            return;
-          }
-         
-
-         
-
-          System.out.println(pose.getX() + ", " + pose.getY());
-          this.poseEstimator.addVisionMeasurement(pose, botPoseEstimate.timestampSeconds);
-        }).ignoringDisable(true);
+              System.out.println(pose.getX() + ", " + pose.getY());
+              this.poseEstimator.addVisionMeasurement(pose, botPoseEstimate.timestampSeconds);
+            })
+        .ignoringDisable(true);
   }
 
   /**
