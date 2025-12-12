@@ -247,10 +247,12 @@ public class RobotContainer {
         LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(
             Constants.LimelightConstants.limelightName);
     if (botPoseEstimate == null) {
+      System.out.println("No Estimate");
       return null;
     }
     Pose2d pose = botPoseEstimate.pose;
     if (pose == null) {
+      System.out.println("No Pose");
       return null;
     }
     System.out.println("Method Works");
