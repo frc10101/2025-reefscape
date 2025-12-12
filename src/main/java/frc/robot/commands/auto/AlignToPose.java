@@ -75,9 +75,9 @@ public class AlignToPose extends Command {
 
     // Field-relative PID calculations for how much to move in x and y directions
     double xOutput =
-        xPidController.calculate(currentPose.getX()) * DriveConstants.kMaxSpeedMetersPerSecond;
+        -1 * xPidController.calculate(currentPose.getX()) * DriveConstants.kMaxSpeedMetersPerSecond;
     double yOutput =
-        yPidController.calculate(currentPose.getY()) * DriveConstants.kMaxSpeedMetersPerSecond;
+        -1 * yPidController.calculate(currentPose.getY()) * DriveConstants.kMaxSpeedMetersPerSecond;
 
     // Normalize x and y velocity vectors
     // if they want the robot to move faster than our constraint says it can
