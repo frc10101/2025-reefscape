@@ -181,7 +181,7 @@ public class RobotContainer {
 
     button3.onTrue(drive.reLocalize());
     button11.onTrue(
-        Commands.runOnce(() -> new AlignToPose(drive, () -> getCurrentPoseFromLimeLight(), true))
+        Commands.runOnce(() -> new AlignToPose(drive, () -> getCurrentPoseFromLimeLight(), false))
         );
   }
 
