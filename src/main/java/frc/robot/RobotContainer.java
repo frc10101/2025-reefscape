@@ -180,7 +180,8 @@ public class RobotContainer {
     button10.onTrue(elevator.L1());
 
     button3.onTrue(drive.reLocalize());
-    button11.onTrue(new AlignToPose(drive, () -> getCurrentPoseFromLimeLight(), false));
+    var map = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
+    button11.onTrue(new AlignToPose(drive, () -> map.getTagPose(18).get().toPose2d(), false));
   }
 
   private void configureSwerveCommands() {
@@ -254,7 +255,7 @@ public class RobotContainer {
       return null;
     }
     System.out.println("Method Works");
-    pose = new Pose2d(pose.getX(), pose.getY(), pose.getRotation().plus(new Rotation2d(Math.PI)));
+    pose = new Pose2d(pose.getX(), pose.getY(), pose.getRotation());
     return pose;
   }
 }
