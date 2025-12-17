@@ -75,7 +75,7 @@ public class AlignToPose extends Command {
 
     // Field-relative PID calculations for how much to move in x and y directions
     double xOutput =
-        -1 * xPidController.calculate(currentPose.getX()) * DriveConstants.kMaxSpeedMetersPerSecond;
+        xPidController.calculate(currentPose.getX()) * DriveConstants.kMaxSpeedMetersPerSecond;
     double yOutput =
         -1 * yPidController.calculate(currentPose.getY()) * DriveConstants.kMaxSpeedMetersPerSecond;
 
