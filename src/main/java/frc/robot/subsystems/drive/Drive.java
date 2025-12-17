@@ -113,6 +113,9 @@ public class Drive extends SubsystemBase {
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
+  public PPHolonomicDriveController m_autoPID = new PPHolonomicDriveController(
+    new PIDConstants(52, 0.1, 0.0), new PIDConstants(16.5, 0.25, 0.0));
+    
   public Drive(
       GyroIO gyroIO,
       ModuleIO flModuleIO,
@@ -139,8 +142,7 @@ public class Drive extends SubsystemBase {
         this::setPose,
         this::getChassisSpeeds,
         this::runVelocity,
-        new PPHolonomicDriveController(
-            new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+        m_autoPID,
         PP_CONFIG,
         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this);
@@ -311,6 +313,9 @@ public class Drive extends SubsystemBase {
 
     // Update gyro alert
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
+
+    //Auto PID Controller Tuning
+    //SmartDashboard.putData("Auto PID Controller", m_autoPID);
   }
 
   /**
