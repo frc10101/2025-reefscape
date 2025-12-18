@@ -114,7 +114,7 @@ public class Drive extends SubsystemBase {
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
   public PPHolonomicDriveController m_autoPID = new PPHolonomicDriveController(
-    new PIDConstants(52, 0.1, 0.0), new PIDConstants(16.5, 0.25, 0.0));
+    new PIDConstants(52, 0.0, 0.1), new PIDConstants(16.5, 0.0, 0.25));
     
   public Drive(
       GyroIO gyroIO,

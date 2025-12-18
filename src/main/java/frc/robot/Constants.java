@@ -47,12 +47,12 @@ public final class Constants {
   /** ALL SPARK MAX CAN ID'S = PDH PORT PLUS ONE */
   public static final class SparkMaxCanIDs {
     /** Daisy Can ID's */
-    public static final int DaisyMotor = 16;
+    public static final int DaisyMotor = 17;
 
     /** Elevator Can ID's */
     public static final int ElevatorMotorLeft = 8;
 
-    public static final int ElevatorMotorRight = 18;
+    public static final int ElevatorMotorRight = 2;
   }
 
   public static final class ElevatorConstants {

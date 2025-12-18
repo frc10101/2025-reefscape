@@ -169,10 +169,10 @@ public class RobotContainer {
     //button1.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyIn));
     //button2.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
     //button3.whileTrue(elevator.raise());
-    button4.whileTrue(elevator.lower());
-    button6.whileTrue(elevator.L3());
-    button7.whileTrue(elevator.HumanPlayer());
-    button9.whileTrue(elevator.L2());
+    button4.onTrue(elevator.lower());
+    button6.onTrue(elevator.L3());
+    button7.onTrue(elevator.HumanPlayer());
+    button9.onTrue(elevator.L2());
     //button10.whileTrue(elevator.L1());
   }
 
