@@ -156,24 +156,20 @@ public class RobotContainer {
   }
 
   private void bindController2Buttons() {
-    //Trigger button1 = new Trigger(controller2.button(1)); // Output Coral
-    //Trigger button2 = new Trigger(controller2.button(2)); // Hold for Intake
-    //Trigger button3 = new Trigger(controller2.button(3)); // Elevator Up
+    Trigger button1 = new Trigger(controller2.button(1)); // L3
+    Trigger button2 = new Trigger(controller2.button(2)); // Human Player
+    Trigger button3 = new Trigger(controller2.button(3)); // L2
     Trigger button4 = new Trigger(controller2.button(4)); // Elevator Down
-    // Trigger button5 = new Trigger(controller2.button(5));
-    Trigger button6 = new Trigger(controller2.button(1)); // L3
-    Trigger button7 = new Trigger(controller2.button(2)); // Human Player
-    Trigger button9 = new Trigger(controller2.button(3)); // L2
-    //Trigger button10 = new Trigger(controller2.button(10)); // L1
+    Trigger button5 = new Trigger(controller2.button(5)); // Hold for Intake
+    Trigger button6 = new Trigger(controller2.button(6)); // Output Coral
 
-    //button1.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyIn));
-    //button2.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
-    //button3.whileTrue(elevator.raise());
+    button1.onTrue(elevator.L3());
+    button2.onTrue(elevator.HumanPlayer());
+    button3.onTrue(elevator.L2());
     button4.onTrue(elevator.lower());
-    button6.onTrue(elevator.L3());
-    button7.onTrue(elevator.HumanPlayer());
-    button9.onTrue(elevator.L2());
-    //button10.whileTrue(elevator.L1());
+    button5.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
+    button6.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyIn));
+
   }
 
   private void configureSwerveCommands() {
