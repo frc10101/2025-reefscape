@@ -181,7 +181,8 @@ public class RobotContainer {
 
     button3.onTrue(drive.reLocalize());
     var map = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
-    button11.onTrue(new AlignToPose(drive, () ->new Pose2d(2.72, 4.25, new Rotation2d(Math.PI)), false));
+    button11.onTrue(
+        new AlignToPose(drive, () -> new Pose2d(2.72, 4.25, new Rotation2d(Math.PI)), false));
   }
 
   private void configureSwerveCommands() {

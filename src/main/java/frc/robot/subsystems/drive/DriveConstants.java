@@ -15,7 +15,7 @@ public final class DriveConstants {
   public static final double periodicTime = 0.02;
   public static final double kMaxSpeedMetersPerSecond = 0.15;
   public static final double kAlignMaxAngularSpeed = 2.5 * Math.PI; // radians per second
-  //public static final double kAlignMaxSpeed = 0.15; // meters per second
+  // public static final double kAlignMaxSpeed = 0.15; // meters per second
 
   public static final double kDirectionSlewRate = 1.2; // radians per second
   public static final double kMagnitudeSlewRate = 1.8; // percent per second (1 = 100%)
