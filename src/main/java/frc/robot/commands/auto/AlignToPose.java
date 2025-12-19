@@ -2,7 +2,6 @@ package frc.robot.commands.auto;
 
 import static frc.robot.subsystems.drive.DriveConstants.kMaxSpeedMetersPerSecond;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -41,15 +40,15 @@ public class AlignToPose extends Command {
     xI = yI = DriveConstants.kTranslationI;
     xD = yD = DriveConstants.kTranslationD;
 
-    thetaP = DriveConstants.kTurnAngleP;
-    thetaI = DriveConstants.kTurnAngleI;
-    thetaD = DriveConstants.kTurnAngleD;
+    // thetaP = DriveConstants.kTurnAngleP;
+    // thetaI = DriveConstants.kTurnAngleI;
+    // thetaD = DriveConstants.kTurnAngleD;
 
     xPidController = new PIDController(xP, xI, xD);
     yPidController = new PIDController(yP, yI, yD);
-    thetaPidController = new PIDController(thetaP, thetaI, thetaD);
+    // thetaPidController = new PIDController(thetaP, thetaI, thetaD);
 
-    thetaPidController.enableContinuousInput(0, 2 * Math.PI);
+    // thetaPidController.enableContinuousInput(0, 2 * Math.PI);
   }
 
   @Override
@@ -60,13 +59,13 @@ public class AlignToPose extends Command {
     // Resets state and integral term of PID controllers
     xPidController.reset();
     yPidController.reset();
-    thetaPidController.reset();
+    // thetaPidController.reset();
 
     // Set the setpoints once at the start of the command
     // Prevents rapidly oscillating movement by going to only 1 setpoint at a time
     xPidController.setSetpoint(targetPoseSupplier.get().getX());
     yPidController.setSetpoint(targetPoseSupplier.get().getY());
-    thetaPidController.setSetpoint(targetPoseSupplier.get().getRotation().getRadians());
+    // thetaPidController.setSetpoint(targetPoseSupplier.get().getRotation().getRadians());
   }
 
   @Override
@@ -94,16 +93,16 @@ public class AlignToPose extends Command {
     }
 
     // PID calculation for how much to turn
-    double thetaOutput =
-        MathUtil.clamp(
-            thetaPidController.calculate(currentPose.getRotation().getRadians())
-                * drive.getMaxAngularSpeedRadPerSec(),
-            -DriveConstants.kAlignMaxAngularSpeed,
-            DriveConstants.kAlignMaxAngularSpeed);
+    // double thetaOutput =
+    // MathUtil.clamp(
+    // thetaPidController.calculate(currentPose.getRotation().getRadians())
+    // * drive.getMaxAngularSpeedRadPerSec(),
+    // -DriveConstants.kAlignMaxAngularSpeed,
+    // DriveConstants.kAlignMaxAngularSpeed);
 
     // Convert field-relative speeds to robot-relative speeds
     ChassisSpeeds driveSpeeds =
-        ChassisSpeeds.fromFieldRelativeSpeeds(xOutput, yOutput, thetaOutput, drive.getRotation());
+        ChassisSpeeds.fromFieldRelativeSpeeds(xOutput, yOutput, 0.0, drive.getRotation());
 
     drive.runVelocity(driveSpeeds);
   }
