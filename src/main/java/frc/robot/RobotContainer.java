@@ -147,7 +147,7 @@ public class RobotContainer {
   }
 
   private void configureButtonBindings() {
-    // configureSwerveCommands();
+    configureSwerveCommands();
 
     // Controller 2 button bindings
     bindController2Buttons();
