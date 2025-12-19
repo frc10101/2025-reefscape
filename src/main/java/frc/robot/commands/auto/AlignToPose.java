@@ -2,9 +2,11 @@ package frc.robot.commands.auto;
 
 import static frc.robot.subsystems.drive.DriveConstants.kMaxSpeedMetersPerSecond;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
@@ -12,7 +14,8 @@ import java.util.function.Supplier;
 
 /** A command that aligns the robot to a certain field-relative position */
 public class AlignToPose extends Command {
-  // This command works by using a simple PID loop to move x/y positions and rotate angle
+  // This command works by using a simple PID loop to move x/y positions and
+  // rotate angle
   private PIDController xPidController, yPidController, thetaPidController;
   private double xP, xI, xD;
   private double yP, yI, yD;
@@ -40,15 +43,19 @@ public class AlignToPose extends Command {
     xI = yI = DriveConstants.kTranslationI;
     xD = yD = DriveConstants.kTranslationD;
 
-    // thetaP = DriveConstants.kTurnAngleP;
-    // thetaI = DriveConstants.kTurnAngleI;
-    // thetaD = DriveConstants.kTurnAngleD;
+    thetaP = DriveConstants.kTurnAngleP;
+    thetaI = DriveConstants.kTurnAngleI;
+    thetaD = DriveConstants.kTurnAngleD;
 
     xPidController = new PIDController(xP, xI, xD);
     yPidController = new PIDController(yP, yI, yD);
-    // thetaPidController = new PIDController(thetaP, thetaI, thetaD);
+    thetaPidController = new PIDController(thetaP, thetaI, thetaD);
 
-    // thetaPidController.enableContinuousInput(0, 2 * Math.PI);
+    thetaPidController.enableContinuousInput(0, 2 * Math.PI);
+
+    SmartDashboard.putData("X PID", xPidController);
+    SmartDashboard.putData("Y PID", yPidController);
+    SmartDashboard.putData("THETA PID", thetaPidController);
   }
 
   @Override
@@ -59,13 +66,13 @@ public class AlignToPose extends Command {
     // Resets state and integral term of PID controllers
     xPidController.reset();
     yPidController.reset();
-    // thetaPidController.reset();
+    thetaPidController.reset();
 
     // Set the setpoints once at the start of the command
     // Prevents rapidly oscillating movement by going to only 1 setpoint at a time
     xPidController.setSetpoint(targetPoseSupplier.get().getX());
     yPidController.setSetpoint(targetPoseSupplier.get().getY());
-    // thetaPidController.setSetpoint(targetPoseSupplier.get().getRotation().getRadians());
+    thetaPidController.setSetpoint(targetPoseSupplier.get().getRotation().getRadians());
   }
 
   @Override
@@ -93,16 +100,16 @@ public class AlignToPose extends Command {
     }
 
     // PID calculation for how much to turn
-    // double thetaOutput =
-    // MathUtil.clamp(
-    // thetaPidController.calculate(currentPose.getRotation().getRadians())
-    // * drive.getMaxAngularSpeedRadPerSec(),
-    // -DriveConstants.kAlignMaxAngularSpeed,
-    // DriveConstants.kAlignMaxAngularSpeed);
+    double thetaOutput =
+        MathUtil.clamp(
+            thetaPidController.calculate(currentPose.getRotation().getRadians())
+                * drive.getMaxAngularSpeedRadPerSec(),
+            -DriveConstants.kAlignMaxAngularSpeed,
+            DriveConstants.kAlignMaxAngularSpeed);
 
     // Convert field-relative speeds to robot-relative speeds
     ChassisSpeeds driveSpeeds =
-        ChassisSpeeds.fromFieldRelativeSpeeds(xOutput, yOutput, 0.0, drive.getRotation());
+        ChassisSpeeds.fromFieldRelativeSpeeds(xOutput, yOutput, thetaOutput, drive.getRotation());
 
     drive.runVelocity(driveSpeeds);
   }

@@ -93,9 +93,9 @@ public final class DriveConstants {
   public static final double kAlignPositionTolerance = 0.03; // meters
   public static final double kAlignRotationTolerance = Units.degreesToRadians(3); // radians
 
-  public static final double kTurnAngleP = 0.4;
+  public static final double kTurnAngleP = 0.00112;
   public static final double kTurnAngleI = 0;
-  public static final double kTurnAngleD = 0;
+  public static final double kTurnAngleD = 0.0000252;
 
   public static final double kTranslationP = 0.6;
   public static final double kTranslationI = 0.0;
