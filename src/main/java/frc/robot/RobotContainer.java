@@ -255,7 +255,7 @@ public class RobotContainer {
       return null;
     }
     System.out.println("Method Works");
-    pose = new Pose2d(pose.getX(), pose.getY(), pose.getRotation());
+    pose = new Pose2d(pose.getX(), pose.getY(), pose.getRotation().plus(new Rotation2d(Math.PI)));
     return pose;
   }
 }
