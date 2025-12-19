@@ -180,7 +180,8 @@ public class RobotContainer {
     button10.onTrue(elevator.L1());
 
     button3.onTrue(drive.reLocalize());
-    button11.onTrue(new AlignToPose(drive, () -> getCurrentPoseFromLimeLight(), false));
+    var map = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
+    button11.onTrue(new AlignToPose(drive, () ->new Pose2d(2.72, 4.25, new Rotation2d(Math.PI)), false));
   }
 
   private void configureSwerveCommands() {

@@ -342,7 +342,7 @@ public class Drive extends SubsystemBase {
     return runOnce(
             () -> {
               PoseEstimate botPoseEstimate =
-                  LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-johnny");
+                  LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-johnny");
               if (botPoseEstimate == null) {
                 System.out.println("The estimate do be null :(");
                 return;

@@ -13,9 +13,9 @@ public final class DriveConstants {
   // Driving Parameters - Note that these are not the maximum capable speeds of
   // the robot, rather the allowed maximum speeds
   public static final double periodicTime = 0.02;
-  public static final double kMaxSpeedMetersPerSecond = 4.6;
+  public static final double kMaxSpeedMetersPerSecond = 0.15;
   public static final double kAlignMaxAngularSpeed = 2.5 * Math.PI; // radians per second
-  public static final double kAlignMaxSpeed = 3.0; // meters per second
+  //public static final double kAlignMaxSpeed = 0.15; // meters per second
 
   public static final double kDirectionSlewRate = 1.2; // radians per second
   public static final double kMagnitudeSlewRate = 1.8; // percent per second (1 = 100%)
@@ -79,9 +79,9 @@ public final class DriveConstants {
           kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
 
   public static final double kSlowModeConstant = 0.5;
-  public static final double kPathplannerTurnAngleP = 3;
+  public static final double kPathplannerTurnAngleP = 16.5;
   public static final double kPathplannerTurnAngleI = 0;
-  public static final double kPathplannerTurnAngleD = 0;
+  public static final double kPathplannerTurnAngleD = 0.25;
 
   public static final double kPathplannerTranslationP = 5;
   public static final double kPathplannerTranslationI = 0.0;

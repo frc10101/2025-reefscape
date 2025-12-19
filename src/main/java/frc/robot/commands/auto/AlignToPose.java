@@ -1,6 +1,6 @@
 package frc.robot.commands.auto;
 
-import static frc.robot.subsystems.drive.DriveConstants.kAlignMaxSpeed;
+import static frc.robot.subsystems.drive.DriveConstants.kMaxSpeedMetersPerSecond;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -75,16 +75,16 @@ public class AlignToPose extends Command {
 
     // Field-relative PID calculations for how much to move in x and y directions
     double xOutput =
-        -1 * xPidController.calculate(currentPose.getX()) * DriveConstants.kMaxSpeedMetersPerSecond;
+        xPidController.calculate(currentPose.getX()) * DriveConstants.kMaxSpeedMetersPerSecond;
     double yOutput =
-        -1 * yPidController.calculate(currentPose.getY()) * DriveConstants.kMaxSpeedMetersPerSecond;
+        yPidController.calculate(currentPose.getY()) * DriveConstants.kMaxSpeedMetersPerSecond;
 
     // Normalize x and y velocity vectors
     // if they want the robot to move faster than our constraint says it can
     double magnitude = Math.hypot(xOutput, yOutput);
-    if (magnitude > kAlignMaxSpeed) {
-      xOutput = xOutput / magnitude * kAlignMaxSpeed;
-      yOutput = yOutput / magnitude * kAlignMaxSpeed;
+    if (magnitude > kMaxSpeedMetersPerSecond) {
+      xOutput = xOutput / magnitude * kMaxSpeedMetersPerSecond;
+      yOutput = yOutput / magnitude * kMaxSpeedMetersPerSecond;
     }
 
     // Apply small deadband to prevent swerve tweaking
