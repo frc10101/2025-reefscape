@@ -32,10 +32,12 @@ import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Daisy;
 import frc.robot.subsystems.Elevator;
+import frc.robot.commands.auto.AlignToPose;
 import frc.robot.commands.auto.AlignToReef;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
@@ -76,7 +78,9 @@ public class RobotContainer {
     NamedCommands.registerCommand("outputSpin",daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
     NamedCommands.registerCommand("stopSpin",daisy.outputSpin(0));
     NamedCommands.registerCommand("HumanPlayer", elevator.HumanPlayer());
-    
+    NamedCommands.registerCommand(
+        "Align", new AlignToPose(drive, () -> getCurrentPoseFromLimeLight(), true));
+
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     setupAutoOptions();
@@ -162,6 +166,8 @@ public class RobotContainer {
     Trigger button4 = new Trigger(controller2.button(4)); // Elevator Down
     Trigger button5 = new Trigger(controller2.button(5)); // Hold for Intake
     Trigger button6 = new Trigger(controller2.button(6)); // Output Coral
+    Trigger button11 = new Trigger(controller2.button(11)); // MoveToPosition
+    Trigger button12 = new Trigger(controller2.button(11)); // ReLocalize
 
     button1.onTrue(elevator.L3());
     button2.onTrue(elevator.HumanPlayer());
@@ -169,10 +175,18 @@ public class RobotContainer {
     button4.onTrue(elevator.lower());
     button5.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
     button6.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyIn));
+    button5.or(button6).onFalse(daisy.outputSpin(0));
+
+    button12.onTrue(drive.reLocalize());
+    var map = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
+    button11.onTrue(
+        new AlignToPose(drive, () -> new Pose2d(2.72, 4.25, new Rotation2d(Math.PI)), false));
 
   }
 
   private void configureSwerveCommands() {
+    Trigger leftReefButton = new Trigger(controller.leftBumper());
+    Trigger rightReefButton = new Trigger(controller.rightBumper());
     // Default command, normal field-relative drive
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
@@ -208,6 +222,8 @@ public class RobotContainer {
                                     : new Rotation2d())),
                     drive)
                 .ignoringDisable(true));
+                leftReefButton.onTrue(alignToReef.generateCommand(AlignToReef.FieldBranchSide.LEFT));
+                rightReefButton.onTrue(alignToReef.generateCommand(AlignToReef.FieldBranchSide.RIGHT));
   }
 
   public void zeroGyro() {
@@ -221,4 +237,23 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     return autoChooser.get();
   }
+
+   public Pose2d getCurrentPoseFromLimeLight() {
+    PoseEstimate botPoseEstimate =
+        LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(
+            Constants.LimelightConstants.limelightName);
+    if (botPoseEstimate == null) {
+      System.out.println("No Estimate");
+      return null;
+    }
+    Pose2d pose = botPoseEstimate.pose;
+    if (pose == null) {
+      System.out.println("No Pose");
+      return null;
+    }
+    System.out.println("Method Works");
+    pose = new Pose2d(pose.getX(), pose.getY(), pose.getRotation().plus(new Rotation2d(Math.PI)));
+    return pose;
+  }
+
 }

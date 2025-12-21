@@ -7,21 +7,19 @@ package frc.robot.subsystems;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-
-import org.littletonrobotics.junction.Logger;
-
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import org.littletonrobotics.junction.Logger;
 
 public class Daisy extends SubsystemBase {
   private final SparkMax m_daisyMotor;
   private final DigitalInput m_daisyBeamBreak;
   private double mMotorSpeed = 0.0;
+  private boolean BeamActive = true;
 
   /** Creates a new Daisy. */
   public Daisy() {
@@ -41,14 +39,30 @@ public class Daisy extends SubsystemBase {
     return runOnce(() -> mMotorSpeed = outputSpeed);
   }
 
+  private void DeactivateBeam() {
+    BeamActive = false;
+  }
+
+  private void ActivateBeam() {
+    BeamActive = true;
+  }
+
+  public Command DeactivateBeamBreak() {
+    return runOnce(() -> DeactivateBeam());
+  }
+
+  public Command ActivateBeamBreak() {
+    return runOnce(() -> ActivateBeam());
+  }
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    if (m_daisyBeamBreak.get() && mMotorSpeed > 0) {
-      mMotorSpeed = 0.0;
+    if (!m_daisyBeamBreak.get() && mMotorSpeed > 0 && BeamActive) {
+      m_daisyMotor.set(0);
+    } else {
+      m_daisyMotor.set(mMotorSpeed);
     }
-
-    m_daisyMotor.set(mMotorSpeed);
-    Logger.recordOutput("DaisyMotor", m_daisyMotor.get());
+    Logger.recordOutput("Daisy", m_daisyMotor.get());
   }
 }

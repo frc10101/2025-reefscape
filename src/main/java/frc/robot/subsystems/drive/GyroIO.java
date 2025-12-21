@@ -14,6 +14,9 @@
 package frc.robot.subsystems.drive;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import frc.robot.Constants;
+import frc.robot.Constants.Mode;
+
 import org.littletonrobotics.junction.AutoLog;
 
 public interface GyroIO {
@@ -27,4 +30,32 @@ public interface GyroIO {
   }
 
   public default void updateInputs(GyroIOInputs inputs) {}
+
+  public default Rotation2d getYaw(){
+    if (Constants.currentMode == Mode.SIM){
+      return new Rotation2d();
+    }
+    else{
+      return null;
+    }
+  }
+
+  public default Rotation2d getPitch(){
+    if (Constants.currentMode == Mode.SIM){
+      return new Rotation2d();
+    }
+    else{
+      return null;
+    }
+  }
+
+  public default Rotation2d getRoll(){
+    if (Constants.currentMode == Mode.SIM){
+      return new Rotation2d();
+    }
+    else{
+      return null;
+    }
+  }
+
 }

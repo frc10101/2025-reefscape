@@ -54,6 +54,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.LimelightResults;
+import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.generated.TunerConstants;
 import frc.robot.util.LocalADStarAK;
 import java.util.concurrent.locks.Lock;
@@ -113,9 +114,10 @@ public class Drive extends SubsystemBase {
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
-  public PPHolonomicDriveController m_autoPID = new PPHolonomicDriveController(
-    new PIDConstants(52, 0.0, 0.1), new PIDConstants(16.5, 0.0, 0.25));
-    
+  public PPHolonomicDriveController m_autoPID =
+      new PPHolonomicDriveController(
+          new PIDConstants(52, 0.0, 0.1), new PIDConstants(16.5, 0.0, 0.25));
+
   public Drive(
       GyroIO gyroIO,
       ModuleIO flModuleIO,
@@ -199,6 +201,9 @@ public class Drive extends SubsystemBase {
             builder.addDoubleProperty("Robot Angle", () -> getRotation().getRadians(), null);
           }
         });
+    // TODO: handle ortientation
+    LimelightHelpers.SetRobotOrientation(
+        Constants.LimelightConstants.limelightName, 0, 0, 0, 0, 0, 0);
   }
 
   /**
@@ -250,6 +255,22 @@ public class Drive extends SubsystemBase {
 
   @Override
   public void periodic() {
+
+    LimelightHelpers.SetRobotOrientation(
+        "limelight-johnny",
+        gyroIO.getYaw().getDegrees(),
+        0,
+        gyroIO.getPitch().getDegrees(),
+        0,
+        gyroIO.getRoll().getDegrees(),
+        0);
+    PoseEstimate botPoseEstimate =
+        LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-johnny");
+
+    if (botPoseEstimate != null && botPoseEstimate.tagCount > 0) {
+      Logger.recordOutput("LimelightPose", botPoseEstimate.pose);
+    }
+
     odometryLock.lock(); // Prevents odometry updates while reading data
     try {
       field.setRobotPose(getPose());
@@ -313,9 +334,6 @@ public class Drive extends SubsystemBase {
 
     // Update gyro alert
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
-
-    //Auto PID Controller Tuning
-    //SmartDashboard.putData("Auto PID Controller", m_autoPID);
   }
 
   /**
@@ -324,13 +342,27 @@ public class Drive extends SubsystemBase {
    * @return Command that performs re-localization
    */
   public Command reLocalize() {
-    return edu.wpi.first.wpilibj2.command.Commands.runOnce(
-        () -> {
-          Pose2d pose = processLimelightData(true);
-          if (pose == null) {
-            System.out.println("Re-localization failed - no valid vision data");
-          }
-        });
+    return runOnce(
+            () -> {
+              PoseEstimate botPoseEstimate =
+                  LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-johnny");
+              if (botPoseEstimate == null) {
+                System.out.println("The estimate do be null :(");
+                return;
+              }
+
+              if (botPoseEstimate.tagCount < 1) return;
+
+              Pose2d pose = botPoseEstimate.pose;
+              if (pose == null) {
+                System.out.println("pose is null");
+                return;
+              }
+
+              System.out.println(pose.getX() + ", " + pose.getY());
+              this.poseEstimator.addVisionMeasurement(pose, botPoseEstimate.timestampSeconds);
+            })
+        .ignoringDisable(true);
   }
 
   /**
@@ -359,6 +391,16 @@ public class Drive extends SubsystemBase {
 
   /** Runs the drive at the desired velocity. */
   public void drive(ChassisSpeeds speeds) {
+    runVelocity(speeds);
+  }
+
+  public void drivePlease(Translation2d translation, double rotation, boolean fieldRelative) {
+    ChassisSpeeds speeds =
+        fieldRelative
+            ? ChassisSpeeds.fromFieldRelativeSpeeds(
+                translation.getX(), translation.getY(), rotation, getRotation())
+            : new ChassisSpeeds(translation.getX(), translation.getY(), rotation);
+
     runVelocity(speeds);
   }
 
