@@ -67,13 +67,17 @@ public final class Constants {
     public static final double goOut = -16;
     public static final double L1 = -4;
     public static final double L2 = -11.25;
-    public static final double L3 = -20.25;
+    public static final double L3 = Units.feetToMeters(6);
     public static final double HumanPlayer = 0;
     public static final double kCarriageMass = 5.31; // kg
     public static final double kElevatorDrumRadius = Units.inchesToMeters(1.88);
     public static final double kMinElevatorHeightMeters = 0.0;
-    public static final double kMaxElevatorHeightMeters = Units.feetToMeters(4.5);
+    public static final double kMaxElevatorHeightMeters = Units.feetToMeters(7.0);
     public static final double kPixelsPerMeter = 20.0; // pixels per meter conversion factor
+    public static final double kS = 0.2; // Static friction feedforward
+    public static final double kG = 0.8; // Gravity feedforward
+    public static final double kV = 0.1; // Velocity feedforward
+    public static final double kCurrentLimit = 40.0; // Current limit in amps
   }
 
   public static final class DaisyConstants {

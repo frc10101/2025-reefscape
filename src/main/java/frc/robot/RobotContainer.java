@@ -24,11 +24,9 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.Daisy;
-import frc.robot.subsystems.Elevator;
-import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.YamsElevator;
 import frc.robot.subsystems.drive.DriveSim;
 
 /**
@@ -38,35 +36,37 @@ import frc.robot.subsystems.drive.DriveSim;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
-    // MapleSim testing
+  // MapleSim testing
   private double MaxSpeed =
-  TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-private double MaxAngularRate =
-  RotationsPerSecond.of(0.75)
-      .in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+      TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+  private double MaxAngularRate =
+      RotationsPerSecond.of(0.75)
+          .in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
-/* Setting up bindings for necessary control of the swerve drive platform */
-private final SwerveRequest.FieldCentric drive2 = new SwerveRequest.FieldCentric()
-      .withDeadband(MaxSpeed * 0.1)
-      .withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
-      .withDriveRequestType(
-          DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
-private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
-private final SwerveRequest.RobotCentric forwardStraight =
-  new SwerveRequest.RobotCentric().withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+  /* Setting up bindings for necessary control of the swerve drive platform */
+  private final SwerveRequest.FieldCentric drive2 =
+      new SwerveRequest.FieldCentric()
+          .withDeadband(MaxSpeed * 0.1)
+          .withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+          .withDriveRequestType(
+              DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+  private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
+  private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
+  private final SwerveRequest.RobotCentric forwardStraight =
+      new SwerveRequest.RobotCentric().withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
-private final Telemetry logger = new Telemetry(MaxSpeed);
+  private final Telemetry logger = new Telemetry(MaxSpeed);
 
   // Subsystems
-  //public final Drive drive = TunerConstants.createDrivetrain();
+  // public final Drive drive = TunerConstants.createDrivetrain();
   public final DriveSim drive = TunerConstants.createDrivetrain();
-  //private final Elevator elevator = new Elevator();
-  //private final Daisy daisy = new Daisy();
+  public final YamsElevator elevator = new YamsElevator();
+  // private final Elevator elevator = new Elevator();
+  // private final Daisy daisy = new Daisy();
 
   // Controllers
-  private final CommandPS4Controller controller = new CommandPS4Controller(0);
-  //private final CommandPS4Controller controller2 = new CommandPS4Controller(1);
+  private final CommandPS5Controller controller = new CommandPS5Controller(0);
+  // private final CommandPS4Controller controller2 = new CommandPS4Controller(1);
 
   // Crit Hit way
   // private final LoggedDashboardChooser<Command> autoChooser;
@@ -79,10 +79,9 @@ private final Telemetry logger = new Telemetry(MaxSpeed);
 
   public RobotContainer() {
     SmartDashboard.putData("Field", m_field);
-
     autoChooser = AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("Auto Mode", autoChooser);
-
+    elevator.setDefaultCommand(elevator.HumanPlayer());
     // SmartDashboard.putData("Field", m_field);
 
     configureBindings();
@@ -203,6 +202,8 @@ private final Telemetry logger = new Telemetry(MaxSpeed);
 
     // reset the field-centric heading on left bumper press
     controller.button(5).onTrue(drive.runOnce(() -> drive.seedFieldCentric()));
+    controller.triangle().onTrue(elevator.L3());
+    controller.cross().onTrue(elevator.HumanPlayer());
 
     drive.registerTelemetry(logger::telemeterize);
   }

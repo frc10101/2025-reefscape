@@ -28,7 +28,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.ElevatorConstants;
 import org.littletonrobotics.junction.Logger;
 
-public class Elevator extends SubsystemBase {
+public class OldElevator extends SubsystemBase {
   private final SparkMax m_motorLeft;
   private final SparkMax m_motorRight;
   private double position;
@@ -62,7 +62,7 @@ public class Elevator extends SubsystemBase {
                   * Constants.ElevatorConstants.kPixelsPerMeter,
               90));
 
-  public Elevator() {
+  public OldElevator() {
     m_motorLeft = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorLeft, false);
     m_motorRight = configureMotor(Constants.SparkMaxCanIDs.ElevatorMotorRight, true);
     position = 0;
