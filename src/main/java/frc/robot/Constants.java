@@ -67,7 +67,7 @@ public final class Constants {
     public static final double goOut = -16;
     public static final double L1 = -4;
     public static final double L2 = -11.25;
-    public static final double L3 = Units.feetToMeters(6);
+    public static final double L3 = Units.inchesToMeters(39);
     public static final double HumanPlayer = 0;
     public static final double kCarriageMass = 5.31; // kg
     public static final double kElevatorDrumRadius = Units.inchesToMeters(1.88);

@@ -13,10 +13,13 @@ import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.generated.TunerConstants;
+
+import org.ironmaple.simulation.SimulatedArena;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.rlog.RLOGServer;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 import org.littletonrobotics.urcl.URCL;
@@ -52,11 +55,10 @@ public class Robot extends LoggedRobot {
         Logger.addDataReceiver(new NT4Publisher());
         break;
 
-        /*case SIM:
+      case SIM:
         // Running a physics simulator, log to NT
         Logger.addDataReceiver(new NT4Publisher());
         break;
-        */
 
       case REPLAY:
         // Replaying a log, set up replay source
@@ -158,5 +160,10 @@ public class Robot extends LoggedRobot {
   public void testExit() {}
 
   @Override
-  public void simulationPeriodic() {}
+  public void simulationPeriodic() {
+    Logger.recordOutput("FieldSimulation/Algae", 
+    SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
+    Logger.recordOutput("FieldSimulation/Coral", 
+    SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
+  }
 }

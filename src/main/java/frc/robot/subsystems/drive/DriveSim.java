@@ -12,6 +12,7 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -23,6 +24,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.util.Simulation.MapleSimSwerveDrivetrain;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.AutoLog;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements Subsystem so it can easily
@@ -157,6 +159,10 @@ public class DriveSim extends TunerSwerveDrivetrain implements Subsystem {
     super.resetPose(pose);
   }
 
+  public Pose2d getPose() {
+    return mapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose();
+  }
+
   public Command getAuto(String autoName) {
     try {
       return AutoBuilder.buildAuto(autoName);
@@ -164,4 +170,8 @@ public class DriveSim extends TunerSwerveDrivetrain implements Subsystem {
       return null;
     }
   }
+  public ChassisSpeeds getChassisSpeed() {
+    return mapleSimSwerveDrivetrain.mapleSimDrive.getDriveTrainSimulatedChassisSpeedsFieldRelative();
+  }
+
 }

@@ -19,7 +19,9 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -28,6 +30,12 @@ import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.YamsElevator;
 import frc.robot.subsystems.drive.DriveSim;
+import frc.robot.subsystems.vision;
+
+import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralAlgaeStack;
+import org.littletonrobotics.junction.AutoLog;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -56,11 +64,11 @@ public class RobotContainer {
       new SwerveRequest.RobotCentric().withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
   private final Telemetry logger = new Telemetry(MaxSpeed);
-
   // Subsystems
   // public final Drive drive = TunerConstants.createDrivetrain();
   public final DriveSim drive = TunerConstants.createDrivetrain();
   public final YamsElevator elevator = new YamsElevator();
+  public final vision vision = new vision(drive);
   // private final Elevator elevator = new Elevator();
   // private final Daisy daisy = new Daisy();
 
@@ -81,12 +89,13 @@ public class RobotContainer {
     SmartDashboard.putData("Field", m_field);
     autoChooser = AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("Auto Mode", autoChooser);
-    elevator.setDefaultCommand(elevator.HumanPlayer());
     // SmartDashboard.putData("Field", m_field);
 
     configureBindings();
 
     drive.resetPose(new Pose2d(7.16, 5, new Rotation2d(Math.PI)));
+    SimulatedArena.getInstance().addGamePiece(new ReefscapeCoralAlgaeStack(new Translation2d(2,2)));
+
 
     /*
         drive.resetPose(new Pose2d(7.16, 5, new Rotation2d(Math.PI)));
@@ -204,8 +213,11 @@ public class RobotContainer {
     controller.button(5).onTrue(drive.runOnce(() -> drive.seedFieldCentric()));
     controller.triangle().onTrue(elevator.L3());
     controller.cross().onTrue(elevator.HumanPlayer());
+    controller.R1().onTrue(elevator.ejectCoral(drive));
+    
 
     drive.registerTelemetry(logger::telemeterize);
+    Logger.recordOutput("zeroedPose", new Pose3d());
   }
 
   // public void zeroGyro() {
