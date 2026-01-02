@@ -1,0 +1,10 @@
+1. Add Robot_OOPS to assets folder of AdvantageScope
+2. add NT://DriveState/Pose as the top pose and set robot to Robot_OOPS
+****THIS ORDER IS VERY IMPORTANT****
+
+3. add NT:/AdvantageKit/RealOutputs/ElevatorPose as FIRST mechanism
+4. add NT:/AdvantageKit/RealOutputs/DaisyPose as SECOND mechanism
+
+****OPTIONAL MAPLE SIM****
+5. outside of robot pose add NT:/AdvantageKit/RealOutputs/FieldSimulation/Algae and set its model as Algae
+6. outside of robot pose add NT:/AdvantageKit/RealOutputs/FieldSimulation/Coral and set its model as Coral

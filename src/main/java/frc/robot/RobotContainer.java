@@ -28,13 +28,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.YamsDaisy;
 import frc.robot.subsystems.YamsElevator;
 import frc.robot.subsystems.drive.DriveSim;
-import frc.robot.subsystems.vision;
+import frc.robot.subsystems.visionSim;
 
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralAlgaeStack;
-import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -68,7 +68,8 @@ public class RobotContainer {
   // public final Drive drive = TunerConstants.createDrivetrain();
   public final DriveSim drive = TunerConstants.createDrivetrain();
   public final YamsElevator elevator = new YamsElevator();
-  public final vision vision = new vision(drive);
+  public final YamsDaisy daisy = new YamsDaisy();
+  public final visionSim vision = new visionSim(drive);
   // private final Elevator elevator = new Elevator();
   // private final Daisy daisy = new Daisy();
 
@@ -95,6 +96,7 @@ public class RobotContainer {
 
     drive.resetPose(new Pose2d(7.16, 5, new Rotation2d(Math.PI)));
     SimulatedArena.getInstance().addGamePiece(new ReefscapeCoralAlgaeStack(new Translation2d(2,2)));
+    daisy.setDefaultCommand(daisy.setVelocity(RPM.of(0)));
 
 
     /*
@@ -213,7 +215,9 @@ public class RobotContainer {
     controller.button(5).onTrue(drive.runOnce(() -> drive.seedFieldCentric()));
     controller.triangle().onTrue(elevator.L3());
     controller.cross().onTrue(elevator.HumanPlayer());
-    controller.R1().onTrue(elevator.ejectCoral(drive));
+    controller.R1().onTrue(elevator.ejectCoral(drive, daisy));
+    controller.square().onTrue(daisy.setVelocity(RPM.of(Constants.DaisyConstants.DaisyOutRPM)));
+    controller.circle().onTrue(daisy.setVelocity(RPM.of(Constants.DaisyConstants.DaisyInRPM)));
     
 
     drive.registerTelemetry(logger::telemeterize);

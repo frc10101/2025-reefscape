@@ -22,7 +22,7 @@ public class Daisy extends SubsystemBase {
   /** Creates a new Daisy. */
   public Daisy() {
     m_daisyMotor = configureMotor(Constants.SparkMaxCanIDs.DaisyMotor);
-    m_daisyBeamBreak = new DigitalInput(Constants.digitalIDs.daisyBeamBreak);
+    m_daisyBeamBreak = new DigitalInput(Constants.DigitalIDs.daisyBeamBreak);
   }
 
   private SparkMax configureMotor(int canID) {

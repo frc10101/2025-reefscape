@@ -1,88 +1,89 @@
-// Copyright 2021-2025 FRC 6328
-// http://github.com/Mechanical-Advantage
-//
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// version 3 as published by the Free Software Foundation or
-// available in the root directory of this project.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
 package frc.robot;
+
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
- * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running
- * on a roboRIO. Change the value of "simMode" to switch between "sim" (physics sim) and "replay"
- * (log replay from a file).
+ * Defines constants for the robot, including runtime modes, CAN IDs, and subsystem-specific values.
  */
 public final class Constants {
   public static final Mode simMode = Mode.SIM;
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
-  public static enum Mode {
-    /** Running on a real robot. */
-    REAL,
-
-    /** Running a physics simulator. */
-    SIM,
-
-    /** Replaying from a log file. */
-    REPLAY
+  public enum Mode {
+    REAL, // Running on a real robot
+    SIM, // Running a physics simulator
+    REPLAY // Replaying from a log file
   }
 
   public static final class CANids {
     public static final int CANdleID = 25;
   }
 
-  public static final class digitalIDs {
+  public static final class DigitalIDs {
     public static final int daisyBeamBreak = 0;
   }
 
-  /** ALL SPARK MAX CAN ID'S = PDH PORT PLUS ONE */
   public static final class SparkMaxCanIDs {
-    /** Daisy Can ID's */
     public static final int DaisyMotor = 16;
-
-    /** Elevator Can ID's */
     public static final int ElevatorMotorLeft = 8;
-
     public static final int ElevatorMotorRight = 18;
   }
 
   public static final class ElevatorConstants {
     public static final double kP = 0.17;
     public static final double kI = 0.0;
-    public static final double kD = 0;
+    public static final double kD = 0.0;
     public static final double kFF = 0.003;
     public static final double kMaxVelocity = 1.75;
     public static final double kMaxAcceleration = 0.75;
-    public static final double ElevatorGearRatio = 25;
-    public static final double NDexter = 0;
-    public static final double goOut = -16;
-    public static final double L1 = -4;
+    public static final double ElevatorGearRatio = 25.0;
+    public static final double L1 = -4.0;
     public static final double L2 = -11.25;
-    public static final double L3 = Units.inchesToMeters(39);
-    public static final double HumanPlayer = 0;
+    public static final double L3 = Units.inchesToMeters(43);
+    public static final double HumanPlayer = 0.0;
     public static final double kCarriageMass = 5.31; // kg
     public static final double kElevatorDrumRadius = Units.inchesToMeters(1.88);
     public static final double kMinElevatorHeightMeters = 0.0;
     public static final double kMaxElevatorHeightMeters = Units.feetToMeters(7.0);
-    public static final double kPixelsPerMeter = 20.0; // pixels per meter conversion factor
     public static final double kS = 0.2; // Static friction feedforward
     public static final double kG = 0.8; // Gravity feedforward
     public static final double kV = 0.1; // Velocity feedforward
-    public static final double kCurrentLimit = 40.0; // Current limit in amps
+    public static final double kCurrentLimit = 40.0; // Amps
+    public static final double kSimClosedLoopP = 6.189;
+    public static final double kSimClosedLoopI = 0.0;
+    public static final double kSimClosedLoopD = 0.0;
+    public static final double kSimFeedforwardS = 0.0;
+    public static final double kSimFeedforwardG = 0.04;
+    public static final double kSimFeedforwardV = 38.19;
+    public static final double kSimFeedforwardA = 0.0;
+    public static final double kClosedLoopRampRate = 0.25; // seconds
+    public static final double kRaiseSpeed = 0.5;
+    public static final double kLowerSpeed = -0.5;
+    public static final double kStopSpeed = 0.0;
+    public static final double kEjectHeightAboveDaisy = Units.inchesToMeters(15);
+    public static final double kEjectSpeed = 2.0; // meters per second
+    public static final double kEjectAngle = -43.0; // degrees
+    public static final double kMaxElevatorPoseHeightMeters = Units.inchesToMeters(19);
+    public static final double kMaxDaisyPoseHeightMeters = Units.inchesToMeters(43);
   }
 
   public static final class DaisyConstants {
-    public static final double DaisyIn = 1; // arbitrary number
-    public static final double DaisyOut = -1; // also and arbitrary number
+    public static final double DaisyIn = 1.0;
+    public static final double DaisyOut = -1.0;
+    public static final double DaisyInRPM = -300.0; // RPM
+    public static final double DaisyOutRPM = 500; // RPM
+    public static final double kDiameterMeters = 0.0762; // Diameter of the flywheel in meters
+    public static final double kMassPounds = 1.2; // Mass of the flywheel in pounds
+    public static final double kPID_P = 0.0025; // PID proportional constant
+    public static final double kPID_I = 0.0; // PID integral constant
+    public static final double kPID_D = 0.0001; // PID derivative constant
+    public static final double kStatorCurrentLimitAmps = 40.0; // Current limit in amps
+    public static final double kGearRatio = 1.0; // Gear ratio for the Daisy mechanism
+    public static final double kFeedforwardS = 0.05; // Static gain for feedforward
+    public static final double kFeedforwardV = 0.51; // Velocity gain for feedforward
+    public static final double kFeedforwardA = 0.034; // Acceleration gain for feedforward
   }
 
   public static final class LimelightConstants {

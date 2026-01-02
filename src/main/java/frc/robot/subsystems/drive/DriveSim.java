@@ -24,7 +24,6 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.util.Simulation.MapleSimSwerveDrivetrain;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.AutoLog;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements Subsystem so it can easily
