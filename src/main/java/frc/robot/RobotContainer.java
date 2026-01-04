@@ -14,29 +14,39 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
+import static frc.robot.subsystems.vision.VisionConstants.aprilTagLayout;
 
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
-import frc.commands.AlignToReefTagRelative;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.DriveCommands;
+import frc.robot.commands.DriveToPosition;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.YamsDaisy;
 import frc.robot.subsystems.YamsElevator;
-import frc.robot.subsystems.drive.DriveSim;
-import frc.robot.subsystems.visionSim;
-
+import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.GyroIO;
+import frc.robot.subsystems.drive.GyroIOPigeon2;
+import frc.robot.subsystems.drive.GyroIOSim;
+import frc.robot.subsystems.drive.ModuleIO;
+import frc.robot.subsystems.drive.ModuleIOTalonFXReal;
+import frc.robot.subsystems.drive.ModuleIOTalonFXSim;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOLimelight;
+import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import org.ironmaple.simulation.SimulatedArena;
-import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralAlgaeStack;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -45,190 +55,157 @@ import org.littletonrobotics.junction.Logger;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
-  // MapleSim testing
-  private final double MaxSpeed = Constants.DriveConstants.MaxSpeed;
-  private final double MaxAngularRate = Constants.DriveConstants.MaxAngularRate;
 
-  /* Setting up bindings for necessary control of the swerve drive platform */
-  private final SwerveRequest.FieldCentric drive2 =
-      new SwerveRequest.FieldCentric()
-          .withDeadband(MaxSpeed * 0.1)
-          .withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
-          .withDriveRequestType(
-              DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-  private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
-  private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
-  private final SwerveRequest.RobotCentric forwardStraight =
-      new SwerveRequest.RobotCentric().withDriveRequestType(DriveRequestType.OpenLoopVoltage);
-
-  private final Telemetry logger = new Telemetry(MaxSpeed);
-  // Subsystems
-  // public final Drive drive = TunerConstants.createDrivetrain();
-  public final DriveSim drive = TunerConstants.createDrivetrain();
-  public final YamsElevator elevator = new YamsElevator();
-  public final YamsDaisy daisy = new YamsDaisy();
-  public final visionSim vision = new visionSim(drive);
-  // private final Elevator elevator = new Elevator();
-  // private final Daisy daisy = new Daisy();
+  public final Drive drive;
+  public final YamsElevator elevator;
+  public final YamsDaisy daisy;
+  public final Vision vision;
 
   // Controllers
   private final CommandPS5Controller controller = new CommandPS5Controller(0);
-  // private final CommandPS4Controller controller2 = new CommandPS4Controller(1);
 
-  // Crit Hit way
-  // private final LoggedDashboardChooser<Command> autoChooser;
+  private SwerveDriveSimulation driveSimulation;
 
-  // Maplesim way
-  private final SendableChooser<Command> autoChooser;
+  private final LoggedDashboardChooser<Command> autoChooser;
 
   // Field
   private final Field2d m_field = new Field2d();
 
   public RobotContainer() {
-    SmartDashboard.putData("Field", m_field);
-    autoChooser = AutoBuilder.buildAutoChooser();
-    SmartDashboard.putData("Auto Mode", autoChooser);
-    // SmartDashboard.putData("Field", m_field);
+    switch (Constants.currentMode) {
+            case REAL:
+                // Real robot, instantiate hardware IO implementations
+                drive = new Drive(
+                        new GyroIOPigeon2(),
+                        new ModuleIOTalonFXReal(TunerConstants.FrontLeft),
+                        new ModuleIOTalonFXReal(TunerConstants.FrontRight),
+                        new ModuleIOTalonFXReal(TunerConstants.BackLeft),
+                        new ModuleIOTalonFXReal(TunerConstants.BackRight),
+                        (pose) -> {});
+                this.vision = new Vision(
+                        drive,
+                        new VisionIOLimelight(VisionConstants.camera0Name, drive::getRotation));
+                this.elevator = new YamsElevator();
+                this.daisy = new YamsDaisy();
 
-    configureBindings();
+                break;
+            case SIM:
+                // Sim robot, instantiate physics sim IO implementations
 
-    drive.resetPose(new Pose2d(7.16, 5, new Rotation2d(Math.PI)));
-    SimulatedArena.getInstance().addGamePiece(new ReefscapeCoralAlgaeStack(new Translation2d(2,2)));
-    daisy.setDefaultCommand(daisy.setVelocity(RPM.of(0)));
+                driveSimulation = new SwerveDriveSimulation(Drive.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
+                SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
+                drive = new Drive(
+                        new GyroIOSim(driveSimulation.getGyroSimulation()),
+                        new ModuleIOTalonFXSim(
+                                TunerConstants.FrontLeft, driveSimulation.getModules()[0]),
+                        new ModuleIOTalonFXSim(
+                                TunerConstants.FrontRight, driveSimulation.getModules()[1]),
+                        new ModuleIOTalonFXSim(
+                                TunerConstants.BackLeft, driveSimulation.getModules()[2]),
+                        new ModuleIOTalonFXSim(
+                                TunerConstants.BackRight, driveSimulation.getModules()[3]),
+                        driveSimulation::setSimulationWorldPose);
+                vision = new Vision(
+                        drive,
+                        new VisionIOPhotonVisionSim(
+                                VisionConstants.camera0Name, VisionConstants.robotToCamera0, driveSimulation::getSimulatedDriveTrainPose));
+                this.elevator = new YamsElevator();
+                this.daisy = new YamsDaisy();
+                break;
 
+            default:
+                // Replayed robot, disable IO implementations
+                drive = new Drive(
+                        new GyroIO() {},
+                        new ModuleIO() {},
+                        new ModuleIO() {},
+                        new ModuleIO() {},
+                        new ModuleIO() {},
+                        (pose) -> {});
+                vision = new Vision(drive, new VisionIO() {}, new VisionIO() {});
+                this.elevator = new YamsElevator();
+                this.daisy = new YamsDaisy();
+                break;
+        }
+    // Set up auto routines
+        autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
-    /*
-        drive.resetPose(new Pose2d(7.16, 5, new Rotation2d(Math.PI)));
-
-        // adds all autos (ALL OF THEM)
-        autoChooser = AutoBuilder.buildAutoChooser();
-        SmartDashboard.putData("Auto Mode", autoChooser);
-
-        SmartDashboard.putData("Field", m_field);
-
-        // PathPlanner Commands
-        NamedCommands.registerCommand("L2", elevator.L2());
-        NamedCommands.registerCommand("L3", elevator.L3());
-        NamedCommands.registerCommand("HumanPlayer", elevator.HumanPlayer());
-
-        NamedCommands.registerCommand(
-            "outputSpin", daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
-        NamedCommands.registerCommand("stopSpin", daisy.outputSpin(0));
-
-        // Configure button bindings
+        // Set up SysId routines
+        autoChooser.addOption("Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
+        autoChooser.addOption("Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
+        autoChooser.addOption(
+                "Drive SysId (Quasistatic Forward)", drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        autoChooser.addOption(
+                "Drive SysId (Quasistatic Reverse)", drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        autoChooser.addOption("Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+        autoChooser.addOption("Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+        // Configure the button bindings
         configureButtonBindings();
-    */
+    daisy.setDefaultCommand(daisy.setVelocity(RPM.of(0)));
   }
+/**
+     * Use this method to define your button->command mappings. Buttons can be created by instantiating a
+     * {@link GenericHID} or one of its subclasses ({@link edu.wpi.first.wpilibj.Joystick} or {@link XboxController}),
+     * and then passing it to a {@link edu.wpi.first.wpilibj2.command.button.JoystickButton}.
+     */
+    private void configureButtonBindings() {
+        // Default command, normal field-relative drive
+        drive.setDefaultCommand(DriveCommands.joystickDrive(
+                drive, () -> -controller.getLeftY(), () -> -controller.getLeftX(), () -> -controller.getRightX()));
 
-  /*private void configureButtonBindings() {
-      // configureSwerveCommands();
+        // Lock to 0° when A button is held
+        controller
+                .circle()
+                .whileTrue(DriveCommands.joystickDriveAtAngle(
+                        drive, () -> -controller.getLeftY(), () -> -controller.getLeftX(), () -> new Rotation2d()));
 
-      // Controller 2 button bindings
-      bindController2Buttons();
+        // Switch to X pattern when X button is pressed
+        controller.cross().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
-      elevator.elevatorLimit().whileTrue(elevator.stop());
+        // Reset gyro / odometry
+        final Runnable resetGyro = Constants.currentMode == Constants.Mode.SIM
+                ? () -> drive.setPose(
+                        driveSimulation.getSimulatedDriveTrainPose()) // reset odometry to actual robot pose during
+                // simulation
+                : () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero gyro
+        controller.create().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
+
+        if (Constants.currentMode == Constants.Mode.SIM) {
+            // L3 placement
+            controller.R1().onTrue(elevator.ejectCoral(driveSimulation, daisy));
+        }
+        controller.pov(180).onTrue(elevator.HumanPlayer());
+        controller.pov(0).onTrue(elevator.L3());
+        controller.pov(90).onTrue(daisy.setVelocity(RPM.of(Constants.DaisyConstants.DaisyOutRPM)));
+        controller.pov(270).onTrue(daisy.setVelocity(RPM.of(Constants.DaisyConstants.DaisyInRPM)));
+
+        controller.R2().whileTrue(new DriveToPosition(drive, aprilTagLayout.getTagPose(17).get().toPose2d()));
     }
 
-    private void bindController2Buttons() {
-      // Trigger button1 = new Trigger(controller2.button(1)); // Output Coral
-      // Trigger button2 = new Trigger(controller2.button(2)); // Hold for Intake
-      // Trigger button3 = new Trigger(controller2.button(3)); // Elevator Up
-      Trigger button4 = new Trigger(controller2.button(4)); // Elevator Down
-      // Trigger button5 = new Trigger(controller2.button(5));
-      Trigger button6 = new Trigger(controller2.button(1)); // L3
-      Trigger button7 = new Trigger(controller2.button(2)); // Human Player
-      Trigger button9 = new Trigger(controller2.button(3)); // L2
-      // Trigger button10 = new Trigger(controller.button(10)); //ResetGyro
-      // button1.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyIn));
-      // button2.whileTrue(daisy.outputSpin(Constants.DaisyConstants.DaisyOut));
-      // button3.whileTrue(elevator.raise());
-      button4.whileTrue(elevator.lower());
-      button6.whileTrue(elevator.L3());
-      button7.whileTrue(elevator.HumanPlayer());
-      button9.whileTrue(elevator.L2());
-      // button10.whileTrue(elevator.L1());
-    }
-
-    private void configureSwerveCommands() {
-      // Default command, normal field-relative drive
-      drive.setDefaultCommand(
-          DriveCommands.joystickDrive(
-              drive,
-              () -> -controller.getLeftY(),
-              () -> -controller.getLeftX(),
-              () -> -controller.getRightX()));
-      // Lock to 0° when A button is held
-      controller
-          .button(1) // should be a
-          .whileTrue(
-              DriveCommands.joystickDriveAtAngle(
-                  drive,
-                  () -> controller.getLeftY(),
-                  () -> controller.getLeftX(),
-                  () -> new Rotation2d()));
-
-      // Switch to X pattern when X button is pressed
-      controller.button(4).onTrue(Commands.runOnce(drive::stopWithX, drive));
-
-      // should be b
-      controller.button(5).onTrue(drive.runOnce(() -> drive.seedFieldCentric()));
-    }
-  */
-
-  private void configureBindings() {
-    // Note that X is defined as forward according to WPILib convention,
-    // and Y is defined as to the left according to WPILib convention.
-    drive.setDefaultCommand(
-        // Drivetrain will execute this command periodically
-        drive.applyRequest(
-            () ->
-                drive2
-                    .withVelocityX(
-                        -controller.getLeftY()
-                            * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(
-                        -controller.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(
-                        -controller.getRightX()
-                            * MaxAngularRate) // Drive counterclockwise with negative X (left)
-            ));
-
-    controller.button(2).whileTrue(drive.applyRequest(() -> brake));
-    controller
-        .button(3)
-        .whileTrue(
-            drive.applyRequest(
-                () ->
-                    point.withModuleDirection(
-                        new Rotation2d(-controller.getLeftY(), -controller.getLeftX()))));
-
-    controller
-        .pov(0)
-        .whileTrue(drive.applyRequest(() -> forwardStraight.withVelocityX(0.5).withVelocityY(0)));
-    controller
-        .pov(180)
-        .whileTrue(drive.applyRequest(() -> forwardStraight.withVelocityX(-0.5).withVelocityY(0)));
-
-    // reset the field-centric heading on left bumper press
-    controller.button(5).onTrue(drive.runOnce(() -> drive.seedFieldCentric()));
-    controller.triangle().onTrue(elevator.L3());
-    controller.cross().onTrue(elevator.HumanPlayer());
-    controller.R1().onTrue(elevator.ejectCoral(drive, daisy));
-    controller.square().onTrue(daisy.setVelocity(RPM.of(Constants.DaisyConstants.DaisyOutRPM)));
-    controller.circle().onTrue(daisy.setVelocity(RPM.of(Constants.DaisyConstants.DaisyInRPM)));
-    controller.R2().onTrue(new AlignToReefTagRelative(false, drive, vision));
-    controller.L2().onTrue(new AlignToReefTagRelative(false, drive, vision));
-    
-
-    Logger.recordOutput("FieldSimulation/RobotPosition", drive.getPose());
-    Logger.recordOutput("zeroedPose", new Pose3d());
-  }
-
-  // public void zeroGyro() {
-  //  drive.runOnce(() -> drive.seedFieldCentric());
-  // }
-
+  /**
+     * Use this to pass the autonomous command to the main {@link Robot} class.
+     *
+     * @return the command to run in autonomous
+     */
   public Command getAutonomousCommand() {
-    return autoChooser.getSelected();
-  }
+    return autoChooser.get();
+}
+
+public void resetSimulationField() {
+    if (Constants.currentMode != Constants.Mode.SIM) return;
+
+    driveSimulation.setSimulationWorldPose(new Pose2d(3, 3, new Rotation2d()));
+    SimulatedArena.getInstance().resetFieldForAuto();
+}
+
+public void updateSimulation() {
+    if (Constants.currentMode != Constants.Mode.SIM) return;
+
+    SimulatedArena.getInstance().simulationPeriodic();
+    Logger.recordOutput("FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
+    Logger.recordOutput(
+            "FieldSimulation/Coral", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
+    Logger.recordOutput(
+            "FieldSimulation/Algae", SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
+}
 }

@@ -1,5 +1,5 @@
 1. Add Robot_OOPS to assets folder of AdvantageScope
-2. add NT://DriveState/Pose as the top pose and set robot to Robot_OOPS
+2. add NT://AdvantageKit/RealOutputs/FieldSimulation/RobotPosition as the top pose and set robot to Robot_OOPS
 ****THIS ORDER IS VERY IMPORTANT****
 
 3. add NT:/AdvantageKit/RealOutputs/ElevatorPose as FIRST mechanism

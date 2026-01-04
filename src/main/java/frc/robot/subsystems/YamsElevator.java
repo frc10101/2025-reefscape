@@ -13,8 +13,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.ElevatorConstants;
-import frc.robot.subsystems.drive.DriveSim;
 import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnFly;
 import org.littletonrobotics.junction.Logger;
 import yams.mechanisms.config.ElevatorConfig;
@@ -34,14 +34,17 @@ public class YamsElevator extends SubsystemBase {
   private final SmartMotorControllerConfig motorConfig =
       new SmartMotorControllerConfig(this)
           .withControlMode(SmartMotorControllerConfig.ControlMode.CLOSED_LOOP)
-          .withMechanismCircumference(Meters.of(2 * Math.PI * ElevatorConstants.kElevatorDrumRadius))
-          .withClosedLoopController(ElevatorConstants.kP, ElevatorConstants.kI, ElevatorConstants.kD)
+          .withMechanismCircumference(
+              Meters.of(2 * Math.PI * ElevatorConstants.kElevatorDrumRadius))
+          .withClosedLoopController(
+              ElevatorConstants.kP, ElevatorConstants.kI, ElevatorConstants.kD)
           .withSimClosedLoopController(
               ElevatorConstants.kSimClosedLoopP,
               ElevatorConstants.kSimClosedLoopI,
               ElevatorConstants.kSimClosedLoopD)
           .withFeedforward(
-              new ElevatorFeedforward(ElevatorConstants.kS, ElevatorConstants.kG, ElevatorConstants.kV))
+              new ElevatorFeedforward(
+                  ElevatorConstants.kS, ElevatorConstants.kG, ElevatorConstants.kV))
           .withSimFeedforward(
               new ElevatorFeedforward(
                   ElevatorConstants.kSimFeedforwardS,
@@ -109,21 +112,21 @@ public class YamsElevator extends SubsystemBase {
     elevator.updateTelemetry();
   }
 
-  private void ejectCoralInternal(DriveSim driveSim, YamsDaisy daisy) {
+  private void ejectCoralInternal(SwerveDriveSimulation driveSim, YamsDaisy daisy) {
     SimulatedArena.getInstance()
-      .addGamePieceProjectile(
-        new ReefscapeCoralOnFly(
-          driveSim.getPose().getTranslation(),
-          new Translation2d(Units.inchesToMeters(9.755), Units.inchesToMeters(3)),
-          driveSim.getChassisSpeed(),
-          driveSim.getPose().getRotation().plus(Rotation2d.fromDegrees(180)),
-          Meters.of(DaisyPose.getZ() + ElevatorConstants.kEjectHeightAboveDaisy),
-          MetersPerSecond.of(daisy.getChoralVelocity()),
-          Degrees.of(ElevatorConstants.kEjectAngle)));
+        .addGamePieceProjectile(
+            new ReefscapeCoralOnFly(
+                driveSim.getSimulatedDriveTrainPose().getTranslation(),
+                new Translation2d(Units.inchesToMeters(9.755), Units.inchesToMeters(3)),
+                driveSim.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
+                driveSim.getSimulatedDriveTrainPose().getRotation().plus(Rotation2d.fromDegrees(180)),
+                Meters.of(DaisyPose.getZ() + ElevatorConstants.kEjectHeightAboveDaisy),
+                MetersPerSecond.of(daisy.getChoralVelocity()),
+                Degrees.of(ElevatorConstants.kEjectAngle)));
   }
-
-  public Command ejectCoral(DriveSim driveSim, YamsDaisy daisy) {
-    return runOnce(() -> ejectCoralInternal(driveSim, daisy));
+//SIMULATION ONLY
+  public Command ejectCoral(SwerveDriveSimulation drive, YamsDaisy daisy) {
+    return runOnce(() -> ejectCoralInternal(drive, daisy));
   }
 
   @Override
@@ -134,10 +137,13 @@ public class YamsElevator extends SubsystemBase {
     DaisyPose = new Pose3d(0, pose.getY(), -pose.getZ(), new Rotation3d());
 
     if (-pose.getZ() > ElevatorConstants.kMaxElevatorPoseHeightMeters) {
-      ElevatorPose = new Pose3d(0, pose.getY(), ElevatorConstants.kMaxElevatorPoseHeightMeters, new Rotation3d());
+      ElevatorPose =
+          new Pose3d(
+              0, pose.getY(), ElevatorConstants.kMaxElevatorPoseHeightMeters, new Rotation3d());
     }
     if (-pose.getZ() > ElevatorConstants.kMaxDaisyPoseHeightMeters) {
-      DaisyPose = new Pose3d(0, pose.getY(), ElevatorConstants.kMaxDaisyPoseHeightMeters, new Rotation3d());
+      DaisyPose =
+          new Pose3d(0, pose.getY(), ElevatorConstants.kMaxDaisyPoseHeightMeters, new Rotation3d());
     }
 
     Logger.recordOutput("ElevatorPose", ElevatorPose);

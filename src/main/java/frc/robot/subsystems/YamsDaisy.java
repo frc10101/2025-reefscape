@@ -10,11 +10,8 @@ import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
-import java.util.logging.Logger;
-
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
-
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -94,14 +91,21 @@ public class YamsDaisy extends SubsystemBase {
 
   public double getChoralVelocity() {
     double speed = daisy.getSpeed().baseUnitMagnitude();
-    String unit = daisy.getSpeed().baseUnit().name(); // Assuming getUnit() returns the unit as a String or Enum
+    String unit =
+        daisy
+            .getSpeed()
+            .baseUnit()
+            .name(); // Assuming getUnit() returns the unit as a String or Enum
     return switch (unit) {
-        case "RPM" -> speed * (2 * Math.PI * (Constants.DaisyConstants.kDiameterMeters / 2)) / 60.0;
-        case "Radian per Second" -> speed * (Constants.DaisyConstants.kDiameterMeters / 2);
-        case "DegreesPerSecond" -> speed * (Math.PI / 180) * (Constants.DaisyConstants.kDiameterMeters / 2);
-        default -> throw new IllegalArgumentException("Unsupported angular velocity unit: " + unit);
+      case "RPM" -> speed * (2 * Math.PI * (Constants.DaisyConstants.kDiameterMeters / 2)) / 60.0;
+      case "Radian per Second" -> speed * (Constants.DaisyConstants.kDiameterMeters / 2);
+      case "DegreesPerSecond" -> speed
+          * (Math.PI / 180)
+          * (Constants.DaisyConstants.kDiameterMeters / 2);
+      default -> throw new IllegalArgumentException("Unsupported angular velocity unit: " + unit);
     };
-}
+  }
+
   /**
    * Sets the duty cycle of the Daisy mechanism.
    *
@@ -120,6 +124,7 @@ public class YamsDaisy extends SubsystemBase {
   @Override
   public void simulationPeriodic() {
     daisy.simIterate();
-    org.littletonrobotics.junction.Logger.recordOutput("daisy Speed", RPM.convertFrom(daisy.getSpeed().magnitude(), RadiansPerSecond));
+    org.littletonrobotics.junction.Logger.recordOutput(
+        "daisy Speed", RPM.convertFrom(daisy.getSpeed().magnitude(), RadiansPerSecond));
   }
 }
