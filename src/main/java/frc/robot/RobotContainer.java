@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
+import frc.commands.AlignToReefTagRelative;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.YamsDaisy;
 import frc.robot.subsystems.YamsElevator;
@@ -45,11 +46,8 @@ import org.littletonrobotics.junction.Logger;
  */
 public class RobotContainer {
   // MapleSim testing
-  private double MaxSpeed =
-      TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-  private double MaxAngularRate =
-      RotationsPerSecond.of(0.75)
-          .in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+  private final double MaxSpeed = Constants.DriveConstants.MaxSpeed;
+  private final double MaxAngularRate = Constants.DriveConstants.MaxAngularRate;
 
   /* Setting up bindings for necessary control of the swerve drive platform */
   private final SwerveRequest.FieldCentric drive2 =
@@ -218,9 +216,11 @@ public class RobotContainer {
     controller.R1().onTrue(elevator.ejectCoral(drive, daisy));
     controller.square().onTrue(daisy.setVelocity(RPM.of(Constants.DaisyConstants.DaisyOutRPM)));
     controller.circle().onTrue(daisy.setVelocity(RPM.of(Constants.DaisyConstants.DaisyInRPM)));
+    controller.R2().onTrue(new AlignToReefTagRelative(false, drive, vision));
+    controller.L2().onTrue(new AlignToReefTagRelative(false, drive, vision));
     
 
-    drive.registerTelemetry(logger::telemeterize);
+    Logger.recordOutput("FieldSimulation/RobotPosition", drive.getPose());
     Logger.recordOutput("zeroedPose", new Pose3d());
   }
 

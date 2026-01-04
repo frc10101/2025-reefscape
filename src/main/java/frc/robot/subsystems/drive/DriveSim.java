@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
@@ -12,6 +13,7 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -20,6 +22,7 @@ import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import frc.robot.Constants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.util.Simulation.MapleSimSwerveDrivetrain;
@@ -103,6 +106,22 @@ public class DriveSim extends TunerSwerveDrivetrain implements Subsystem {
   public Command applyRequest(Supplier<SwerveRequest> requestSupplier) {
     return run(() -> this.setControl(requestSupplier.get()));
   }
+
+  public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
+        this.setControl(fieldRelative
+            ? new SwerveRequest.FieldCentric()
+                .withVelocityX(translation.getX())
+                .withVelocityY(translation.getY())
+                .withRotationalRate(rotation)
+                .withDeadband(Constants.DriveConstants.MaxSpeed)
+                .withRotationalDeadband(Constants.DriveConstants.MaxAngularRate)
+                .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+            : new SwerveRequest.RobotCentric()
+                .withVelocityX(translation.getX())
+                .withVelocityY(translation.getY())
+                .withRotationalRate(rotation)
+                .withDriveRequestType(DriveRequestType.OpenLoopVoltage));
+    }
 
   @Override
   public void periodic() {

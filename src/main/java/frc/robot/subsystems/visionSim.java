@@ -7,6 +7,8 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 
+import java.util.List;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -20,6 +22,7 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
+import org.photonvision.targeting.PhotonPipelineResult;
 
 public class visionSim extends SubsystemBase {
   private VisionSystemSim visionSim = new VisionSystemSim("limelight");
@@ -29,6 +32,7 @@ public class visionSim extends SubsystemBase {
   private PhotonCamera camera = new PhotonCamera("limelight");
   private PhotonCameraSim cameraSim;
   private DriveSim driveSim;
+  private PhotonPipelineResult Results;
 
   /** Creates a new vision. */
   public visionSim(DriveSim driveSim) {
@@ -45,8 +49,29 @@ public class visionSim extends SubsystemBase {
     this.driveSim = driveSim;
   }
 
+  public double getFiducialID() {
+    return Results.getBestTarget().getFiducialId();
+  }
+  public boolean getTV() {
+    return Results.hasTargets();
+  }
+  public double[] getBotPose_TargetSpace() {
+      var bestTarget = Results.getBestTarget();
+      var cameraToTarget = bestTarget.getBestCameraToTarget();
+      return new double[] {
+        cameraToTarget.getX(),
+        cameraToTarget.getY(),
+        cameraToTarget.getZ(),
+        Math.toDegrees(cameraToTarget.getRotation().getX()),
+        Math.toDegrees(cameraToTarget.getRotation().getY()),
+        Math.toDegrees(cameraToTarget.getRotation().getZ())
+      };
+      }
+
   @Override
   public void simulationPeriodic() {
     visionSim.update(new Pose3d(driveSim.getPose()));
+    Results = camera.getLatestResult();
+    Results = camera.getLatestResult();
   }
 }
